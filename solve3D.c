@@ -4,7 +4,7 @@
 #include <mpi.h>
 #include<math.h>
 #include <omp.h>
-
+coucou
 int main(int argc, char **argv){	
 /********************************************************************************
 		Declaration of variables and initialisation.
