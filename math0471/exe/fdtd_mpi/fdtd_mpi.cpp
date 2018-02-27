@@ -239,7 +239,7 @@ int main(int argc, char **argv){
 			}
 			sgrids_Ex[l].dx = Vec3d(dx, dx, dx);	
       			sgrids_Ex[l].id = l;	
-			//std::cout << l << ": " << sgrids_Ex[l] << '\n';	 		
+			std::cout << l << ": " << sgrids_Ex[l] << '\n';	 		
 		}
 	}
 
@@ -497,7 +497,7 @@ int main(int argc, char **argv){
 	int j_min_a = (Ny-n_ay)/2;
 	int j_max_a = j_min_a + n_ay-1;
 
-	double l_az = 0.1;
+	double l_az = 0.01;
 	double n_az_double = (l_az/dx)+1;
 	int n_az = (int) n_az_double;
 	int k_min_a = (Nz-n_az)/2;
@@ -631,6 +631,18 @@ int main(int argc, char **argv){
 			Ex_bottom[i][j] = 0;
 		}
 	}
+	
+
+	double*Ex_left_send;
+	double*Ex_bottom_send;;
+	Ex_left_send =(double*)malloc((point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank]*sizeof(double*));
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		Ex_left_send[i] = 0;
+	}
+	Ex_bottom_send =(double*)malloc((point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank]*sizeof(double*));
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		Ex_bottom_send[i] = 0;
+	}
 
 	double**Ey_bottom;
 	double**Ey_back;
@@ -647,6 +659,19 @@ int main(int argc, char **argv){
 		for(k=0;k<point_per_proc_z[myrank];k++){
 			Ey_back[j][k] = 0;
 		}
+	}
+
+
+
+	double*Ey_bottom_send;
+	double*Ey_back_send;
+	Ey_bottom_send =(double*)malloc((point_per_proc_x[myrank])*(point_per_proc_y[myrank]+lasty)*sizeof(double*));
+	for(i=0;i<(point_per_proc_x[myrank])*(point_per_proc_y[myrank]+lasty);i++){
+		Ey_bottom_send[i] = 0;
+	}
+	Ey_back_send =(double*)malloc((point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank]*sizeof(double*));
+	for(j=0;j<(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank];j++){
+		Ey_back_send[j] = 0;
 	}
 	
 	double**Ez_left;
@@ -666,6 +691,18 @@ int main(int argc, char **argv){
 		}
 	}
 
+
+	double*Ez_left_send;
+	double*Ez_back_send;
+	Ez_left_send =(double*)malloc((point_per_proc_x[myrank])*(point_per_proc_z[myrank]+lastz)*sizeof(double*));
+	for(i=0;i<(point_per_proc_x[myrank])*(point_per_proc_z[myrank]+lastz);i++){
+		Ez_left_send[i] = 0;
+	}
+	Ez_back_send =(double*)malloc((point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz)*sizeof(double*));
+	for(j=0;j<point_per_proc_y[myrank];j++){
+		Ez_back_send[j] = 0;
+	}
+
 	double**Hx_right;
 	double**Hx_up;
 	Hx_right =(double**)malloc((point_per_proc_x[myrank])*sizeof(double**));
@@ -682,6 +719,18 @@ int main(int argc, char **argv){
 			Hx_up[i][j] = 0;
 		}
 	}
+
+	double*Hx_right_send;
+	double*Hx_up_send;
+	Hx_right_send =(double*)malloc((point_per_proc_x[myrank])*(point_per_proc_z[myrank]+lastz)*sizeof(double*));
+	for(i=0;i<point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz);i++){
+		Hx_right_send[i] = 0;
+	}
+	Hx_up_send =(double*)malloc((point_per_proc_x[myrank])*(point_per_proc_y[myrank]+lasty)*sizeof(double*));
+	for(i=0;i<point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty);i++){
+		Hx_up_send[i] = 0;
+
+	}	
 
 	double**Hy_up;
 	double**Hy_front;
@@ -700,6 +749,18 @@ int main(int argc, char **argv){
 		}
 	}
 
+
+	double*Hy_up_send;
+	double*Hy_front_send;
+	Hy_up_send =(double*)malloc((point_per_proc_x[myrank]+lastx)*(point_per_proc_y[myrank])*sizeof(double*));
+	for(i=0;i<(point_per_proc_x[myrank]+lastx)*(point_per_proc_y[myrank]);i++){
+		Hy_up_send[i] = 0;
+	}
+	Hy_front_send =(double*)malloc((point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz)*sizeof(double*));
+	for(j=0;j<point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz);j++){
+		Hy_front_send[j] = 0;
+	}
+
 	double**Hz_right;
 	double**Hz_front;
 	Hz_right =(double**)malloc((point_per_proc_x[myrank]+lastx)*sizeof(double**));
@@ -715,6 +776,17 @@ int main(int argc, char **argv){
 		for(k=0;k<point_per_proc_z[myrank];k++){
 			Hz_front[j][k] = 0;
 		}
+	}
+
+	double*Hz_right_send;
+	double*Hz_front_send;
+	Hz_right_send =(double*)malloc((point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank]*sizeof(double*));
+	for(i=0;i<(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank];i++){
+		Hz_right_send[i] = 0;
+	}
+	Hz_front_send =(double*)malloc((point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank])*sizeof(double*));
+	for(j=0;j<(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]);j++){
+		Hz_front_send[j] = 0;
 	}	
 /********************************************************************************
 			Begining of the algorithm.
@@ -725,14 +797,16 @@ int main(int argc, char **argv){
 		   attributed to another process to update the electric field.*/
 			if(divx!=1){
 				if(ip==0){ // I receive only
+					MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
 					for(j=0;j<point_per_proc_y[myrank];j++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							MPI_Recv(&Hy_front[j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+							Hy_front[j][k] = Hy_front_send[j + k*point_per_proc_y[myrank]];			
 						}	
-					}
+					}					
 					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							MPI_Recv(&Hz_front[j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+							Hz_front[j][k] = Hz_front_send[j + k*(point_per_proc_y[myrank]+lasty)];
 						}
 					}
 				}
@@ -742,65 +816,75 @@ int main(int argc, char **argv){
 					if(ip%2==1){ // I send then I receive
 						for(j=0;j<point_per_proc_y[myrank];j++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								MPI_Send(&Hy_prev[0][j][k],1,MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
+								Hy_front_send[j+k*(point_per_proc_y[myrank])] = Hy_prev[0][j][k];
 							}	
 						}
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								MPI_Send(&Hz_prev[0][j][k],1,MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
+								Hz_front_send[j+k*(point_per_proc_y[myrank]+lasty)] = Hz_prev[0][j][k];
 							}
 						}
+						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
+						MPI_Send(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);						
 
 						if(lastx!=1){
-							for(j=0;j<point_per_proc_y[myrank];j++){
-								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									MPI_Recv(&Hy_front[j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);	
-								}	
+							MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+						MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+						for(j=0;j<point_per_proc_y[myrank];j++){
+							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+								Hy_front[j][k] = Hy_front_send[j + k*point_per_proc_y[myrank]];			
+							}	
+						}					
+						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+							for(k=0;k<point_per_proc_z[myrank];k++){
+								Hz_front[j][k] = Hz_front_send[j + k*(point_per_proc_y[myrank]+lasty)];
 							}
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								for(k=0;k<point_per_proc_z[myrank];k++){
-									MPI_Recv(&Hz_front[j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-								}
-							}
+						}
 						}				
 					}
 					else{ // I receive then I send
 						if(lastx!=1){
-							for(j=0;j<point_per_proc_y[myrank];j++){
-								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									MPI_Recv(&Hy_front[j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);	
-								}	
+							MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+						MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+						for(j=0;j<point_per_proc_y[myrank];j++){
+							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+								Hy_front[j][k] = Hy_front_send[j + k*point_per_proc_y[myrank]];			
+							}	
+						}					
+						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+							for(k=0;k<point_per_proc_z[myrank];k++){
+								Hz_front[j][k] = Hz_front_send[j + k*(point_per_proc_y[myrank]+lasty)];
 							}
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								for(k=0;k<point_per_proc_z[myrank];k++){
-									MPI_Recv(&Hz_front[j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-								}
-							}
+						}
 						}
 						for(j=0;j<point_per_proc_y[myrank];j++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								MPI_Send(&Hy_prev[0][j][k],1,MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
+								Hy_front_send[j+k*(point_per_proc_y[myrank])] = Hy_prev[0][j][k];
 							}	
 						}
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								MPI_Send(&Hz_prev[0][j][k],1,MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
+								Hz_front_send[j+k*(point_per_proc_y[myrank]+lasty)] = Hz_prev[0][j][k];
 							}
 						}
+						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
+						MPI_Send(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 
 					}
 				}
 			}
 			if (divy != 1){
 				if (jp == 0){ //I receive only
+					MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							MPI_Recv(&Hx_right[i][k],1,MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+							Hx_right[i][k] = Hx_right_send[i+k*point_per_proc_x[myrank]];
 						}
 					}
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							MPI_Recv(&Hz_right[i][k],1,MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+							Hz_right[i][k] = Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)];
 						}
 					}
 				}
@@ -808,114 +892,132 @@ int main(int argc, char **argv){
 					if(jp%2==1){//I send then I receive
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								MPI_Send(&Hx_prev[i][0][k],1,MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
+								Hx_right_send[i+k*point_per_proc_x[myrank]] = Hx_prev[i][0][k] ;
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								MPI_Send(&Hz_prev[i][0][k],1,MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
+								Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)] = Hz_prev[i][0][k];
 							}
 						}
+						MPI_Send(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
+						MPI_Send(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 						if (lasty!=1){
+							MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+							MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 							for(i=0;i<point_per_proc_x[myrank];i++){
 								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									MPI_Recv(&Hx_right[i][k],1,MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+									Hx_right[i][k] = Hx_right_send[i+k*point_per_proc_x[myrank]];
 								}
 							}
 							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 								for(k=0;k<point_per_proc_z[myrank];k++){
-									MPI_Recv(&Hz_right[i][k],1,MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+									Hz_right[i][k] = Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)];
 								}
-							}
+							}	
 						}
 					}
 					else{//I receive then I send
 						if (lasty!=1){
+							MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+							MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 							for(i=0;i<point_per_proc_x[myrank];i++){
 								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									MPI_Recv(&Hx_right[i][k],1,MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+									Hx_right[i][k] = Hx_right_send[i+k*point_per_proc_x[myrank]];
 								}
 							}
 							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 								for(k=0;k<point_per_proc_z[myrank];k++){
-									MPI_Recv(&Hz_right[i][k],1,MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+									Hz_right[i][k] = Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)];
 								}
-							}
+							}	
 						}
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								MPI_Send(&Hx_prev[i][0][k],1,MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
+								Hx_right_send[i+k*point_per_proc_x[myrank]] = Hx_prev[i][0][k] ;
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								MPI_Send(&Hz_prev[i][0][k],1,MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
+								Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)] = Hz_prev[i][0][k];
 							}
 						}
+						MPI_Send(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
+						MPI_Send(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 					}
 				}
 			}
 			if (divz!=1){
 				if (kp==0){//I receive only
+					MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							MPI_Recv(&Hx_up[i][j],1,MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+							Hx_up[i][j] = Hx_up_send[i+j*(point_per_proc_x[myrank])];
 						}
 					}
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(j=0;j<point_per_proc_y[myrank];j++){
-							MPI_Recv(&Hy_up[i][j],1,MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+							Hy_up[i][j] = Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)];
 						}
 					}
 				}
 				else{
 					if(kp%2==1){//I send then I receive
 						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								MPI_Send(&Hx_prev[i][j][0],1,MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
+							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
+								Hx_up_send[i+j*(point_per_proc_x[myrank])]=Hx_prev[i][j][0];
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(j=0;j<point_per_proc_y[myrank];j++){
-								MPI_Send(&Hy_prev[i][j][0],1,MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
+							for(j=0;j<point_per_proc_y[myrank];j++){								
+								Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)] = Hy_prev[i][j][0];
 							}
 						}
+						MPI_Send(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
+						MPI_Send(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 						if(lastz!=1){
+							MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+							MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 							for(i=0;i<point_per_proc_x[myrank];i++){
 								for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-									MPI_Recv(&Hx_up[i][j],1,MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+									Hx_up[i][j] = Hx_up_send[i+j*(point_per_proc_x[myrank])];
 								}
 							}
 							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 								for(j=0;j<point_per_proc_y[myrank];j++){
-									MPI_Recv(&Hy_up[i][j],1,MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+									Hy_up[i][j] = Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)];
 								}
 							}
 						}
 					}
 					else{//I receive then I send
 						if(lastz!=1){
+							MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+							MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 							for(i=0;i<point_per_proc_x[myrank];i++){
 								for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-									MPI_Recv(&Hx_up[i][j],1,MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+									Hx_up[i][j] = Hx_up_send[i+j*(point_per_proc_x[myrank])];
 								}
 							}
 							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 								for(j=0;j<point_per_proc_y[myrank];j++){
-									MPI_Recv(&Hy_up[i][j],1,MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+									Hy_up[i][j] = Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)];
 								}
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								MPI_Send(&Hx_prev[i][j][0],1,MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
+							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
+								Hx_up_send[i+j*(point_per_proc_x[myrank])]=Hx_prev[i][j][0];
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(j=0;j<point_per_proc_y[myrank];j++){
-								MPI_Send(&Hy_prev[i][j][0],1,MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
+							for(j=0;j<point_per_proc_y[myrank];j++){								
+								Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)] = Hy_prev[i][j][0];
 							}
 						}
+						MPI_Send(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
+						MPI_Send(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 					}
 				}
 			}
@@ -1265,7 +1367,7 @@ int main(int argc, char **argv){
 				for(j=b_inf_y;j<=b_sup_y;j++){
 					for(k=b_inf_z;k<=b_sup_z;k++){
 						Ey_new[0][j][k]= sin(omega*step*dt);
-						Ez_new[0][j][k]= sin(omega*step*dt);					
+						//Ez_new[0][j][k]= sin(omega*step*dt);					
 					}				
 				}
 			}
@@ -1301,62 +1403,70 @@ int main(int argc, char **argv){
 		if (divx!=1){
 			if(ip==0){//I only send
 				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					for(k=0;k<point_per_proc_z[myrank];k++){
-						MPI_Send(&Ey_prev[point_per_proc_x[myrank]-1][j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+					for(k=0;k<point_per_proc_z[myrank];k++){						
+						Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
 					}
 				}
 				for(j=0;j<point_per_proc_y[myrank];j++){
 					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-						MPI_Send(&Ez_prev[point_per_proc_x[myrank]-1][j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+						Ez_back_send[j+k*point_per_proc_y[myrank]] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
 					}
 				}
-			}
+				MPI_Send(Ey_back_send,(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+				MPI_Send(Ez_back_send,(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+			}			
 			else{
 				if(ip%2==1){//I receive then I send
+					MPI_Recv(Ey_back_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Ez_back_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
 					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							MPI_Recv(&Ey_back[j][k],1,MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+							Ey_back[j][k] = Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)];
 						}
 					}					
 					for(j=0;j<point_per_proc_y[myrank];j++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							MPI_Recv(&Ez_back[j][k],1,MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+							Ez_back[j][k] = Ez_back_send[j+k*point_per_proc_y[myrank]];
 						}
 					}
 					if(lastx!=1){
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								MPI_Send(&Ey_prev[point_per_proc_x[myrank]-1][j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+							for(k=0;k<point_per_proc_z[myrank];k++){						
+								Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
 							}
 						}
 						for(j=0;j<point_per_proc_y[myrank];j++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								MPI_Send(&Ez_prev[point_per_proc_x[myrank]-1][j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+								Ez_back_send[j+k*point_per_proc_y[myrank]] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
 							}
-						}						
+						}	
+						MPI_Send(Ey_back_send,(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+						MPI_Send(Ez_back_send,(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);					
 					}
 				}
 				else{//I send then I receive
 					if(lastx!=1){
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								MPI_Send(&Ey_prev[point_per_proc_x[myrank]-1][j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+							for(k=0;k<point_per_proc_z[myrank];k++){						
+								Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
 							}
 						}
 						for(j=0;j<point_per_proc_y[myrank];j++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								MPI_Send(&Ez_prev[point_per_proc_x[myrank]-1][j][k],1,MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+								Ez_back_send[j+k*point_per_proc_y[myrank]] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
 							}
-						}						
+						}			
+						MPI_Recv(Ey_back_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+						MPI_Recv(Ez_back_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
 					}
 					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							MPI_Recv(&Ey_back[j][k],1,MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+							Ey_back[j][k] = Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)];
 						}
-					}
+					}					
 					for(j=0;j<point_per_proc_y[myrank];j++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							MPI_Recv(&Ez_back[j][k],1,MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+							Ez_back[j][k] = Ez_back_send[j+k*point_per_proc_y[myrank]];
 						}
 					}
 				}
@@ -1367,61 +1477,71 @@ int main(int argc, char **argv){
 			if(jp==0){//I only send
 				for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 					for(k=0;k<point_per_proc_z[myrank];k++){
-						MPI_Send(&Ex_prev[i][point_per_proc_y[myrank]-1][k],1,MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+						Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
 					}
 				}
 				for(i=0;i<point_per_proc_x[myrank];i++){
 					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-						MPI_Send(&Ez_prev[i][point_per_proc_y[myrank]-1][k],1,MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+						Ez_left_send[i+k*point_per_proc_x[myrank]] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
 					}
 				}
-			}
+				MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+				MPI_Send(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+			}			
 			else{
 				if(jp%2==1){//I receive then I send
+					MPI_Recv(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							MPI_Recv(&Ex_left[i][k],1,MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
+							Ex_prev[i][point_per_proc_y[myrank]-1][k] = Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)];
 						}
 					}
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							MPI_Recv(&Ez_left[i][k],1,MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
+							Ez_prev[i][point_per_proc_y[myrank]-1][k] = Ez_left_send[i+k*point_per_proc_x[myrank]];
 						}
 					}
 					if(lasty!=1){
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								MPI_Send(&Ex_prev[i][point_per_proc_y[myrank]-1][k],1,MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+								Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								MPI_Send(&Ez_prev[i][point_per_proc_y[myrank]-1][k],1,MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+								Ez_left_send[i+k*point_per_proc_x[myrank]] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
 							}
 						}
+						MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+						MPI_Send(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
 					}
 				}
 				else{//I send then I receive
 					if(lasty!=1){
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								MPI_Send(&Ex_prev[i][point_per_proc_y[myrank]-1][k],1,MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+								Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								MPI_Send(&Ez_prev[i][point_per_proc_y[myrank]-1][k],1,MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+								Ez_left_send[i+k*point_per_proc_x[myrank]] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
 							}
-						}						
+						}
+						MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
+						MPI_Send(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
 					}
+					MPI_Recv(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							MPI_Recv(&Ex_left[i][k],1,MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
+							Ex_prev[i][point_per_proc_y[myrank]-1][k] = Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)];
 						}
 					}
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							MPI_Recv(&Ez_left[i][k],1,MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
+							Ez_prev[i][point_per_proc_y[myrank]-1][k] = Ez_left_send[i+k*point_per_proc_x[myrank]];
 						}
 					}
 				}
@@ -1431,67 +1551,77 @@ int main(int argc, char **argv){
 			if(kp==0){//I only send
 				for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 					for(j=0;j<point_per_proc_y[myrank];j++){
-						MPI_Send(&Ex_prev[i][j][point_per_proc_z[myrank]-1],1,MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+						Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][j][point_per_proc_z[myrank]-1];
+						
 					}
 				}
 				for(i=0;i<point_per_proc_x[myrank];i++){
 					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-						MPI_Send(&Ey_prev[i][j][point_per_proc_z[myrank]-1],1,MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+						Ey_bottom_send[i + j*(point_per_proc_x[myrank])] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
 					}
 				}
-			}
+				MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+				MPI_Send(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);			
+}
 			else{
 				if(kp%2==1){//I receive then I send
+					MPI_Recv(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(j=0;j<point_per_proc_y[myrank];j++){
-							MPI_Recv(&Ex_bottom[i][j],1,MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
+							Ex_prev[i][j][point_per_proc_z[myrank]-1] = Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)];
 						}
 					}
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							MPI_Recv(&Ey_bottom[i][j],1,MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
+							Ey_prev[i][j][point_per_proc_z[myrank]-1] = Ey_bottom_send[i + j*(point_per_proc_x[myrank])]; 
 						}
 					}
 					if(lastz!=1){
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(j=0;j<point_per_proc_y[myrank];j++){
-								MPI_Send(&Ex_prev[i][j][point_per_proc_z[myrank]-1],1,MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+								Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][j][point_per_proc_z[myrank]-1];		
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								MPI_Send(&Ey_prev[i][j][point_per_proc_z[myrank]-1],1,MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+								Ey_bottom_send[i + j*(point_per_proc_x[myrank])] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
 							}
 						}
+						MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+						MPI_Send(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
 					}
 				}
 				else{// I send then I receive
 					if(lastz!=1){
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(j=0;j<point_per_proc_y[myrank];j++){
-								MPI_Send(&Ex_prev[i][j][point_per_proc_z[myrank]-1],1,MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+								Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][j][point_per_proc_z[myrank]-1];		
 							}
 						}
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								MPI_Send(&Ey_prev[i][j][point_per_proc_z[myrank]-1],1,MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+								Ey_bottom_send[i + j*(point_per_proc_x[myrank])] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
 							}
 						}
+						MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
+						MPI_Send(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
 					}
+					MPI_Recv(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(j=0;j<point_per_proc_y[myrank];j++){
-							MPI_Recv(&Ex_bottom[i][j],1,MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
+							Ex_prev[i][j][point_per_proc_z[myrank]-1] = Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)];
 						}
 					}
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							MPI_Recv(&Ey_bottom[i][j],1,MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
+							Ey_prev[i][j][point_per_proc_z[myrank]-1] = Ey_bottom_send[i + j*(point_per_proc_x[myrank])]; 
 						}
 					}
 				}
 			}
 		}			
-		//modif 
 
 		//Update of the magnetic field
 		//	X Component
@@ -1821,10 +1951,9 @@ int main(int argc, char **argv){
 
 
 		// Storage of the Results
-		if(step%SR==0){
-            		//save results of the mpi process to disk
+		if(step%SR==0){//save results of the mpi process to disk
 			//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED);
-            		export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED);
+            		//export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED);
 			//export_spoints_XML("Ez", step, grid_Ez, mygrid_Ez, ZIPPED);
 			//export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED);
 			//export_spoints_XML("Hy", step, grid_Hy, mygrid_Hy, ZIPPED);
@@ -1832,7 +1961,7 @@ int main(int argc, char **argv){
 
             		if (myrank == 0){	// save main pvti file by rank0
 				//export_spoints_XMLP("Ex", step, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-                		export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+                		//export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 				//export_spoints_XMLP("Ez", step, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
 				//export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 				//export_spoints_XMLP("Hy", step, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
@@ -1889,6 +2018,9 @@ int main(int argc, char **argv){
 	}
 	free(Ex_bottom);
 
+	free(Ex_left_send);
+	free(Ex_bottom_send);
+
 	for(i=0;i<point_per_proc_x[myrank];i++){
 		free(Ey_bottom[i]);
 	}
@@ -1899,6 +2031,9 @@ int main(int argc, char **argv){
 	}
 	free(Ey_back);
 
+	free(Ey_bottom_send);
+	free(Ey_back_send);
+
 	for(i=0;i<point_per_proc_x[myrank];i++){
 		free(Ez_left[i]);
 	}
@@ -1908,6 +2043,9 @@ int main(int argc, char **argv){
 		free(Ez_back[j]);
 	}
 	free(Ez_back);
+
+	free(Ez_left_send);
+	free(Ez_back_send);
 
 
 	//Magnetic field
@@ -1954,6 +2092,9 @@ int main(int argc, char **argv){
 	}
 	free(Hx_up);
 
+	free(Hx_right_send);
+	free(Hx_up_send);
+
 	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 		free(Hy_up[i]);
 	}
@@ -1964,6 +2105,9 @@ int main(int argc, char **argv){
 	}
 	free(Hy_front);
 
+	free(Hy_up_send);
+	free(Hy_front_send);
+
 	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 		free(Hz_right[i]);
 	}
@@ -1973,6 +2117,10 @@ int main(int argc, char **argv){
 		free(Hz_front[j]);
 	}
 	free(Hz_front);
+
+	free(Hz_right_send);
+	free(Hz_front_send);
+
 
 	// Physical variables
 	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
@@ -1996,6 +2144,7 @@ int main(int argc, char **argv){
 	free(point_per_proc_x);
 	free(point_per_proc_y);
 	free(point_per_proc_z);
+
 
 	MPI_Finalize();
 }
