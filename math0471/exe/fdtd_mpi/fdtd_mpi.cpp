@@ -799,14 +799,16 @@ int main(int argc, char **argv){
 				if(ip==0){ // I receive only
 					MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+					#pragma omp parallel for default(shared) private(i,j,k)		
 					for(j=0;j<point_per_proc_y[myrank];j++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Hy_front[j][k] = Hy_front_send[j + k*point_per_proc_y[myrank]];			
+							Hy_front[j][k] = Hy_front_send[j*(point_per_proc_z[myrank]+lastz) + k];			
 						}	
-					}					
+					}
+					#pragma omp parallel for default(shared) private(i,j,k)					
 					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							Hz_front[j][k] = Hz_front_send[j + k*(point_per_proc_y[myrank]+lasty)];
+							Hz_front[j][k] = Hz_front_send[j*(point_per_proc_z[myrank])+ k];
 						}
 					}
 				}
@@ -814,14 +816,16 @@ int main(int argc, char **argv){
 
 				else{
 					if(ip%2==1){ // I send then I receive
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(j=0;j<point_per_proc_y[myrank];j++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hy_front_send[j+k*(point_per_proc_y[myrank])] = Hy_prev[0][j][k];
+								Hy_front_send[j*(point_per_proc_z[myrank]+lastz)+k] = Hy_prev[0][j][k];
 							}	
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_front_send[j+k*(point_per_proc_y[myrank]+lasty)] = Hz_prev[0][j][k];
+								Hz_front_send[j*(point_per_proc_z[myrank])+k] = Hz_prev[0][j][k];
 							}
 						}
 						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
@@ -829,42 +833,48 @@ int main(int argc, char **argv){
 
 						if(lastx!=1){
 							MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-						MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hy_front[j][k] = Hy_front_send[j + k*point_per_proc_y[myrank]];			
-							}	
-						}					
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_front[j][k] = Hz_front_send[j + k*(point_per_proc_y[myrank]+lasty)];
+							MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+							#pragma omp parallel for default(shared) private(i,j,k)
+							for(j=0;j<point_per_proc_y[myrank];j++){
+								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+									Hy_front[j][k] = Hy_front_send[j*(point_per_proc_z[myrank]+lastz)+k];			
+								}	
 							}
-						}
+							#pragma omp parallel for default(shared) private(i,j,k)					
+							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+								for(k=0;k<point_per_proc_z[myrank];k++){
+									Hz_front[j][k] = Hz_front_send[j*(point_per_proc_z[myrank])+k];
+								}
+							}
 						}				
 					}
 					else{ // I receive then I send
 						if(lastx!=1){
 							MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-						MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hy_front[j][k] = Hy_front_send[j + k*point_per_proc_y[myrank]];			
-							}	
-						}					
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_front[j][k] = Hz_front_send[j + k*(point_per_proc_y[myrank]+lasty)];
+							MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
+							#pragma omp parallel for default(shared) private(i,j,k)
+							for(j=0;j<point_per_proc_y[myrank];j++){
+								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+									Hy_front[j][k] = Hy_front_send[j*(point_per_proc_z[myrank]+lastz)+k];			
+								}	
 							}
+							#pragma omp parallel for default(shared) private(i,j,k)					
+							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+								for(k=0;k<point_per_proc_z[myrank];k++){
+									Hz_front[j][k] = Hz_front_send[j*(point_per_proc_z[myrank])+k];
+								}
 						}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(j=0;j<point_per_proc_y[myrank];j++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hy_front_send[j+k*(point_per_proc_y[myrank])] = Hy_prev[0][j][k];
+								Hy_front_send[j*(point_per_proc_z[myrank]+lastz)+k] = Hy_prev[0][j][k];
 							}	
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_front_send[j+k*(point_per_proc_y[myrank]+lasty)] = Hz_prev[0][j][k];
+								Hz_front_send[j*(point_per_proc_z[myrank])+k] = Hz_prev[0][j][k];
 							}
 						}
 						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
@@ -877,27 +887,31 @@ int main(int argc, char **argv){
 				if (jp == 0){ //I receive only
 					MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Hx_right[i][k] = Hx_right_send[i+k*point_per_proc_x[myrank]];
+							Hx_right[i][k] = Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k];
 						}
 					}
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							Hz_right[i][k] = Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)];
+							Hz_right[i][k] = Hz_right_send[i*(point_per_proc_z[myrank])+k];
 						}
 					}
 				}
 				else{
 					if(jp%2==1){//I send then I receive
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hx_right_send[i+k*point_per_proc_x[myrank]] = Hx_prev[i][0][k] ;
+								Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k] = Hx_prev[i][0][k] ;
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)] = Hz_prev[i][0][k];
+								Hz_right_send[i*(point_per_proc_z[myrank])+k] = Hz_prev[i][0][k];
 							}
 						}
 						MPI_Send(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
@@ -905,14 +919,16 @@ int main(int argc, char **argv){
 						if (lasty!=1){
 							MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+							#pragma omp parallel for default(shared) private(i,j,k)
 							for(i=0;i<point_per_proc_x[myrank];i++){
 								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									Hx_right[i][k] = Hx_right_send[i+k*point_per_proc_x[myrank]];
+									Hx_right[i][k] = Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k];
 								}
 							}
+							#pragma omp parallel for default(shared) private(i,j,k)
 							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 								for(k=0;k<point_per_proc_z[myrank];k++){
-									Hz_right[i][k] = Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)];
+									Hz_right[i][k] = Hz_right_send[i*(point_per_proc_z[myrank])+k];
 								}
 							}	
 						}
@@ -921,25 +937,29 @@ int main(int argc, char **argv){
 						if (lasty!=1){
 							MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
+							#pragma omp parallel for default(shared) private(i,j,k)
 							for(i=0;i<point_per_proc_x[myrank];i++){
 								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									Hx_right[i][k] = Hx_right_send[i+k*point_per_proc_x[myrank]];
+									Hx_right[i][k] = Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k];
 								}
 							}
+							#pragma omp parallel for default(shared) private(i,j,k)
 							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 								for(k=0;k<point_per_proc_z[myrank];k++){
-									Hz_right[i][k] = Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)];
+									Hz_right[i][k] = Hz_right_send[i*(point_per_proc_z[myrank])+k];
 								}
 							}	
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hx_right_send[i+k*point_per_proc_x[myrank]] = Hx_prev[i][0][k] ;
+								Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k] = Hx_prev[i][0][k] ;
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_right_send[i+k*(point_per_proc_x[myrank]+lastx)] = Hz_prev[i][0][k];
+								Hz_right_send[i*(point_per_proc_z[myrank])+k] = Hz_prev[i][0][k];
 							}
 						}
 						MPI_Send(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
@@ -951,27 +971,31 @@ int main(int argc, char **argv){
 				if (kp==0){//I receive only
 					MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							Hx_up[i][j] = Hx_up_send[i+j*(point_per_proc_x[myrank])];
+							Hx_up[i][j] = Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j];
 						}
 					}
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(j=0;j<point_per_proc_y[myrank];j++){
-							Hy_up[i][j] = Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)];
+							Hy_up[i][j] = Hy_up_send[i*(point_per_proc_y[myrank])+j];
 						}
 					}
 				}
 				else{
 					if(kp%2==1){//I send then I receive
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
-								Hx_up_send[i+j*(point_per_proc_x[myrank])]=Hx_prev[i][j][0];
+								Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j]=Hx_prev[i][j][0];
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(j=0;j<point_per_proc_y[myrank];j++){								
-								Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)] = Hy_prev[i][j][0];
+								Hy_up_send[i*(point_per_proc_y[myrank])+j] = Hy_prev[i][j][0];
 							}
 						}
 						MPI_Send(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
@@ -979,14 +1003,16 @@ int main(int argc, char **argv){
 						if(lastz!=1){
 							MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+							#pragma omp parallel for default(shared) private(i,j,k)
 							for(i=0;i<point_per_proc_x[myrank];i++){
 								for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-									Hx_up[i][j] = Hx_up_send[i+j*(point_per_proc_x[myrank])];
+									Hx_up[i][j] = Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j];
 								}
 							}
+							#pragma omp parallel for default(shared) private(i,j,k)
 							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 								for(j=0;j<point_per_proc_y[myrank];j++){
-									Hy_up[i][j] = Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)];
+									Hy_up[i][j] = Hy_up_send[i*(point_per_proc_y[myrank])+j];
 								}
 							}
 						}
@@ -995,25 +1021,29 @@ int main(int argc, char **argv){
 						if(lastz!=1){
 							MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
+							#pragma omp parallel for default(shared) private(i,j,k)
 							for(i=0;i<point_per_proc_x[myrank];i++){
 								for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-									Hx_up[i][j] = Hx_up_send[i+j*(point_per_proc_x[myrank])];
+									Hx_up[i][j] = Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j];
 								}
 							}
+							#pragma omp parallel for default(shared) private(i,j,k)
 							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 								for(j=0;j<point_per_proc_y[myrank];j++){
-									Hy_up[i][j] = Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)];
+									Hy_up[i][j] = Hy_up_send[i*(point_per_proc_y[myrank])+j];
 								}
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
-								Hx_up_send[i+j*(point_per_proc_x[myrank])]=Hx_prev[i][j][0];
+								Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j]=Hx_prev[i][j][0];
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(j=0;j<point_per_proc_y[myrank];j++){								
-								Hy_up_send[i+j*(point_per_proc_x[myrank]+lastx)] = Hy_prev[i][j][0];
+								Hy_up_send[i*(point_per_proc_y[myrank])+j] = Hy_prev[i][j][0];
 							}
 						}
 						MPI_Send(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
@@ -1345,34 +1375,54 @@ int main(int argc, char **argv){
 		}
 
 		// Imposition of the value of the electric field for the node corresponding to the antenna.
-		if(ip==0){
-			if(j_min_proc[myrank]<= j_max_a && k_min_proc[myrank]<= k_max_a && j_max_proc[myrank]>= j_min_a && k_max_proc[myrank]>= k_min_a){
-				b_inf_y = j_min_a - j_min_proc[myrank];
-				b_inf_z = k_min_a - k_min_proc[myrank];
-				b_sup_y = j_max_a - j_min_proc[myrank];
-				b_sup_z = k_max_a - k_min_proc[myrank];
-				if(b_inf_y<0){
-					b_inf_y = 0;		
+		if(P == 1){
+			if(ip==0){
+				if(j_min_proc[myrank]<= j_max_a && k_min_proc[myrank]<= k_max_a && j_max_proc[myrank]>= j_min_a && k_max_proc[myrank]>= k_min_a){
+					b_inf_y = j_min_a - j_min_proc[myrank];
+					b_inf_z = k_min_a - k_min_proc[myrank];
+					b_sup_y = j_max_a - j_min_proc[myrank];
+					b_sup_z = k_max_a - k_min_proc[myrank];
+					if(b_inf_y<0){
+						b_inf_y = 0;		
+					}
+					if(b_inf_z<0){
+						b_inf_z = 0;		
+					}
+					if(point_per_proc_y[myrank]-1<b_sup_y){
+						b_sup_y = point_per_proc_y[myrank]-1;
+					}
+					if(point_per_proc_z[myrank]-1<b_sup_z){
+						b_sup_z = point_per_proc_z[myrank]-1;
+					}
+					#pragma omp parallel for default(shared) private(i,j,k)
+					for(j=b_inf_y;j<=b_sup_y;j++){
+						for(k=b_inf_z;k<=b_sup_z;k++){
+							Ey_new[0][j][k]= sin(omega*step*dt);
+							//Ez_new[0][j][k]= sin(omega*step*dt);					
+						}				
+					}
 				}
-				if(b_inf_z<0){
-					b_inf_z = 0;		
-				}
-				if(point_per_proc_y[myrank]-1<b_sup_y){
-					b_sup_y = point_per_proc_y[myrank]-1;
-				}
-				if(point_per_proc_z[myrank]-1<b_sup_z){
-					b_sup_z = point_per_proc_z[myrank]-1;
-				}
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(j=b_inf_y;j<=b_sup_y;j++){
-					for(k=b_inf_z;k<=b_sup_z;k++){
-						Ey_new[0][j][k]= sin(omega*step*dt);
-						//Ez_new[0][j][k]= sin(omega*step*dt);					
-					}				
+			}
+		}
+		else if(P == 2){
+			if(ip == 0 && kp == 0){				
+				i = point_per_proc_x[myrank]-1 ;
+				k = point_per_proc_z[myrank]-1 ;
+				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+					Ey_new[i][j][k] = 1;	
 				}
 			}
 		}
 
+		else if(P == 3){
+			if(ip == 0 && kp == 0){				
+				i = point_per_proc_x[myrank]-1 ;
+				k = point_per_proc_z[myrank]-1 ;
+				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+					Ey_new[i][j][k] = sin(omega*step*dt);	
+				}
+			}
+		}
 		//Storage of the new value of the electric field in E_prev.
 		#pragma omp parallel for default(shared) private(i,j,k)
 		for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
@@ -1402,14 +1452,16 @@ int main(int argc, char **argv){
 		/* Certain processes needs an information on the updated electric field at places attributed to another process to update the magnetic field.*/
 		if (divx!=1){
 			if(ip==0){//I only send
+				#pragma omp parallel for default(shared) private(i,j,k)
 				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 					for(k=0;k<point_per_proc_z[myrank];k++){						
-						Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
+						Ey_back_send[j*(point_per_proc_z[myrank])+k] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
 					}
 				}
+				#pragma omp parallel for default(shared) private(i,j,k)
 				for(j=0;j<point_per_proc_y[myrank];j++){
 					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-						Ez_back_send[j+k*point_per_proc_y[myrank]] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
+						Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
 					}
 				}
 				MPI_Send(Ey_back_send,(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
@@ -1419,25 +1471,29 @@ int main(int argc, char **argv){
 				if(ip%2==1){//I receive then I send
 					MPI_Recv(Ey_back_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ez_back_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							Ey_back[j][k] = Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)];
+							Ey_back[j][k] = Ey_back_send[j*(point_per_proc_z[myrank])+k];
 						}
-					}					
+					}	
+					#pragma omp parallel for default(shared) private(i,j,k)				
 					for(j=0;j<point_per_proc_y[myrank];j++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Ez_back[j][k] = Ez_back_send[j+k*point_per_proc_y[myrank]];
+							Ez_back[j][k] = Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k];
 						}
 					}
 					if(lastx!=1){
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 							for(k=0;k<point_per_proc_z[myrank];k++){						
-								Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
+								Ey_back_send[j*(point_per_proc_z[myrank])+k] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(j=0;j<point_per_proc_y[myrank];j++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Ez_back_send[j+k*point_per_proc_y[myrank]] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
+								Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
 							}
 						}	
 						MPI_Send(Ey_back_send,(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
@@ -1446,27 +1502,31 @@ int main(int argc, char **argv){
 				}
 				else{//I send then I receive
 					if(lastx!=1){
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 							for(k=0;k<point_per_proc_z[myrank];k++){						
-								Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
+								Ey_back_send[j*(point_per_proc_z[myrank])+k] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(j=0;j<point_per_proc_y[myrank];j++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Ez_back_send[j+k*point_per_proc_y[myrank]] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
+								Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
 							}
 						}			
 						MPI_Recv(Ey_back_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
 						MPI_Recv(Ez_back_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
 					}
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							Ey_back[j][k] = Ey_back_send[j+k*(point_per_proc_y[myrank]+lasty)];
+							Ey_back[j][k] = Ey_back_send[j*(point_per_proc_z[myrank])+k];
 						}
-					}					
+					}
+					#pragma omp parallel for default(shared) private(i,j,k)					
 					for(j=0;j<point_per_proc_y[myrank];j++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Ez_back[j][k] = Ez_back_send[j+k*point_per_proc_y[myrank]];
+							Ez_back[j][k] = Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k];
 						}
 					}
 				}
@@ -1475,14 +1535,16 @@ int main(int argc, char **argv){
 
 		if(divy!=1){
 			if(jp==0){//I only send
+				#pragma omp parallel for default(shared) private(i,j,k)
 				for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 					for(k=0;k<point_per_proc_z[myrank];k++){
-						Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
+						Ex_left_send[i*(point_per_proc_z[myrank])+k] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
 					}
 				}
+				#pragma omp parallel for default(shared) private(i,j,k)
 				for(i=0;i<point_per_proc_x[myrank];i++){
 					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-						Ez_left_send[i+k*point_per_proc_x[myrank]] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
+						Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
 					}
 				}
 				MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
@@ -1492,25 +1554,29 @@ int main(int argc, char **argv){
 				if(jp%2==1){//I receive then I send
 					MPI_Recv(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							Ex_prev[i][point_per_proc_y[myrank]-1][k] = Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)];
+							Ex_left[i][k] = Ex_left_send[i*(point_per_proc_z[myrank])+k];
 						}
 					}
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Ez_prev[i][point_per_proc_y[myrank]-1][k] = Ez_left_send[i+k*point_per_proc_x[myrank]];
+							Ez_left[i][k] = Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k];
 						}
 					}
 					if(lasty!=1){
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
+								Ex_left_send[i*(point_per_proc_z[myrank])+k] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Ez_left_send[i+k*point_per_proc_x[myrank]] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
+								Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
 							}
 						}
 						MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
@@ -1519,14 +1585,16 @@ int main(int argc, char **argv){
 				}
 				else{//I send then I receive
 					if(lasty!=1){
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(k=0;k<point_per_proc_z[myrank];k++){
-								Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
+								Ex_left_send[i*(point_per_proc_z[myrank])+k] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Ez_left_send[i+k*point_per_proc_x[myrank]] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
+								Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
 							}
 						}
 						MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
@@ -1534,14 +1602,16 @@ int main(int argc, char **argv){
 					}
 					MPI_Recv(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(k=0;k<point_per_proc_z[myrank];k++){
-							Ex_prev[i][point_per_proc_y[myrank]-1][k] = Ex_left_send[i+k*(point_per_proc_x[myrank]+lastx)];
+							Ex_left[i][k] = Ex_left_send[i*(point_per_proc_z[myrank])+k];
 						}
 					}
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Ez_prev[i][point_per_proc_y[myrank]-1][k] = Ez_left_send[i+k*point_per_proc_x[myrank]];
+							Ez_left[i][k] = Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k];
 						}
 					}
 				}
@@ -1549,15 +1619,17 @@ int main(int argc, char **argv){
 		}
 		if(divz!=1){
 			if(kp==0){//I only send
+				#pragma omp parallel for default(shared) private(i,j,k)
 				for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 					for(j=0;j<point_per_proc_y[myrank];j++){
-						Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][j][point_per_proc_z[myrank]-1];
+						Ex_bottom_send[i*(point_per_proc_y[myrank])+ j] = Ex_prev[i][j][point_per_proc_z[myrank]-1];
 						
 					}
 				}
+				#pragma omp parallel for default(shared) private(i,j,k)
 				for(i=0;i<point_per_proc_x[myrank];i++){
 					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-						Ey_bottom_send[i + j*(point_per_proc_x[myrank])] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
+						Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
 					}
 				}
 				MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
@@ -1567,25 +1639,29 @@ int main(int argc, char **argv){
 				if(kp%2==1){//I receive then I send
 					MPI_Recv(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(j=0;j<point_per_proc_y[myrank];j++){
-							Ex_prev[i][j][point_per_proc_z[myrank]-1] = Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)];
+							Ex_bottom[i][j] = Ex_bottom_send[i*(point_per_proc_y[myrank])+ j];
 						}
 					}
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							Ey_prev[i][j][point_per_proc_z[myrank]-1] = Ey_bottom_send[i + j*(point_per_proc_x[myrank])]; 
+							Ey_bottom[i][j] = Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j]; 
 						}
 					}
 					if(lastz!=1){
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(j=0;j<point_per_proc_y[myrank];j++){
-								Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][j][point_per_proc_z[myrank]-1];		
+								Ex_bottom_send[i*(point_per_proc_y[myrank])+ j] = Ex_prev[i][j][point_per_proc_z[myrank]-1];		
 							}
-						}
+						}	
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								Ey_bottom_send[i + j*(point_per_proc_x[myrank])] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
+								Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
 							}
 						}
 						MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
@@ -1594,14 +1670,16 @@ int main(int argc, char **argv){
 				}
 				else{// I send then I receive
 					if(lastz!=1){
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 							for(j=0;j<point_per_proc_y[myrank];j++){
-								Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)] = Ex_prev[i][j][point_per_proc_z[myrank]-1];		
+								Ex_bottom_send[i*point_per_proc_y[myrank]+ j] = Ex_prev[i][j][point_per_proc_z[myrank]-1];		
 							}
 						}
+						#pragma omp parallel for default(shared) private(i,j,k)
 						for(i=0;i<point_per_proc_x[myrank];i++){
 							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								Ey_bottom_send[i + j*(point_per_proc_x[myrank])] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
+								Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
 							}
 						}
 						MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
@@ -1609,14 +1687,16 @@ int main(int argc, char **argv){
 					}
 					MPI_Recv(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 						for(j=0;j<point_per_proc_y[myrank];j++){
-							Ex_prev[i][j][point_per_proc_z[myrank]-1] = Ex_bottom_send[i + j*(point_per_proc_x[myrank]+lastx)];
+							Ex_bottom[i][j] = Ex_bottom_send[i*point_per_proc_y[myrank]+ j];
 						}
 					}
+					#pragma omp parallel for default(shared) private(i,j,k)
 					for(i=0;i<point_per_proc_x[myrank];i++){
 						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							Ey_prev[i][j][point_per_proc_z[myrank]-1] = Ey_bottom_send[i + j*(point_per_proc_x[myrank])]; 
+							Ey_bottom[i][j] = Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j]; 
 						}
 					}
 				}
@@ -2144,7 +2224,6 @@ int main(int argc, char **argv){
 	free(point_per_proc_x);
 	free(point_per_proc_y);
 	free(point_per_proc_z);
-
 
 	MPI_Finalize();
 }
