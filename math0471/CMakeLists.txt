@@ -17,5 +17,4 @@ ENDIF()
 
 
 ADD_SUBDIRECTORY( vtl )
-ADD_SUBDIRECTORY( exe/fdtd )
 ADD_SUBDIRECTORY( exe/fdtd_mpi )
