@@ -65,7 +65,7 @@ int main(int argc, char **argv){
 
 
 	// Importation of param.dat and initialisation of other parameters.
-	double data[9];	
+	double data[11];	
 	char chain[150];
 	for (i=0 ; i<9; i++){
 		if (fgets(chain, 150, FileR) == NULL){
@@ -81,19 +81,20 @@ int main(int argc, char **argv){
 	double Ly = data[1];
 	double Lz = data[2];
  	double f = data[3];
+ 	double omega = f*2*3.141692;
 	double dx = data[4];
-	double dt = data[5];
+ 	int Nx = (int) (Lx/dx)+1;
+	int Ny = (int) (Ly/dx)+1;
+	int Nz = (int) (Lz/dx)+1;
+	double dt = data[5]; 
 	double Tf = data[6];
 	double temp = Tf/dt;
 	int step_max = (int) temp;
 	int P = (int) data[7];
 	double S = data[8];
-	int SR = (int) 1/S;		
-	double omega = f*2*3.141692;
-	int Nx = (int) (Lx/dx)+1;
-	int Ny = (int) (Ly/dx)+1;
-	int Nz = (int) (Lz/dx)+1;
-	int saveResults = true;	
+	int SR = (int) 1/S;
+	double l_ay = data[9];
+	double l_az = data[10];
 	
 	/* Division of the domain along x, y and z depending on the number of process.
 	   Each process will process a portion of the domain.*/
@@ -491,13 +492,11 @@ int main(int argc, char **argv){
 	
 
 	// Calculation of the position of the antenna.
-	double l_ay = 0.1;
 	double n_ay_double = (l_ay/dx)+1;
 	int n_ay = (int) n_ay_double;
 	int j_min_a = (Ny-n_ay)/2;
 	int j_max_a = j_min_a + n_ay-1;
 
-	double l_az = 0.01;
 	double n_az_double = (l_az/dx)+1;
 	int n_az = (int) n_az_double;
 	int k_min_a = (Nz-n_az)/2;
@@ -1397,8 +1396,9 @@ int main(int argc, char **argv){
 					#pragma omp parallel for default(shared) private(i,j,k)
 					for(j=b_inf_y;j<=b_sup_y;j++){
 						for(k=b_inf_z;k<=b_sup_z;k++){
+							Ex_new[0][j][k]= 0;
 							Ey_new[0][j][k]= sin(omega*step*dt);
-							//Ez_new[0][j][k]= sin(omega*step*dt);					
+							Ez_new[0][j][k]= 0;					
 						}				
 					}
 				}
@@ -2035,7 +2035,7 @@ int main(int argc, char **argv){
 			//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED);
             		//export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED);
 			//export_spoints_XML("Ez", step, grid_Ez, mygrid_Ez, ZIPPED);
-			//export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED);
+			export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED);
 			//export_spoints_XML("Hy", step, grid_Hy, mygrid_Hy, ZIPPED);
 			//export_spoints_XML("Hz", step, grid_Hz, mygrid_Hz, ZIPPED);
 
@@ -2043,7 +2043,7 @@ int main(int argc, char **argv){
 				//export_spoints_XMLP("Ex", step, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
                 		//export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 				//export_spoints_XMLP("Ez", step, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
-				//export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
+				export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 				//export_spoints_XMLP("Hy", step, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
 				//export_spoints_XMLP("Hz", step, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
             		}
