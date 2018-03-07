@@ -28,6 +28,15 @@ using namespace vtl;
 
 // Function that determiner how to split the domain among the different process.
 void divisor(int np,int*r);
+void compute_proc_ind_point(int nbproc,int Nx,int Ny,int Nz,int divx,int divy,int divz,int*i_min_proc,int*j_min_proc,int*k_min_proc,int*i_max_proc,int*j_max_proc,int*k_max_proc,int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z);
+void Update_send_in_mat(int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z,int lastx,int lasty,int lastz,double**M1,double*V1,double**M2,double*V2,int myrank,int Case);
+void Update_prev_in_send(int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z,int lastx,int lasty,int lastz,double*V1,double***M1,double*V2,double***M2,int myrank,int Case);
+void Update_E_inside(int i_max,int j_max,int k_max,double***E_new,double***E_prev,double***H1_prev,double***H2_prev,double dt,double dx,double e_0,double***e_r,int Case);
+void Update_E_boundary(int i_max,int j_max,int k_max,double***E_new,double***E_prev,double***H1_prev,double***H2_prev,double**H_boundary,double dt,double dx,double e_0,double***e_r,int myrank,int Case);
+void Boundary_condition_imosition(int ip,int jp,int kp,int lastx,int lasty,int lastz,int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z,double***Ex_new,double***Ey_new,double***Ez_new,int myrank);
+void Update_H_inside(int i_max,int j_max,int k_max,int last1, int last2,double***H_new,double***H_prev,double***E1_prev,double***E2_prev,double dt,double dx,double mu_0,double***mu_r,int Case);
+void Update_H_boundary(int i_max,int j_max,int k_max,int last,double***H_new,double***H_prev,double***E1_prev,double***E2_prev,double**E_boundary,double dt,double dx,double mu_0,double***mu_r,int myrank,int Case);
+void New_in_old(int i_max,int j_max,int k_max,double***New,double***Old);
 int compare(int temp);
 
 
@@ -81,7 +90,7 @@ int main(int argc, char **argv){
 	double Ly = data[1];
 	double Lz = data[2];
  	double f = data[3];
- 	double omega = f*2*3.141692;
+        double omega = f*2*3.141692;
 	double dx = data[4];
  	int Nx = (int) (Lx/dx)+1;
 	int Ny = (int) (Ly/dx)+1;
@@ -118,39 +127,9 @@ int main(int argc, char **argv){
 	int*point_per_proc_x = (int*)malloc(nbproc*sizeof(int));
 	int*point_per_proc_y = (int*)malloc(nbproc*sizeof(int));
 	int*point_per_proc_z = (int*)malloc(nbproc*sizeof(int));	
-
-	for(l=0;l<nbproc;l++){
-		point_per_proc_x[l] = Nx/divx;
-		point_per_proc_y[l] = Ny/divy;
-		point_per_proc_z[l] = Nz/divz;		
-		if(((l/(divy*divz))+1)<=(Nx % divx)){
-			point_per_proc_x[l]++;
-		}
-		if(((l%(divy*divz))%divy+1)<=(Ny % divy)){
-			point_per_proc_y[l]++;			
-		}
-		if(((l%(divy*divz))/divy+1)<=(Nz % divz)){
-			point_per_proc_z[l]++;			
-		}
-	}
-	for(l=0;l<nbproc;l++){
-		i_min_proc[l] = 0;
-		j_min_proc[l] = 0;
-		k_min_proc[l] = 0;
-		for(i=0;i<l/(divy*divz);i++){
-			i_min_proc[l] += point_per_proc_x[i*divy*divz];
-		}
-		for(j=0;j<(l%(divy*divz))%divy;j++){
-			j_min_proc[l] += point_per_proc_y[j];
-		}
-		for(k=0;k<(l%(divy*divz))/divy;k++){
-			k_min_proc[l] += point_per_proc_z[divy*k];
-		}
-		i_max_proc[l] = i_min_proc[l] + point_per_proc_x[l]-1;
-		j_max_proc[l] = j_min_proc[l] + point_per_proc_y[l]-1;
-		k_max_proc[l] = k_min_proc[l] + point_per_proc_z[l]-1;
-	}	
-			
+ 
+  compute_proc_ind_point(nbproc,Nx,Ny,Nz,divx,divy,divz,i_min_proc,j_min_proc,k_min_proc,i_max_proc,j_max_proc,k_max_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z);
+   			
 	/* Variables useful to define the size of the fields on each process */
 	int ip = (myrank/(divy*divz));
 	int jp = (myrank%(divy*divz))%divy;
@@ -193,15 +172,8 @@ int main(int argc, char **argv){
 			e_r[i][j] = (double*)malloc((point_per_proc_z[myrank]+lastz)*sizeof(double));			
 			mu_r[i][j] = (double*)malloc((point_per_proc_z[myrank]+lastz)*sizeof(double));
 			for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					if(nbproc == 27 && myrank == 13){
-						e_r[i][j][k] = 5;
-						mu_r[i][j][k] = 1;
-
-					}
-					else{
 						e_r[i][j][k] = 1;
-						mu_r[i][j][k] = 1;
-					}	
+						mu_r[i][j][k] = 1;	
 			}
 		}
 	}
@@ -475,9 +447,7 @@ int main(int argc, char **argv){
 			else{
 				sgrids_Hz[l].np2 = Vec3i(i_max_proc[l]+1, j_max_proc[l]+1, k_max_proc[l]);
 			}
-			sgrids_Hz[l].dx = Vec3d(dx, dx, dx);	
-      			sgrids_Hz[l].id = l;	
-			//std::cout << l << ": " << sgrids_Hz[l] << '\n';	 		
+			sgrids_Hz[l].dx = Vec3d(dx, dx, dx);		
 		}
 	}
 
@@ -794,332 +764,119 @@ int main(int argc, char **argv){
 		if(step!=1){
 		   /* Certain processes needs an information on Hx, Hy and Hz at places 
 		   attributed to another process to update the electric field.*/
-			if(divx!=1){
+			if(divx!=1){ // Communication in the x direction
+
 				if(ip==0){ // I receive only
 					MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-					#pragma omp parallel for default(shared) private(i,j,k)		
-					for(j=0;j<point_per_proc_y[myrank];j++){
-						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Hy_front[j][k] = Hy_front_send[j*(point_per_proc_z[myrank]+lastz) + k];			
-						}	
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)					
-					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-						for(k=0;k<point_per_proc_z[myrank];k++){
-							Hz_front[j][k] = Hz_front_send[j*(point_per_proc_z[myrank])+ k];
-						}
-					}
+		Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hy_front,Hy_front_send,Hz_front,Hz_front_send,myrank,1);                                                                             
 				}
 
 
 				else{
 					if(ip%2==1){ // I send then I receive
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hy_front_send[j*(point_per_proc_z[myrank]+lastz)+k] = Hy_prev[0][j][k];
-							}	
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_front_send[j*(point_per_proc_z[myrank])+k] = Hz_prev[0][j][k];
-							}
-						}
+         					Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hy_front_send,Hy_prev,Hz_front_send,Hz_prev,myrank,1);
 						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);						
 
 						if(lastx!=1){
 							MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(j=0;j<point_per_proc_y[myrank];j++){
-								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									Hy_front[j][k] = Hy_front_send[j*(point_per_proc_z[myrank]+lastz)+k];			
-								}	
-							}
-							#pragma omp parallel for default(shared) private(i,j,k)					
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								for(k=0;k<point_per_proc_z[myrank];k++){
-									Hz_front[j][k] = Hz_front_send[j*(point_per_proc_z[myrank])+k];
-								}
-							}
+							Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hy_front,Hy_front_send,Hz_front,Hz_front_send,myrank,1);
 						}				
 					}
 					else{ // I receive then I send
 						if(lastx!=1){
 							MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-							MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(j=0;j<point_per_proc_y[myrank];j++){
-								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									Hy_front[j][k] = Hy_front_send[j*(point_per_proc_z[myrank]+lastz)+k];			
-								}	
-							}
-							#pragma omp parallel for default(shared) private(i,j,k)					
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								for(k=0;k<point_per_proc_z[myrank];k++){
-									Hz_front[j][k] = Hz_front_send[j*(point_per_proc_z[myrank])+k];
-								}
+							MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);							
+							Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hy_front,Hy_front_send,Hz_front,Hz_front_send,myrank,1);
 						}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hy_front_send[j*(point_per_proc_z[myrank]+lastz)+k] = Hy_prev[0][j][k];
-							}	
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_front_send[j*(point_per_proc_z[myrank])+k] = Hz_prev[0][j][k];
-							}
-						}
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hy_front_send,Hy_prev,Hz_front_send,Hz_prev,myrank,1);
 						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 
 					}
 				}
 			}
-			if (divy != 1){
+			if (divy != 1){// Communication in the y direction
+
 				if (jp == 0){ //I receive only
 					MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank];i++){
-						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Hx_right[i][k] = Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-						for(k=0;k<point_per_proc_z[myrank];k++){
-							Hz_right[i][k] = Hz_right_send[i*(point_per_proc_z[myrank])+k];
-						}
-					}
+          Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_right,Hx_right_send,Hz_right,Hz_right_send,myrank,2);                                                                             
 				}
 				else{
 					if(jp%2==1){//I send then I receive
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k] = Hx_prev[i][0][k] ;
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_right_send[i*(point_per_proc_z[myrank])+k] = Hz_prev[i][0][k];
-							}
-						}
+           				Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_right_send,Hx_prev,Hz_right_send,Hz_prev,myrank,2);						
 						MPI_Send(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 						if (lasty!=1){
 							MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(i=0;i<point_per_proc_x[myrank];i++){
-								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									Hx_right[i][k] = Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k];
-								}
-							}
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-								for(k=0;k<point_per_proc_z[myrank];k++){
-									Hz_right[i][k] = Hz_right_send[i*(point_per_proc_z[myrank])+k];
-								}
-							}	
+							Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_right,Hx_right_send,Hz_right,Hz_right_send,myrank,2);	
 						}
 					}
 					else{//I receive then I send
 						if (lasty!=1){
 							MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(i=0;i<point_per_proc_x[myrank];i++){
-								for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-									Hx_right[i][k] = Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k];
-								}
-							}
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-								for(k=0;k<point_per_proc_z[myrank];k++){
-									Hz_right[i][k] = Hz_right_send[i*(point_per_proc_z[myrank])+k];
-								}
-							}	
+							Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_right,Hx_right_send,Hz_right,Hz_right_send,myrank,2);	
 						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Hx_right_send[i*(point_per_proc_z[myrank]+lastz)+k] = Hx_prev[i][0][k] ;
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								Hz_right_send[i*(point_per_proc_z[myrank])+k] = Hz_prev[i][0][k];
-							}
-						}
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_right_send,Hx_prev,Hz_right_send,Hz_prev,myrank,2);
 						MPI_Send(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 					}
 				}
 			}
-			if (divz!=1){
+			if (divz!=1){// Communication in the z direction
+
 				if (kp==0){//I receive only
 					MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank];i++){
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							Hx_up[i][j] = Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							Hy_up[i][j] = Hy_up_send[i*(point_per_proc_y[myrank])+j];
-						}
-					}
+          			Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_up,Hx_up_send,Hy_up,Hy_up_send,myrank,3);                                                                
 				}
 				else{
 					if(kp%2==1){//I send then I receive
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
-								Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j]=Hx_prev[i][j][0];
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(j=0;j<point_per_proc_y[myrank];j++){								
-								Hy_up_send[i*(point_per_proc_y[myrank])+j] = Hy_prev[i][j][0];
-							}
-						}
+            					Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_up_send,Hx_prev,Hy_up_send,Hy_prev,myrank,3);
 						MPI_Send(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 						MPI_Send(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 						if(lastz!=1){
 							MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(i=0;i<point_per_proc_x[myrank];i++){
-								for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-									Hx_up[i][j] = Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j];
-								}
-							}
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-								for(j=0;j<point_per_proc_y[myrank];j++){
-									Hy_up[i][j] = Hy_up_send[i*(point_per_proc_y[myrank])+j];
-								}
-							}
+							Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_up,Hx_up_send,Hy_up,Hy_up_send,myrank,3);
 						}
 					}
 					else{//I receive then I send
 						if(lastz!=1){
 							MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 							MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(i=0;i<point_per_proc_x[myrank];i++){
-								for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-									Hx_up[i][j] = Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j];
-								}
-							}
-							#pragma omp parallel for default(shared) private(i,j,k)
-							for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-								for(j=0;j<point_per_proc_y[myrank];j++){
-									Hy_up[i][j] = Hy_up_send[i*(point_per_proc_y[myrank])+j];
-								}
-							}
+							Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_up,Hx_up_send,Hy_up,Hy_up_send,myrank,3);
 						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
-								Hx_up_send[i*(point_per_proc_y[myrank]+lasty)+j]=Hx_prev[i][j][0];
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(j=0;j<point_per_proc_y[myrank];j++){								
-								Hy_up_send[i*(point_per_proc_y[myrank])+j] = Hy_prev[i][j][0];
-							}
-						}
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hx_up_send,Hx_prev,Hy_up_send,Hy_prev,myrank,3);
 						MPI_Send(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 						MPI_Send(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 					}
 				}
 			}
 		}
+   
 		//Update of the electric field.
 		//	X component		
 		if(lasty==1 && lastz==1){
-			#pragma omp parallel for default(shared) private(i,j,k) 
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					for(k=0;k<point_per_proc_z[myrank];k++){					
-						Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((Hz_prev[i][j+1][k]-Hz_prev[i][j][k])-(Hy_prev[i][j][k+1]-Hy_prev[i][j][k]));	
-					}
-				}
-			}
+      			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank],Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_r,1);
 		}
 		else if(lasty==1){
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					for(k=0;k<point_per_proc_z[myrank]-1;k++){					
-						Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((Hz_prev[i][j+1][k]-Hz_prev[i][j][k])-(Hy_prev[i][j][k+1]-Hy_prev[i][j][k]));	
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					k = point_per_proc_z[myrank]-1;
-					Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((Hz_prev[i][j+1][k]-Hz_prev[i][j][k])-(Hy_up[i][j]-Hy_prev[i][j][k]));
-				}
-			}
+    			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_r,1);
+     			Update_E_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,Hy_up,dt,dx,e_0,e_r,myrank,5);
 		}
 		else if (lastz == 1){
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank]-1;j++){
-					for(k=0;k<point_per_proc_z[myrank];k++){					
-						Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((Hz_prev[i][j+1][k]-Hz_prev[i][j][k])-(Hy_prev[i][j][k+1]-Hy_prev[i][j][k]));	
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					j = point_per_proc_y[myrank]-1;
-					Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((Hz_right[i][k]-Hz_prev[i][j][k])-(Hy_prev[i][j][k+1]-Hy_prev[i][j][k]));
-				}
-			}
+      			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank],Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_r,1);
+     			Update_E_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank],Ex_new,Ex_prev,Hz_prev,Hy_prev,Hz_right,dt,dx,e_0,e_r,myrank,3);
 		}
 		else{
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank]-1;j++){
-					for(k=0;k<point_per_proc_z[myrank]-1;k++){					
-						Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((Hz_prev[i][j+1][k]-Hz_prev[i][j][k])-(Hy_prev[i][j][k+1]-Hy_prev[i][j][k]));	
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank]-1;j++){
-					k = point_per_proc_z[myrank]-1;
-					Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((Hz_prev[i][j+1][k]-Hz_prev[i][j][k])-(Hy_up[i][j]-Hy_prev[i][j][k]));
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(k=0;k<point_per_proc_z[myrank]-1;k++){
-					j = point_per_proc_y[myrank]-1;
-					Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((Hz_right[i][k]-Hz_prev[i][j][k])-(Hy_prev[i][j][k+1]-Hy_prev[i][j][k]));
-				}
-			}
+      			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_r,1);
+     			Update_E_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,Hy_up,dt,dx,e_0,e_r,myrank,5);
+     			Update_E_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,Hz_right,dt,dx,e_0,e_r,myrank,3);
 			#pragma omp parallel for default(shared) private(i,j,k)
 			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
 				k = point_per_proc_z[myrank]-1;
@@ -1128,75 +885,22 @@ int main(int argc, char **argv){
 			}
 		}
 
-
 		//	Y component
 		if(lastx==1 && lastz==1){
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					for(k=0;k<point_per_proc_z[myrank];k++){					
-						Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hx_prev[i][j][k+1]-Hx_prev[i][j][k])-(Hz_prev[i+1][j][k]-Hz_prev[i][j][k]));	
-					}
-				}
-			}
+     			 Update_E_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Ey_new,Ey_prev,Hx_prev,Hz_prev,dt,dx,e_0,e_r,2);			
 		}
 		else if(lastx==1){
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					for(k=0;k<point_per_proc_z[myrank]-1;k++){						
-						Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hx_prev[i][j][k+1]-Hx_prev[i][j][k])-(Hz_prev[i+1][j][k]-Hz_prev[i][j][k]));	
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					k = point_per_proc_z[myrank]-1;
-					Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hx_up[i][j]-Hx_prev[i][j][k])-(Hz_prev[i+1][j][k]-Hz_prev[i][j][k]));
-				}
-			}
+     			 Update_E_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,dt,dx,e_0,e_r,2);
+     			 Update_E_boundary(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,Hx_up,dt,dx,e_0,e_r,myrank,6);
 		}
 		else if(lastz==1){
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]-1;i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					for(k=0;k<point_per_proc_z[myrank];k++){						
-						Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hx_prev[i][j][k+1]-Hx_prev[i][j][k])-(Hz_prev[i+1][j][k]-Hz_prev[i][j][k]));	
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					i = point_per_proc_x[myrank]-1;
-					Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hx_prev[i][j][k+1]-Hx_prev[i][j][k])-(Hz_front[j][k]-Hz_prev[i][j][k]));
-				}
-			}
+     			 Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Ey_new,Ey_prev,Hx_prev,Hz_prev,dt,dx,e_0,e_r,2);
+     			 Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Ey_new,Ey_prev,Hx_prev,Hz_prev,Hz_front,dt,dx,e_0,e_r,myrank,1);
 		}
 		else{
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]-1;i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					for(k=0;k<point_per_proc_z[myrank]-1;k++){
-						Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hx_prev[i][j][k+1]-Hx_prev[i][j][k])-(Hz_prev[i+1][j][k]-Hz_prev[i][j][k]));
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]-1;i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					k = point_per_proc_z[myrank]-1;
-					Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hx_up[i][j]-Hx_prev[i][j][k])-(Hz_prev[i+1][j][k]-Hz_prev[i][j][k]));
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank]-1;k++){
-					i = point_per_proc_x[myrank]-1;
-					Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hx_prev[i][j][k+1]-Hx_prev[i][j][k])-(Hz_front[j][k]-Hz_prev[i][j][k]));
-				}
-			}
+     			Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,dt,dx,e_0,e_r,2);
+     			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,Hx_up,dt,dx,e_0,e_r,myrank,6);
+     			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,Hz_front,dt,dx,e_0,e_r,myrank,1);
 			#pragma omp parallel for default(shared) private(i,j,k)
 			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 				i = point_per_proc_x[myrank]-1;
@@ -1206,72 +910,20 @@ int main(int argc, char **argv){
 		}
 		//	Z component
 		if(lastx==1 && lasty==1){
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){						
-						Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hy_prev[i+1][j][k]-Hy_prev[i][j][k])-(Hx_prev[i][j+1][k]-Hx_prev[i][j][k]));	
-					}
-				}
-			}			
+      			Update_E_inside(point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_r,3);			
 		}
 		else if(lastx==1){
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]-1;j++){
-					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){						
-						Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hy_prev[i+1][j][k]-Hy_prev[i][j][k])-(Hx_prev[i][j+1][k]-Hx_prev[i][j][k]));	
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){	
-					j = point_per_proc_y[myrank]-1;					
-					Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hy_prev[i+1][j][k]-Hy_prev[i][j][k])-(Hx_right[i][k]-Hx_prev[i][j][k]));	
-				}
-			}	
+      			Update_E_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_r,3);
+      			Update_E_boundary(point_per_proc_x[myrank],point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,Hx_right,dt,dx,e_0,e_r,myrank,4);	
 		}
 		else if(lasty==1){
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]-1;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){						
-						Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hy_prev[i+1][j][k]-Hy_prev[i][j][k])-(Hx_prev[i][j+1][k]-Hx_prev[i][j][k]));	
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){	
-					i = point_per_proc_x[myrank]-1;					
-					Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hy_front[j][k]-Hy_prev[i][j][k])-(Hx_prev[i][j+1][k]-Hx_prev[i][j][k]));	
-				}
-			}
+      			Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_r,3);
+    			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,Hy_front,dt,dx,e_0,e_r,myrank,2);
 		}
 		else{
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]-1;i++){
-				for(j=0;j<point_per_proc_y[myrank]-1;j++){
-					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){						
-						Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hy_prev[i+1][j][k]-Hy_prev[i][j][k])-(Hx_prev[i][j+1][k]-Hx_prev[i][j][k]));	
-					}
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]-1;i++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){	
-					j = point_per_proc_y[myrank]-1;					
-					Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hy_prev[i+1][j][k]-Hy_prev[i][j][k])-(Hx_right[i][k]-Hx_prev[i][j][k]));	
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(j=0;j<point_per_proc_y[myrank]-1;j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){	
-					i = point_per_proc_x[myrank]-1;					
-					Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((Hy_front[j][k]-Hy_prev[i][j][k])-(Hx_prev[i][j+1][k]-Hx_prev[i][j][k]));	
-				}
-			}
+    			Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_r,3);
+    			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,Hx_right,dt,dx,e_0,e_r,myrank,4);
+    			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,Hy_front,dt,dx,e_0,e_r,myrank,2);
 			#pragma omp parallel for default(shared) private(i,j,k)
 			for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
 				i = point_per_proc_x[myrank]-1;
@@ -1280,98 +932,9 @@ int main(int argc, char **argv){
 			}
 		}
 
-
 		// Boundary condition
-		if(ip==0){
-			i = 0;
-			#pragma omp parallel for default(shared) private(j,k)
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){						
-					Ey_new[i][j][k] = 0;	
-				}
-			}
-			#pragma omp parallel for default(shared) private(j,k)
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_new[i][j][k] = 0;	
-				}
-			}
-		}
-		if(lastx==1){
-			i = point_per_proc_x[myrank]-1;
-			#pragma omp parallel for default(shared) private(j,k)
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){						
-					Ey_new[i][j][k] = 0;	
-				}
-			}
-			#pragma omp parallel for default(shared) private(j,k)
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_new[i][j][k] = 0;	
-				}
-			}
-		}
-		if(jp==0){
-			j = 0;
-			#pragma omp parallel for default(shared) private(i,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					Ex_new[i][j][k] = 0;	
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,k)				
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_new[i][j][k] = 0;	
-				}
-			}				
-		}
-		if(lasty==1){
-			j = point_per_proc_y[myrank]-1;
-			#pragma omp parallel for default(shared) private(i,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					Ex_new[i][j][k] = 0;	
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,k)				
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_new[i][j][k] = 0;	
-				}
-			}
-		}
-		if(kp==0){
-			k=0;
-			#pragma omp parallel for default(shared) private(i,j)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					Ex_new[i][j][k] = 0;						
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					Ey_new[i][j][k] = 0;	
-				}
-			}
-		}
-		if(lastz==1){
-			k=point_per_proc_z[myrank]-1;
-			#pragma omp parallel for default(shared) private(i,j)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					Ex_new[i][j][k] = 0;						
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					Ey_new[i][j][k] = 0;	
-				}
-			}
-		}
+   
+   		Boundary_condition_imosition(ip,jp,kp,lastx,lasty,lastz,point_per_proc_x,point_per_proc_y,point_per_proc_z,Ex_new,Ey_new,Ez_new,myrank);		
 
 		// Imposition of the value of the electric field for the node corresponding to the antenna.
 		if(P == 1){
@@ -1424,46 +987,16 @@ int main(int argc, char **argv){
 			}
 		}
 		//Storage of the new value of the electric field in E_prev.
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					Ex_prev[i][j][k] = Ex_new[i][j][k];
-				}
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<point_per_proc_x[myrank];i++){
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					Ey_prev[i][j][k] = Ey_new[i][j][k];	
-				}
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<point_per_proc_x[myrank];i++){
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_prev[i][j][k] = Ez_new[i][j][k];	
-				}
-			}
-		}
+
+		New_in_old(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank],Ex_new,Ex_prev);
+		New_in_old(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Ey_new,Ey_prev);
+		New_in_old(point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev);		
 		
 		/* Certain processes needs an information on the updated electric field at places attributed to another process to update the magnetic field.*/
-		if (divx!=1){
+		if (divx!=1){// Communication in the x direction
+
 			if(ip==0){//I only send
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					for(k=0;k<point_per_proc_z[myrank];k++){						
-						Ey_back_send[j*(point_per_proc_z[myrank])+k] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
-					}
-				}
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-						Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
-					}
-				}
+				Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ey_back_send,Ey_prev,Ez_back_send,Ez_prev,myrank,4);				
 				MPI_Send(Ey_back_send,(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
 				MPI_Send(Ez_back_send,(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
 			}			
@@ -1471,82 +1004,30 @@ int main(int argc, char **argv){
 				if(ip%2==1){//I receive then I send
 					MPI_Recv(Ey_back_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ez_back_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-						for(k=0;k<point_per_proc_z[myrank];k++){
-							Ey_back[j][k] = Ey_back_send[j*(point_per_proc_z[myrank])+k];
-						}
-					}	
-					#pragma omp parallel for default(shared) private(i,j,k)				
-					for(j=0;j<point_per_proc_y[myrank];j++){
-						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Ez_back[j][k] = Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k];
-						}
-					}
+					Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ey_back,Ey_back_send,Ez_back,Ez_back_send,myrank,4);					
 					if(lastx!=1){
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){						
-								Ey_back_send[j*(point_per_proc_z[myrank])+k] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
-							}
-						}	
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ey_back_send,Ey_prev,Ez_back_send,Ez_prev,myrank,4);	
 						MPI_Send(Ey_back_send,(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
 						MPI_Send(Ez_back_send,(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);					
 					}
 				}
 				else{//I send then I receive
 					if(lastx!=1){
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){						
-								Ey_back_send[j*(point_per_proc_z[myrank])+k] = Ey_prev[point_per_proc_x[myrank]-1][j][k];
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[point_per_proc_x[myrank]-1][j][k];
-							}
-						}			
-						MPI_Recv(Ey_back_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
-						MPI_Recv(Ez_back_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ey_back_send,Ey_prev,Ez_back_send,Ez_prev,myrank,4);	
+						MPI_Send(Ey_back_send,(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
+						MPI_Send(Ez_back_send,(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);						
 					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-						for(k=0;k<point_per_proc_z[myrank];k++){
-							Ey_back[j][k] = Ey_back_send[j*(point_per_proc_z[myrank])+k];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)					
-					for(j=0;j<point_per_proc_y[myrank];j++){
-						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Ez_back[j][k] = Ez_back_send[j*(point_per_proc_z[myrank]+lastz)+k];
-						}
-					}
+					MPI_Recv(Ey_back_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+					MPI_Recv(Ez_back_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank-(divy*divz),MPI_COMM_WORLD, &mystatus);
+					Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ey_back,Ey_back_send,Ez_back,Ez_back_send,myrank,4);
 				}
 			}
 		}
 
-		if(divy!=1){
+		if(divy!=1){// Communication in the y direction
+
 			if(jp==0){//I only send
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-					for(k=0;k<point_per_proc_z[myrank];k++){
-						Ex_left_send[i*(point_per_proc_z[myrank])+k] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
-					}
-				}
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(i=0;i<point_per_proc_x[myrank];i++){
-					for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-						Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
-					}
-				}
+				Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_left_send,Ex_prev,Ez_left_send,Ez_prev,myrank,5);				
 				MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
 				MPI_Send(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
 			}			
@@ -1554,84 +1035,29 @@ int main(int argc, char **argv){
 				if(jp%2==1){//I receive then I send
 					MPI_Recv(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-						for(k=0;k<point_per_proc_z[myrank];k++){
-							Ex_left[i][k] = Ex_left_send[i*(point_per_proc_z[myrank])+k];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank];i++){
-						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Ez_left[i][k] = Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k];
-						}
-					}
+					Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_left,Ex_left_send,Ez_left,Ez_left_send,myrank,5);					
 					if(lasty!=1){
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								Ex_left_send[i*(point_per_proc_z[myrank])+k] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
-							}
-						}
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_left_send,Ex_prev,Ez_left_send,Ez_prev,myrank,5);
 						MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
 						MPI_Send(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
 					}
 				}
 				else{//I send then I receive
 					if(lasty!=1){
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								Ex_left_send[i*(point_per_proc_z[myrank])+k] = Ex_prev[i][point_per_proc_y[myrank]-1][k];
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k] = Ez_prev[i][point_per_proc_y[myrank]-1][k];
-							}
-						}
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_left_send,Ex_prev,Ez_left_send,Ez_prev,myrank,5);
 						MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
 						MPI_Send(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
 					}
 					MPI_Recv(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ez_left_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank-1,MPI_COMM_WORLD, &mystatus);
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-						for(k=0;k<point_per_proc_z[myrank];k++){
-							Ex_left[i][k] = Ex_left_send[i*(point_per_proc_z[myrank])+k];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank];i++){
-						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							Ez_left[i][k] = Ez_left_send[i*(point_per_proc_z[myrank]+lastz)+k];
-						}
-					}
+					Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_left,Ex_left_send,Ez_left,Ez_left_send,myrank,5);
 				}
 			}
 		}
-		if(divz!=1){
+		if(divz!=1){// Communication in the z direction
+
 			if(kp==0){//I only send
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-					for(j=0;j<point_per_proc_y[myrank];j++){
-						Ex_bottom_send[i*(point_per_proc_y[myrank])+ j] = Ex_prev[i][j][point_per_proc_z[myrank]-1];
-						
-					}
-				}
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(i=0;i<point_per_proc_x[myrank];i++){
-					for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-						Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
-					}
-				}
+				Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_bottom_send,Ex_prev,Ey_bottom_send,Ey_prev,myrank,6);				
 				MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
 				MPI_Send(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);			
 }
@@ -1639,122 +1065,32 @@ int main(int argc, char **argv){
 				if(kp%2==1){//I receive then I send
 					MPI_Recv(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							Ex_bottom[i][j] = Ex_bottom_send[i*(point_per_proc_y[myrank])+ j];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank];i++){
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							Ey_bottom[i][j] = Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j]; 
-						}
-					}
+					Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_bottom,Ex_bottom_send,Ey_bottom,Ey_bottom_send,myrank,6);					
 					if(lastz!=1){
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(j=0;j<point_per_proc_y[myrank];j++){
-								Ex_bottom_send[i*(point_per_proc_y[myrank])+ j] = Ex_prev[i][j][point_per_proc_z[myrank]-1];		
-							}
-						}	
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
-							}
-						}
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_bottom_send,Ex_prev,Ey_bottom_send,Ey_prev,myrank,6);
 						MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
 						MPI_Send(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
 					}
 				}
 				else{// I send then I receive
 					if(lastz!=1){
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(j=0;j<point_per_proc_y[myrank];j++){
-								Ex_bottom_send[i*point_per_proc_y[myrank]+ j] = Ex_prev[i][j][point_per_proc_z[myrank]-1];		
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-								Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j] = Ey_prev[i][j][point_per_proc_z[myrank]-1] ; 
-							}
-						}
+						Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_bottom_send,Ex_prev,Ey_bottom_send,Ey_prev,myrank,6);
 						MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
 						MPI_Send(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
 					}
 					MPI_Recv(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Ey_bottom_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank-divy,MPI_COMM_WORLD, &mystatus);
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							Ex_bottom[i][j] = Ex_bottom_send[i*point_per_proc_y[myrank]+ j];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank];i++){
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							Ey_bottom[i][j] = Ey_bottom_send[i*(point_per_proc_y[myrank]+lasty) + j]; 
-						}
-					}
+					Update_send_in_mat(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Ex_bottom,Ex_bottom_send,Ey_bottom,Ey_bottom_send,myrank,6);
 				}
 			}
 		}			
 
 		//Update of the magnetic field
 		//	X Component
-		#pragma omp parallel for default(shared) private(i,j,k)	
-		for(i=0;i<point_per_proc_x[myrank];i++){
-			for(j=1;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=1;k<point_per_proc_z[myrank]+lastz;k++){	
-					if (lastz==1 && k == point_per_proc_z[myrank]){
-						temp1 = 0;
-					}		
-					else{
-						temp1 = Ey_prev[i][j][k];			
-					}
-					if(lasty==1 && j == point_per_proc_y[myrank]){
-						temp2 = 0;
-					}
-					else{
-						temp2 = Ez_prev[i][j][k];
-					}				
-					Hx_new[i][j][k] = Hx_prev[i][j][k] + (dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-Ey_prev[i][j][k-1])-(temp2-Ez_prev[i][j-1][k]));	
-				}
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<point_per_proc_x[myrank];i++){
-			for(k=1;k<point_per_proc_z[myrank]+lastz;k++){	
-				j = 0;			
-				if (lastz==1 && k == point_per_proc_z[myrank]){
-					temp1 = 0;
-				}		
-				else{
-					temp1 = Ey_prev[i][j][k];			
-				}
-				temp2 = Ez_prev[i][j][k];
-				Hx_new[i][j][k] = Hx_prev[i][j][k] + (dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-Ey_prev[i][j][k-1])-(temp2-Ez_left[i][k]));	
-			}
-	
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<point_per_proc_x[myrank];i++){
-			for(j=1;j<point_per_proc_y[myrank]+lasty;j++){	
-				k = 0;
-				temp1 = Ey_prev[i][j][k];			
-				if(lasty==1 && j == point_per_proc_y[myrank]){
-					temp2 = 0;
-				}
-				else{
-					temp2 = Ez_prev[i][j][k];
-				}			
-				Hx_new[i][j][k] = Hx_prev[i][j][k] + (dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-Ey_bottom[i][j])-(temp2-Ez_prev[i][j-1][k]));	
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
+		Update_H_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]+lastz, lastz, lasty,Hx_new,Hx_prev,Ey_prev,Ez_prev,dt,dx,mu_0,mu_r,1);	
+		Update_H_boundary(point_per_proc_x[myrank],0,point_per_proc_z[myrank]+lastz,lastz,Hx_new,Hx_prev,Ey_prev,Ez_prev,Ez_left,dt,dx,mu_0,mu_r,myrank,3);
+		Update_H_boundary(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,0,lasty,Hx_new,Hx_prev,Ey_prev,Ez_prev,Ey_bottom,dt,dx,mu_0,mu_r,myrank,5);		
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
 		for(i=0;i<point_per_proc_x[myrank];i++){
 			j = 0;
 			k = 0;
@@ -1764,55 +1100,10 @@ int main(int argc, char **argv){
 		}
 		
 		//	Y Component
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=1;i<point_per_proc_x[myrank]+lastx;i++){
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=1;k<point_per_proc_z[myrank]+lastz;k++){	
-					if(lastx ==1 && i == point_per_proc_x[myrank]){
-						temp1 = 0;
-					}		
-					else{
-						temp1 = Ez_prev[i][j][k];
-					}	
-					if(lastz==1 && k == point_per_proc_z[myrank]){
-						temp2 = 0;
-					}
-					else{
-						temp2 = Ex_prev[i][j][k];
-					}
-					Hy_new[i][j][k] = Hy_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-Ez_prev[i-1][j][k])-(temp2-Ex_prev[i][j][k-1]));	
-				}
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=1;i<point_per_proc_x[myrank]+lastx;i++){
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				k = 0;
-				if(lastx ==1 && i == point_per_proc_x[myrank]){
-					temp1 = 0;
-				}		
-				else{
-					temp1 = Ez_prev[i][j][k];
-				}
-					temp2 = Ex_prev[i][j][k];
-				Hy_new[i][j][k] = Hy_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-Ez_prev[i-1][j][k])-(temp2-Ex_bottom[i][j]));	
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(j=0;j<point_per_proc_y[myrank];j++){
-			for(k=1;k<point_per_proc_z[myrank]+lastz;k++){	
-				i = 0;
-				temp1 = Ez_prev[i][j][k];	
-				if(lastz==1 && k == point_per_proc_z[myrank]){
-					temp2 = 0;
-				}
-				else{
-				temp2 = Ex_prev[i][j][k];
-				}
-				Hy_new[i][j][k] = Hy_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-Ez_back[j][k])-(temp2-Ex_prev[i][j][k-1]));	
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
+		Update_H_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz, lastx, lastz,Hy_new,Hy_prev,Ez_prev,Ex_prev,dt,dx,mu_0,mu_r,2);	
+		Update_H_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],0,lastx,Hy_new,Hy_prev,Ez_prev,Ex_prev,Ex_bottom,dt,dx,mu_0,mu_r,myrank,6);		
+		Update_H_boundary(0,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,lastz,Hy_new,Hy_prev,Ez_prev,Ex_prev,Ez_back,dt,dx,mu_0,mu_r,myrank,1);		
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
 		for(j=0;j<point_per_proc_y[myrank];j++){
 			i = 0;
 			k = 0;
@@ -1822,56 +1113,10 @@ int main(int argc, char **argv){
 		}
 			
 		//	Z Component
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=1;i<point_per_proc_x[myrank]+lastx;i++){
-			for(j=1;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					if(lasty==1 && j == point_per_proc_y[myrank]){
-						temp1 = 0;
-					}		
-					else{
-						temp1 = Ex_prev[i][j][k];			
-					}	
-					if(lastx==1 && i == point_per_proc_x[myrank]){
-						temp2 = 0;
-					}	
-					else{
-						temp2 = Ey_prev[i][j][k];
-					}
-					Hz_new[i][j][k] = Hz_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1 - Ex_prev[i][j-1][k])-(temp2 - Ey_prev[i-1][j][k]));
-				}
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=1;i<point_per_proc_x[myrank]+lastx;i++){
-			for(k=0;k<point_per_proc_z[myrank];k++){
-				j = 0;
-				temp1 = Ex_prev[i][j][k];				
-				if(lastx==1 && i == point_per_proc_x[myrank]){
-					temp2 = 0;
-				}	
-				else{
-					temp2 = Ey_prev[i][j][k];
-				}
-				Hz_new[i][j][k] = Hz_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1 - Ex_left[i][k])-(temp2 - Ey_prev[i-1][j][k]));
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(j=1;j<point_per_proc_y[myrank]+lasty;j++){
-			for(k=0;k<point_per_proc_z[myrank];k++){
-				i = 0;
-				if(lasty==1 && j == point_per_proc_y[myrank]){
-						temp1 = 0;
-				}		
-				else{
-					temp1 = Ex_prev[i][j][k];			
-				}	
-				temp2 = Ey_prev[i][j][k];
-				Hz_new[i][j][k] = Hz_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1 - Ex_prev[i][j-1][k])-(temp2 - Ey_back[j][k]));				
-	
-			}
-		}
-		#pragma omp parallel for default(shared) private(i,j,k)
+		Update_H_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank], lasty, lastx,Hz_new,Hz_prev,Ex_prev,Ey_prev,dt,dx,mu_0,mu_r,3);	
+		Update_H_boundary(point_per_proc_x[myrank]+lastx,0,point_per_proc_z[myrank],lastx,Hz_new,Hz_prev,Ex_prev,Ey_prev,Ex_left,dt,dx,mu_0,mu_r,myrank,4);	
+		Update_H_boundary(0,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],lasty,Hz_new,Hz_prev,Ex_prev,Ey_prev,Ey_back,dt,dx,mu_0,mu_r,myrank,2);		
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
 		for(k=0;k<point_per_proc_z[myrank];k++){
 			i = 0;
 			j = 0;
@@ -1882,36 +1127,10 @@ int main(int argc, char **argv){
 
 		// Storage of the updated value of the magnetic field in H_prev
 
-		// X component
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<point_per_proc_x[myrank];i++){
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){									
-					Hx_prev[i][j][k] = Hx_new[i][j][k];	
-				}
-			}
-		}
-		//	Y Component
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){					
-					Hy_prev[i][j][k] = Hy_new[i][j][k];	
-				}
-			}
-		}
-		//	Z Component
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){					
-					Hz_prev[i][j][k] = Hz_new[i][j][k];
-				}
-			}
-		}
-		
-
-		
+		New_in_old(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]+lastz,Hx_new,Hx_prev);
+		New_in_old(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Hy_new,Hy_prev);		
+		New_in_old(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hz_new,Hz_prev);
+				
 		// Storage of the matrices in vectors
 		
 		// E_X
@@ -2033,17 +1252,17 @@ int main(int argc, char **argv){
 		// Storage of the Results
 		if(step%SR==0){//save results of the mpi process to disk
 			//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED);
-            		//export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED);
+ 		  export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED);
 			//export_spoints_XML("Ez", step, grid_Ez, mygrid_Ez, ZIPPED);
-			export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED);
+			//export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED);
 			//export_spoints_XML("Hy", step, grid_Hy, mygrid_Hy, ZIPPED);
 			//export_spoints_XML("Hz", step, grid_Hz, mygrid_Hz, ZIPPED);
 
             		if (myrank == 0){	// save main pvti file by rank0
 				//export_spoints_XMLP("Ex", step, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-                		//export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+                		export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 				//export_spoints_XMLP("Ez", step, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
-				export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
+				//export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 				//export_spoints_XMLP("Hy", step, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
 				//export_spoints_XMLP("Hz", step, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
             		}
@@ -2230,7 +1449,7 @@ int main(int argc, char **argv){
 
 
 
-
+// This function split the spatial domain over the different processes
 void divisor(int n_p,int*r){
 	int prime_nb[10]={2,3,5,7,11,13,17,19,23,29};
 	int divx = 1;
@@ -2275,11 +1494,619 @@ void divisor(int n_p,int*r){
 	r[1] = divy;
 	r[2] = divz;
 }
-int compare(int temp){
-	if(temp!=0){
-		return 1;
+
+// This function compute the number of point per process as well as the minimum and maximum indices of the processes in the global axes
+void compute_proc_ind_point(int nbproc,int Nx,int Ny,int Nz,int divx,int divy,int divz,int*i_min_proc,int*j_min_proc,int*k_min_proc,int*i_max_proc,int*j_max_proc,int*k_max_proc,int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z){
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int l = 0;
+  	for(l=0;l<nbproc;l++){
+		point_per_proc_x[l] = Nx/divx;
+		point_per_proc_y[l] = Ny/divy;
+		point_per_proc_z[l] = Nz/divz;		
+		if(((l/(divy*divz))+1)<=(Nx % divx)){
+			point_per_proc_x[l]++;
+		}
+		if(((l%(divy*divz))%divy+1)<=(Ny % divy)){
+			point_per_proc_y[l]++;			
+		}
+		if(((l%(divy*divz))/divy+1)<=(Nz % divz)){
+			point_per_proc_z[l]++;			
+		}
 	}
-	else{
-		return 0;
+	for(l=0;l<nbproc;l++){
+		i_min_proc[l] = 0;
+		j_min_proc[l] = 0;
+		k_min_proc[l] = 0;
+		for(i=0;i<l/(divy*divz);i++){
+			i_min_proc[l] += point_per_proc_x[i*divy*divz];
+		}
+		for(j=0;j<(l%(divy*divz))%divy;j++){
+			j_min_proc[l] += point_per_proc_y[j];
+		}
+		for(k=0;k<(l%(divy*divz))/divy;k++){
+			k_min_proc[l] += point_per_proc_z[divy*k];
+		}
+		i_max_proc[l] = i_min_proc[l] + point_per_proc_x[l]-1;
+		j_max_proc[l] = j_min_proc[l] + point_per_proc_y[l]-1;
+		k_max_proc[l] = k_min_proc[l] + point_per_proc_z[l]-1;
+	}	
+}
+
+// This function store the vector receive by MPI in a matrix
+void Update_send_in_mat(int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z,int lastx,int lasty,int lastz,double**M1,double*V1,double**M2,double*V2,int myrank,int Case){
+  int i =0;
+  int j =0;
+  int k =0;
+  if(Case == 1){
+    #pragma omp parallel for default(shared) private(i,j,k)		
+	  			for(j=0;j<point_per_proc_y[myrank];j++){
+		  			for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+			  			M1[j][k] = V1[j*(point_per_proc_z[myrank]+lastz) + k];			
+				  	}	
+  				}
+	  			#pragma omp parallel for default(shared) private(i,j,k)					
+		  		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+			  		for(k=0;k<point_per_proc_z[myrank];k++){
+				  		M2[j][k] = V2[j*(point_per_proc_z[myrank])+ k];
+					  }
+				  }
+  }
+  else if(Case==2){
+      					#pragma omp parallel for default(shared) private(i,j,k)
+					for(i=0;i<point_per_proc_x[myrank];i++){
+						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+							M1[i][k] = V1[i*(point_per_proc_z[myrank]+lastz)+k];
+						}
+					}
+					#pragma omp parallel for default(shared) private(i,j,k)
+					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+						for(k=0;k<point_per_proc_z[myrank];k++){
+							M2[i][k] = V2[i*(point_per_proc_z[myrank])+k];
+						}
+					}
+  }
+  else if(Case==3){
+    					#pragma omp parallel for default(shared) private(i,j,k)
+					for(i=0;i<point_per_proc_x[myrank];i++){
+						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+							M1[i][j] = V1[i*(point_per_proc_y[myrank]+lasty)+j];
+						}
+					}
+					#pragma omp parallel for default(shared) private(i,j,k)
+					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+						for(j=0;j<point_per_proc_y[myrank];j++){
+							M2[i][j] = V2[i*(point_per_proc_y[myrank])+j];
+						}
+					}
+  }
+	else if(Case==4){
+		#pragma omp parallel for default(shared) private(i,j,k)
+			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+				for(k=0;k<point_per_proc_z[myrank];k++){
+					M1[j][k] = V1[j*(point_per_proc_z[myrank])+k];
+				}
+			}	
+			#pragma omp parallel for default(shared) private(i,j,k)				
+			for(j=0;j<point_per_proc_y[myrank];j++){
+				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+					M2[j][k] = V2[j*(point_per_proc_z[myrank]+lastz)+k];
+				}
+			}
+	}
+	else if(Case==5){
+		#pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+				for(k=0;k<point_per_proc_z[myrank];k++){
+					M1[i][k] = V1[i*(point_per_proc_z[myrank])+k];
+				}
+			}
+			#pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<point_per_proc_x[myrank];i++){
+				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+					M2[i][k] = V2[i*(point_per_proc_z[myrank]+lastz)+k];
+				}
+			}
+	}
+	else if(Case==6){
+		#pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+				for(j=0;j<point_per_proc_y[myrank];j++){
+					M1[i][j] = V1[i*(point_per_proc_y[myrank])+ j];
+				}
+			}
+			#pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<point_per_proc_x[myrank];i++){
+				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+					M2[i][j] = V2[i*(point_per_proc_y[myrank]+lasty) + j]; 
+				}
+			}
 	}
 }
+
+
+// This function place the content of a matrix in a vector in order to send it with MPI
+void Update_prev_in_send(int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z,int lastx,int lasty,int lastz,double*V1,double***M1,double*V2,double***M2,int myrank,int Case){
+ 	 int i =0;
+ 	 int j =0;
+	  int k =0;
+	  if(Case == 1){
+            #pragma omp parallel for default(shared) private(i,j,k)
+						for(j=0;j<point_per_proc_y[myrank];j++){
+							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+								V1[j*(point_per_proc_z[myrank]+lastz)+k] = M1[0][j][k];
+							}	
+						}
+						#pragma omp parallel for default(shared) private(i,j,k)
+						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+							for(k=0;k<point_per_proc_z[myrank];k++){
+								V2[j*(point_per_proc_z[myrank])+k] = M2[0][j][k];
+							}
+						}
+  	}
+ 	 else if(Case==2){
+    	  #pragma omp parallel for default(shared) private(i,j,k)
+						for(i=0;i<point_per_proc_x[myrank];i++){
+							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+								V1[i*(point_per_proc_z[myrank]+lastz)+k] = M1[i][0][k] ;
+							}
+						}
+						#pragma omp parallel for default(shared) private(i,j,k)
+						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+							for(k=0;k<point_per_proc_z[myrank];k++){
+								V2[i*(point_per_proc_z[myrank])+k] = M2[i][0][k];
+							}
+						}
+	  }
+	  else if(Case==3){
+	      #pragma omp parallel for default(shared) private(i,j,k)
+						for(i=0;i<point_per_proc_x[myrank];i++){
+							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
+								V1[i*(point_per_proc_y[myrank]+lasty)+j]=M1[i][j][0];
+							}
+						}
+						#pragma omp parallel for default(shared) private(i,j,k)
+						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+							for(j=0;j<point_per_proc_y[myrank];j++){								
+								V2[i*(point_per_proc_y[myrank])+j] = M2[i][j][0];
+							}
+						}
+  	}
+	else if(Case==4){
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+			for(k=0;k<point_per_proc_z[myrank];k++){						
+				V1[j*(point_per_proc_z[myrank])+k] = M1[point_per_proc_x[myrank]-1][j][k];
+			}
+		}
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(j=0;j<point_per_proc_y[myrank];j++){
+			for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+				V2[j*(point_per_proc_z[myrank]+lastz)+k] = M2[point_per_proc_x[myrank]-1][j][k];
+			}
+		}
+	}
+	else if(Case==5){
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+			for(k=0;k<point_per_proc_z[myrank];k++){
+				V1[i*(point_per_proc_z[myrank])+k] = M1[i][point_per_proc_y[myrank]-1][k];
+			}
+		}
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=0;i<point_per_proc_x[myrank];i++){
+			for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+				V2[i*(point_per_proc_z[myrank]+lastz)+k] = M2[i][point_per_proc_y[myrank]-1][k];
+			}
+		}
+	}
+	else if(Case==6){
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+			for(j=0;j<point_per_proc_y[myrank];j++){
+				V1[i*(point_per_proc_y[myrank])+ j] = M1[i][j][point_per_proc_z[myrank]-1];				
+			}
+		}
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=0;i<point_per_proc_x[myrank];i++){
+			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+				V2[i*(point_per_proc_y[myrank]+lasty) + j] = M2[i][j][point_per_proc_z[myrank]-1] ; 
+			}
+		}
+	}	
+}
+
+// This function update the electric field inside the domain attributed to a given process
+void Update_E_inside(int i_max,int j_max,int k_max,double***E_new,double***E_prev,double***H1_prev,double***H2_prev,double dt,double dx,double e_0,double***e_r,int Case){
+  int i =0;
+  int j =0;
+  int k =0;
+  if(Case==1){
+    #pragma omp parallel for default(shared) private(i,j,k) 
+			for(i=0;i<i_max;i++){
+				for(j=0;j<j_max;j++){
+					for(k=0;k<k_max;k++){					
+						E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j+1][k]-H1_prev[i][j][k])-(H2_prev[i][j][k+1]-H2_prev[i][j][k]));	
+					}
+				}
+			}
+  }
+  else if(Case==2){
+    #pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<i_max;i++){
+				for(j=0;j<j_max;j++){
+					for(k=0;k<k_max;k++){					
+						E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j][k+1]-H1_prev[i][j][k])-(H2_prev[i+1][j][k]-H2_prev[i][j][k]));	
+					}
+				}
+			}
+  }
+  else if(Case==3){
+      #pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<i_max;i++){
+				for(j=0;j<j_max;j++){
+					for(k=0;k<k_max;k++){						
+						E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i+1][j][k]-H1_prev[i][j][k])-(H2_prev[i][j+1][k]-H2_prev[i][j][k]));	
+					}
+				}
+			}
+  }
+}
+
+// This function update the electric field at the boundary of the domain attributed to a given process
+void Update_E_boundary(int i_max,int j_max,int k_max,double***E_new,double***E_prev,double***H1_prev,double***H2_prev,double**H_boundary,double dt,double dx,double e_0,double***e_r,int myrank,int Case){
+  int i =0;
+  int j =0;
+  int k =0;
+  if(Case==1){
+    #pragma omp parallel for default(shared) private(i,j,k)
+			for(j=0;j<j_max;j++){
+				for(k=0;k<k_max;k++){
+					i = i_max;
+					E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j][k+1]-H1_prev[i][j][k])-(H_boundary[j][k]-H2_prev[i][j][k]));
+				}
+			}
+  }
+  if(Case==2){
+		  #pragma omp parallel for default(shared) private(i,j,k)
+			for(j=0;j<j_max;j++){
+				for(k=0;k<k_max;k++){	
+					i = i_max;					
+					E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[j][k]-H1_prev[i][j][k])-(H2_prev[i][j+1][k]-H2_prev[i][j][k]));	
+				}
+			}
+  }
+  if(Case==3){
+    #pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<i_max;i++){
+				for(k=0;k<k_max;k++){
+					j = j_max;
+					E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[i][k]-H1_prev[i][j][k])-(H2_prev[i][j][k+1]-H2_prev[i][j][k]));
+				}
+			}
+  }
+  else if(Case==4){
+    #pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<i_max;i++){
+				for(k=0;k<k_max;k++){	
+					j = j_max;					
+					E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i+1][j][k]-H1_prev[i][j][k])-(H_boundary[i][k]-H2_prev[i][j][k]));	
+				}
+			}
+  }
+  else if(Case==5){
+    #pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<i_max;i++){
+				for(j=0;j<j_max;j++){
+					k = k_max;
+					E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j+1][k]-H1_prev[i][j][k])-(H_boundary[i][j]-H2_prev[i][j][k]));
+				}
+			}
+  }
+  else if(Case==6){
+		#pragma omp parallel for default(shared) private(i,j,k)
+			for(i=0;i<i_max;i++){
+				for(j=0;j<j_max;j++){
+					k = k_max;
+					E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[i][j]-H1_prev[i][j][k])-(H2_prev[i+1][j][k]-H2_prev[i][j][k]));
+				}
+			}
+  }
+}
+
+// This function update the magnetic field inside the domain attributed to a given process.
+void Update_H_inside(int i_max,int j_max,int k_max,int last1, int last2,double***H_new,double***H_prev,double***E1_prev,double***E2_prev,double dt,double dx,double mu_0,double***mu_r,int Case){
+	int i = 0;
+ 	int j = 0;
+  	int k = 0;
+	double temp1=0;
+	double temp2=0;
+	if(Case==1){		
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)	
+		for(i=0;i<i_max;i++){
+			for(j=1;j<j_max;j++){
+				for(k=1;k<k_max;k++){	
+					if (last1==1 && k == k_max-last1){
+						temp1 = 0;
+					}		
+					else{
+						temp1 = E1_prev[i][j][k];			
+					}
+					if(last2==1 && j == j_max-last2){
+						temp2 = 0;
+					}
+					else{
+						temp2 = E2_prev[i][j][k];
+					}				
+					H_new[i][j][k] = H_prev[i][j][k] + (dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-E1_prev[i][j][k-1])-(temp2-E2_prev[i][j-1][k]));	
+	 			}
+			}
+		}
+	}
+	else if(Case==2){
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
+		for(i=1;i<i_max;i++){
+			for(j=0;j<j_max;j++){
+				for(k=1;k<k_max;k++){	
+					if(last1 ==1 && i == i_max-last1){
+						temp1 = 0;
+					}		
+					else{
+						temp1 = E1_prev[i][j][k];
+					}	
+					if(last2==1 && k == k_max-last2){
+						temp2 = 0;
+					}
+					else{
+						temp2 = E2_prev[i][j][k];
+					}
+					H_new[i][j][k] = H_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-E1_prev[i-1][j][k])-(temp2-E2_prev[i][j][k-1]));	
+				}
+			}
+		}
+	}
+	else if(Case==3){
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
+		for(i=1;i<i_max;i++){
+			for(j=1;j<j_max;j++){
+				for(k=0;k<k_max;k++){
+					if(last1==1 && j == j_max-last1){
+						temp1 = 0;
+					}		
+					else{
+						temp1 = E1_prev[i][j][k];			
+					}	
+					if(last2==1 && i == i_max-last2){
+						temp2 = 0;
+					}	
+					else{
+						temp2 = E2_prev[i][j][k];
+					}
+					H_new[i][j][k] = H_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1 - E1_prev[i][j-1][k])-(temp2 - E2_prev[i-1][j][k]));
+				}
+			}
+		}
+	}
+}
+
+// This function update the magnetic field at the boundary of the domain attributed to a given process
+void Update_H_boundary(int i_max,int j_max,int k_max,int last,double***H_new,double***H_prev,double***E1_prev,double***E2_prev,double**E_boundary,double dt,double dx,double mu_0,double***mu_r,int myrank,int Case){
+	int i = 0;
+ 	int j = 0;
+  	int k = 0;
+	double temp1=0;
+	double temp2=0;	
+	if(Case==1){
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
+		for(j=0;j<j_max;j++){
+			for(k=1;k<k_max;k++){	
+				i = 0;
+				temp1 = E1_prev[i][j][k];	
+				if(last==1 && k == k_max-last){
+					temp2 = 0;
+				}
+				else{
+				temp2 = E2_prev[i][j][k];
+				}
+				H_new[i][j][k] = H_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-E_boundary[j][k])-(temp2-E2_prev[i][j][k-1]));	
+			}
+		}
+	}
+	else if(Case==2){
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
+		for(j=1;j<j_max;j++){
+			for(k=0;k<k_max;k++){
+				i = 0;
+				if(last==1 && j == j_max-last){
+						temp1 = 0;
+				}		
+				else{
+					temp1 = E1_prev[i][j][k];			
+				}	
+				temp2 = E2_prev[i][j][k];
+				H_new[i][j][k] = H_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1 - E1_prev[i][j-1][k])-(temp2 - E_boundary[j][k]));				
+	
+			}
+		}
+	}
+	else if(Case==3){
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
+		for(i=0;i<i_max;i++){
+			for(k=1;k<k_max;k++){	
+				j = 0;			
+				if (last==1 && k == k_max-last){
+					temp1 = 0;
+				}		
+				else{
+					temp1 = E1_prev[i][j][k];			
+				}
+				temp2 = E2_prev[i][j][k];
+				H_new[i][j][k] = H_prev[i][j][k] + (dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-E1_prev[i][j][k-1])-(temp2-E_boundary[i][k]));	
+			}
+	
+		}
+	}
+	else if(Case==4){
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
+		for(i=1;i<i_max;i++){
+			for(k=0;k<k_max;k++){
+				j = 0;
+				temp1 = E1_prev[i][j][k];				
+				if(last==1 && i == i_max-last){
+					temp2 = 0;
+				}	
+				else{
+					temp2 = E2_prev[i][j][k];
+				}
+				H_new[i][j][k] = H_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1 - E_boundary[i][k])-(temp2 - E2_prev[i-1][j][k]));
+			}
+		}
+	}
+	else if(Case==5){
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
+		for(i=0;i<i_max;i++){
+			for(j=1;j<j_max;j++){	
+				k = 0;
+				temp1 = E1_prev[i][j][k];			
+				if(last==1 && j == j_max-last){
+					temp2 = 0;
+				}
+				else{
+					temp2 = E2_prev[i][j][k];
+				}			
+				H_new[i][j][k] = H_prev[i][j][k] + (dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-E_boundary[i][j])-(temp2-E2_prev[i][j-1][k]));	
+			}
+		}
+	}
+	else if(Case==6){
+		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
+		for(i=1;i<i_max;i++){
+			for(j=0;j<j_max;j++){
+				k = 0;
+				if(last ==1 && i == i_max-last){
+					temp1 = 0;
+				}		
+				else{
+					temp1 = E1_prev[i][j][k];
+				}
+					temp2 = E2_prev[i][j][k];
+				H_new[i][j][k] = H_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-E1_prev[i-1][j][k])-(temp2-E_boundary[i][j]));	
+			}
+		}
+	}
+}
+
+// This function imposes the boundary condition of the electromagnetic problem
+void Boundary_condition_imosition(int ip,int jp,int kp,int lastx,int lasty,int lastz,int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z,double***Ex_new,double***Ey_new,double***Ez_new,int myrank){
+  int i = 0;
+  int j = 0;
+  int k = 0;
+  if(ip==0){
+			i = 0;
+			#pragma omp parallel for default(shared) private(j,k)
+			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+				for(k=0;k<point_per_proc_z[myrank];k++){						
+					Ey_new[i][j][k] = 0;	
+				}
+			}
+			#pragma omp parallel for default(shared) private(j,k)
+			for(j=0;j<point_per_proc_y[myrank];j++){
+				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+					Ez_new[i][j][k] = 0;	
+				}
+			}
+		}
+		if(lastx==1){
+			i = point_per_proc_x[myrank]-1;
+			#pragma omp parallel for default(shared) private(j,k)
+			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+				for(k=0;k<point_per_proc_z[myrank];k++){						
+					Ey_new[i][j][k] = 0;	
+				}
+			}
+			#pragma omp parallel for default(shared) private(j,k)
+			for(j=0;j<point_per_proc_y[myrank];j++){
+				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+					Ez_new[i][j][k] = 0;	
+				}
+			}
+		}
+		if(jp==0){
+			j = 0;
+			#pragma omp parallel for default(shared) private(i,k)
+			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+				for(k=0;k<point_per_proc_z[myrank];k++){
+					Ex_new[i][j][k] = 0;	
+				}
+			}
+			#pragma omp parallel for default(shared) private(i,k)				
+			for(i=0;i<point_per_proc_x[myrank];i++){
+				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+					Ez_new[i][j][k] = 0;	
+				}
+			}				
+		}
+		if(lasty==1){
+			j = point_per_proc_y[myrank]-1;
+			#pragma omp parallel for default(shared) private(i,k)
+			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+				for(k=0;k<point_per_proc_z[myrank];k++){
+					Ex_new[i][j][k] = 0;	
+				}
+			}
+			#pragma omp parallel for default(shared) private(i,k)				
+			for(i=0;i<point_per_proc_x[myrank];i++){
+				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+					Ez_new[i][j][k] = 0;	
+				}
+			}
+		}
+		if(kp==0){
+			k=0;
+			#pragma omp parallel for default(shared) private(i,j)
+			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+				for(j=0;j<point_per_proc_y[myrank];j++){
+					Ex_new[i][j][k] = 0;						
+				}
+			}
+			#pragma omp parallel for default(shared) private(i,j)
+			for(i=0;i<point_per_proc_x[myrank];i++){
+				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+					Ey_new[i][j][k] = 0;	
+				}
+			}
+		}
+		if(lastz==1){
+			k=point_per_proc_z[myrank]-1;
+			#pragma omp parallel for default(shared) private(i,j)
+			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+				for(j=0;j<point_per_proc_y[myrank];j++){
+					Ex_new[i][j][k] = 0;						
+				}
+			}
+			#pragma omp parallel for default(shared) private(i,j)
+			for(i=0;i<point_per_proc_x[myrank];i++){
+				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+					Ey_new[i][j][k] = 0;	
+				}
+			}
+		}
+}
+void New_in_old(int i_max,int j_max,int k_max,double***New,double***Old){
+	int i = 0;
+  	int j = 0;
+  	int k = 0;
+	#pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<i_max;i++){
+		for(j=0;j<j_max;j++){
+			for(k=0;k<k_max;k++){
+				Old[i][j][k] = New[i][j][k];
+			}
+		}
+	}
+}
+
+
+
+
