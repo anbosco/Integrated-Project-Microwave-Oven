@@ -37,6 +37,7 @@ void Boundary_condition_imosition(int ip,int jp,int kp,int lastx,int lasty,int l
 void Update_H_inside(int i_max,int j_max,int k_max,int last1, int last2,double***H_new,double***H_prev,double***E1_prev,double***E2_prev,double dt,double dx,double mu_0,double***mu_r,int Case);
 void Update_H_boundary(int i_max,int j_max,int k_max,int last,double***H_new,double***H_prev,double***E1_prev,double***E2_prev,double**E_boundary,double dt,double dx,double mu_0,double***mu_r,int myrank,int Case);
 void New_in_old(int i_max,int j_max,int k_max,double***New,double***Old);
+void insert_obj(double***e_r,int nb_obj,double*prop_obj,double dx,double point_per_proc_x,double point_per_proc_y,double point_per_proc_z,int lastx,int lasty,int lastz,int i_min_proc,int j_min_proc,int k_min_proc,int i_max_proc,int j_max_proc,int k_max_proc);
 int compare(int temp);
 
 
@@ -74,9 +75,9 @@ int main(int argc, char **argv){
 
 
 	// Importation of param.dat and initialisation of other parameters.
-	double data[11];	
+	double data[16];	
 	char chain[150];
-	for (i=0 ; i<9; i++){
+	for (i=0 ; i<16; i++){
 		if (fgets(chain, 150, FileR) == NULL){
 			printf("Impossible to read the data file. \n");
 			return 1; 
@@ -102,9 +103,13 @@ int main(int argc, char **argv){
 	int P = (int) data[7];
 	double S = data[8];
 	int SR = (int) 1/S;
-	double l_ay = data[9];
-	double l_az = data[10];
-	
+	double l_ax = data[9];
+	double l_ay = data[10];
+	double l_az = data[11];
+	double pos_ax = data[12];
+	double pos_ay = data[13];
+	double pos_az = data[14];
+	int nb_obj = (int) data[15];
 	/* Division of the domain along x, y and z depending on the number of process.
 	   Each process will process a portion of the domain.*/
 	int divx = 1;
@@ -126,9 +131,8 @@ int main(int argc, char **argv){
 	int*k_max_proc = (int*)malloc(nbproc*sizeof(int));
 	int*point_per_proc_x = (int*)malloc(nbproc*sizeof(int));
 	int*point_per_proc_y = (int*)malloc(nbproc*sizeof(int));
-	int*point_per_proc_z = (int*)malloc(nbproc*sizeof(int));	
- 
-  compute_proc_ind_point(nbproc,Nx,Ny,Nz,divx,divy,divz,i_min_proc,j_min_proc,k_min_proc,i_max_proc,j_max_proc,k_max_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z);
+	int*point_per_proc_z = (int*)malloc(nbproc*sizeof(int)); 
+  	compute_proc_ind_point(nbproc,Nx,Ny,Nz,divx,divy,divz,i_min_proc,j_min_proc,k_min_proc,i_max_proc,j_max_proc,k_max_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z);
    			
 	/* Variables useful to define the size of the fields on each process */
 	int ip = (myrank/(divy*divz));
@@ -177,6 +181,52 @@ int main(int argc, char **argv){
 			}
 		}
 	}
+	double*prop_obj = (double*)malloc(7*nb_obj*sizeof(double));
+	FileR = fopen(argv[2],"r");
+	if(FileR == NULL){ 
+		printf("Impossible to open the data file (Object property). \n");
+		return 1; 
+	}		
+	for (i=0 ; i<7*nb_obj; i++){
+		if (fgets(chain, 150, FileR) == NULL){
+			printf("Impossible to read the data file. \n");
+			return 1; 
+		}
+		else{
+			prop_obj[i] = atof(chain);
+		}
+	}
+	fclose(FileR);
+	insert_obj(e_r,nb_obj,prop_obj,dx,point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz,i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],i_max_proc[myrank],j_max_proc[myrank],k_max_proc[myrank]);
+
+	// Calculation of the position of the antenna.
+	double n_ax_double = (l_ax/dx)+1;
+	int n_ax = (int) n_ax_double;
+	pos_ax = (pos_ax/dx);	
+	int i_min_a = (int)pos_ax;
+	i_min_a = i_min_a - (n_ax/2);
+	int i_max_a = i_min_a + n_ax-1;
+
+	double n_ay_double = (l_ay/dx)+1;
+	int n_ay = (int) n_ay_double;
+	pos_ay = (pos_ay/dx);	
+	int j_min_a = (int)pos_ay;
+	j_min_a = j_min_a - (n_ay/2);
+	int j_max_a = j_min_a + n_ay-1;
+
+	double n_az_double = (l_az/dx)+1;
+	int n_az = (int) n_az_double;
+	pos_az = (pos_az/dx);	
+	int k_min_a = (int)pos_az;
+	k_min_a = k_min_a - (n_az/2);
+	int k_max_a = k_min_a + n_az-1;
+	// Variables used to impose the value of E at the antenna.
+	int b_inf_x =0;
+	int b_inf_y =0;
+	int b_inf_z =0;
+	int b_sup_x = 0;
+	int b_sup_y = 0;
+	int b_sup_z = 0;
 	
 	/* Variables used to export the results  under the proper fomat. */
 
@@ -212,7 +262,7 @@ int main(int argc, char **argv){
 			}
 			sgrids_Ex[l].dx = Vec3d(dx, dx, dx);	
       			sgrids_Ex[l].id = l;	
-			std::cout << l << ": " << sgrids_Ex[l] << '\n';	 		
+			//std::cout << l << ": " << sgrids_Ex[l] << '\n';	 		
 		}
 	}
 
@@ -457,25 +507,7 @@ int main(int argc, char **argv){
 	for(i=0;i<mynbp_Hz;i++){
 		Hz_vec[i] = 0;
 	}
- 	mygrid_Hz.scalars["H z"] = &Hz_vec;
-
-	
-
-	// Calculation of the position of the antenna.
-	double n_ay_double = (l_ay/dx)+1;
-	int n_ay = (int) n_ay_double;
-	int j_min_a = (Ny-n_ay)/2;
-	int j_max_a = j_min_a + n_ay-1;
-
-	double n_az_double = (l_az/dx)+1;
-	int n_az = (int) n_az_double;
-	int k_min_a = (Nz-n_az)/2;
-	int k_max_a = k_min_a + n_az-1;
-	// Variables used to impose the value of E at the antenna.
-	int b_inf_y =0;
-	int b_inf_z =0;
-	int b_sup_y = 0;
-	int b_sup_z = 0;	
+ 	mygrid_Hz.scalars["H z"] = &Hz_vec;		
 	
 	// Variables that will contain the previous and the updated value of the fields only on a division of the domain.
 	double***Ex_prev;
@@ -938,34 +970,43 @@ int main(int argc, char **argv){
 
 		// Imposition of the value of the electric field for the node corresponding to the antenna.
 		if(P == 1){
-			if(ip==0){
-				if(j_min_proc[myrank]<= j_max_a && k_min_proc[myrank]<= k_max_a && j_max_proc[myrank]>= j_min_a && k_max_proc[myrank]>= k_min_a){
-					b_inf_y = j_min_a - j_min_proc[myrank];
-					b_inf_z = k_min_a - k_min_proc[myrank];
-					b_sup_y = j_max_a - j_min_proc[myrank];
-					b_sup_z = k_max_a - k_min_proc[myrank];
-					if(b_inf_y<0){
-						b_inf_y = 0;		
-					}
-					if(b_inf_z<0){
-						b_inf_z = 0;		
-					}
-					if(point_per_proc_y[myrank]-1<b_sup_y){
-						b_sup_y = point_per_proc_y[myrank]-1;
-					}
-					if(point_per_proc_z[myrank]-1<b_sup_z){
-						b_sup_z = point_per_proc_z[myrank]-1;
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(j=b_inf_y;j<=b_sup_y;j++){
+
+
+			if(i_min_proc[myrank]<= i_max_a && j_min_proc[myrank]<= j_max_a && k_min_proc[myrank]<= k_max_a && i_max_proc[myrank]>= i_min_a && j_max_proc[myrank]>= j_min_a && k_max_proc[myrank]>= k_min_a){
+				b_inf_x = i_min_a - i_min_proc[myrank];				
+				b_inf_y = j_min_a - j_min_proc[myrank];
+				b_inf_z = k_min_a - k_min_proc[myrank];
+				b_sup_x = i_max_a - i_min_proc[myrank];
+				b_sup_y = j_max_a - j_min_proc[myrank];
+				b_sup_z = k_max_a - k_min_proc[myrank];
+				if(b_inf_x<0){
+					b_inf_x = 0;		
+				}
+				if(b_inf_y<0){
+					b_inf_y = 0;		
+				}
+				if(b_inf_z<0){
+					b_inf_z = 0;		
+				}
+				if(point_per_proc_x[myrank]-1+lastx<b_sup_x){
+					b_sup_x = point_per_proc_x[myrank]-1+lastx;
+				}
+				if(point_per_proc_y[myrank]-1+lasty<b_sup_y){
+					b_sup_y = point_per_proc_y[myrank]-1+lasty;
+				}
+				if(point_per_proc_z[myrank]-1+lastz<b_sup_z){
+					b_sup_z = point_per_proc_z[myrank]-1+lastz;
+				}
+				#pragma omp parallel for default(shared) private(i,j,k)
+				for(i=b_inf_x;i<=b_sup_x;i++){
+					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
 						for(k=b_inf_z;k<=b_sup_z;k++){
-							Ex_new[0][j][k]= 0;
-							Ey_new[0][j][k]= sin(omega*step*dt);
-							Ez_new[0][j][k]= 0;					
+							Ey_new[i][j][k]= sin(omega*step*dt);					
 						}				
 					}
 				}
 			}
+
 		}
 		else if(P == 2){
 			if(ip == 0 && kp == 0){				
@@ -1443,6 +1484,8 @@ int main(int argc, char **argv){
 	free(point_per_proc_x);
 	free(point_per_proc_y);
 	free(point_per_proc_z);
+
+	free(prop_obj);
 
 	MPI_Finalize();
 }
@@ -2104,6 +2147,79 @@ void New_in_old(int i_max,int j_max,int k_max,double***New,double***Old){
 				Old[i][j][k] = New[i][j][k];
 			}
 		}
+	}
+}
+
+void insert_obj(double***e_r,int nb_obj,double*prop_obj,double dx,double point_per_proc_x,double point_per_proc_y,double point_per_proc_z,int lastx,int lasty,int lastz,int i_min_proc,int j_min_proc,int k_min_proc,int i_max_proc,int j_max_proc,int k_max_proc){
+	int i = 0;
+  	int j = 0;
+  	int k = 0;
+	int l = 0;
+
+	for(l=0;l<nb_obj;l++){
+		double n_x_double = (prop_obj[l]/dx)+1;
+		int n_x = (int) n_x_double;
+		double pos_x = (prop_obj[l+3]/dx);	
+		int i_min = (int)pos_x;
+		i_min = i_min - (n_x/2);
+		int i_max = i_min + n_x-1;
+	
+		double n_y_double = (prop_obj[l+1]/dx)+1;
+		int n_y = (int) n_y_double;
+		double pos_y = (prop_obj[l+4]/dx);	
+		int j_min = (int)pos_y;
+		j_min = j_min - (n_y/2);
+		int j_max = j_min + n_y-1;
+	
+		double n_z_double = (prop_obj[l+2]/dx)+1;
+		int n_z = (int) n_z_double;
+		double pos_z = (prop_obj[l+5]/dx);	
+		int k_min = (int)pos_z;
+		k_min = k_min - (n_z/2);
+		int k_max = k_min + n_z-1;
+	
+		int b_inf_x =0;
+		int b_inf_y =0;
+		int b_inf_z =0;
+		int b_sup_x = 0;
+		int b_sup_y = 0;
+		int b_sup_z = 0;
+
+		if(i_min_proc<= i_max && j_min_proc<= j_max && k_min_proc<= k_max && i_max_proc>= i_min && j_max_proc>= j_min && k_max_proc>= k_min){
+				b_inf_x = i_min - i_min_proc;				
+				b_inf_y = j_min - j_min_proc;
+				b_inf_z = k_min - k_min_proc;
+				b_sup_x = i_max - i_min_proc;
+				b_sup_y = j_max - j_min_proc;
+				b_sup_z = k_max - k_min_proc;
+				if(b_inf_x<0){
+					b_inf_x = 0;		
+				}
+				if(b_inf_y<0){
+					b_inf_y = 0;		
+				}
+				if(b_inf_z<0){
+					b_inf_z = 0;		
+				}
+				if(point_per_proc_x-1+lastx<b_sup_x){
+					b_sup_x = point_per_proc_x-1+lastx;
+				}
+				if(point_per_proc_y-1+lasty<b_sup_y){
+					b_sup_y = point_per_proc_y-1+lasty;
+				}
+				if(point_per_proc_z-1+lastz<b_sup_z){
+					b_sup_z = point_per_proc_z-1+lastz;
+				}
+				#pragma omp parallel for default(shared) private(i,j,k)
+				for(i=b_inf_x;i<=b_sup_x;i++){
+					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
+						for(k=b_inf_z;k<=b_sup_z;k++){
+							e_r[i][j][k]= prop_obj[l+6];					
+						}				
+					}
+				}
+			}
+
 	}
 }
 
