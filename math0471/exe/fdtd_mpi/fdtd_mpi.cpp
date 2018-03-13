@@ -26,7 +26,6 @@
 
 using namespace vtl;
 
-// Function that determiner how to split the domain among the different process.
 void divisor(int np,int*r);
 void compute_proc_ind_point(int nbproc,int Nx,int Ny,int Nz,int divx,int divy,int divz,int*i_min_proc,int*j_min_proc,int*k_min_proc,int*i_max_proc,int*j_max_proc,int*k_max_proc,int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z);
 void Update_send_in_mat(int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z,int lastx,int lasty,int lastz,double**M1,double*V1,double**M2,double*V2,int myrank,int Case);
@@ -91,7 +90,7 @@ int main(int argc, char **argv){
 	double Ly = data[1];
 	double Lz = data[2];
  	double f = data[3];
-        double omega = f*2*3.141692;
+  double omega = f*2*3.141692;
 	double dx = data[4];
  	int Nx = (int) (Lx/dx)+1;
 	int Ny = (int) (Ly/dx)+1;
@@ -110,6 +109,7 @@ int main(int argc, char **argv){
 	double pos_ay = data[13];
 	double pos_az = data[14];
 	int nb_obj = (int) data[15];
+ 
 	/* Division of the domain along x, y and z depending on the number of process.
 	   Each process will process a portion of the domain.*/
 	int divx = 1;
@@ -132,7 +132,7 @@ int main(int argc, char **argv){
 	int*point_per_proc_x = (int*)malloc(nbproc*sizeof(int));
 	int*point_per_proc_y = (int*)malloc(nbproc*sizeof(int));
 	int*point_per_proc_z = (int*)malloc(nbproc*sizeof(int)); 
-  	compute_proc_ind_point(nbproc,Nx,Ny,Nz,divx,divy,divz,i_min_proc,j_min_proc,k_min_proc,i_max_proc,j_max_proc,k_max_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z);
+	compute_proc_ind_point(nbproc,Nx,Ny,Nz,divx,divy,divz,i_min_proc,j_min_proc,k_min_proc,i_max_proc,j_max_proc,k_max_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z);
    			
 	/* Variables useful to define the size of the fields on each process */
 	int ip = (myrank/(divy*divz));
@@ -181,6 +181,8 @@ int main(int argc, char **argv){
 			}
 		}
 	}
+
+	// Insertion of the objects inside the domain
 	double*prop_obj = (double*)malloc(7*nb_obj*sizeof(double));
 	FileR = fopen(argv[2],"r");
 	if(FileR == NULL){ 
@@ -197,7 +199,9 @@ int main(int argc, char **argv){
 		}
 	}
 	fclose(FileR);
-	insert_obj(e_r,nb_obj,prop_obj,dx,point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz,i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],i_max_proc[myrank],j_max_proc[myrank],k_max_proc[myrank]);
+	if (nb_obj!=0){
+		insert_obj(e_r,nb_obj,prop_obj,dx,point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz,i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],i_max_proc[myrank],j_max_proc[myrank],k_max_proc[myrank]);
+	}
 
 	// Calculation of the position of the antenna.
 	double n_ax_double = (l_ax/dx)+1;
@@ -220,6 +224,7 @@ int main(int argc, char **argv){
 	int k_min_a = (int)pos_az;
 	k_min_a = k_min_a - (n_az/2);
 	int k_max_a = k_min_a + n_az-1;
+
 	// Variables used to impose the value of E at the antenna.
 	int b_inf_x =0;
 	int b_inf_y =0;
@@ -234,10 +239,10 @@ int main(int argc, char **argv){
 
 	// X component
 	SPoints grid_Ex;
-	grid_Ex.o = Vec3d(10.0, 10.0, 10.0); // origin
-	grid_Ex.np1 = Vec3i(0, 0, 0);       // first index
-	grid_Ex.np2 = Vec3i(Nx, Ny-1, Nz-1); // last index
-	grid_Ex.dx = Vec3d(dx, dx, dx);  // compute spacing
+	grid_Ex.o = Vec3d(10.0, 10.0, 10.0); 
+	grid_Ex.np1 = Vec3i(0, 0, 0);       
+	grid_Ex.np2 = Vec3i(Nx, Ny-1, Nz-1); 
+	grid_Ex.dx = Vec3d(dx, dx, dx);  
 
 	SPoints mygrid_Ex;
 	mygrid_Ex.o = Vec3d(10.0, 10.0, 10.0);
@@ -248,8 +253,7 @@ int main(int argc, char **argv){
 
 	std::vector<SPoints> sgrids_Ex; // list of subgrids (used by rank0 for pvti file)
 
-	if (myrank == 0)
-	{
+	if (myrank == 0){
 		sgrids_Ex.resize(nbproc);
 		for (int l = 0; l < nbproc; ++l){
 			sgrids_Ex[l].o = Vec3d(10.0, 10.0, 10.0);
@@ -261,8 +265,7 @@ int main(int argc, char **argv){
 				sgrids_Ex[l].np2 = Vec3i(i_max_proc[l]+1, j_max_proc[l], k_max_proc[l]);
 			}
 			sgrids_Ex[l].dx = Vec3d(dx, dx, dx);	
-      			sgrids_Ex[l].id = l;	
-			//std::cout << l << ": " << sgrids_Ex[l] << '\n';	 		
+      			sgrids_Ex[l].id = l;		 		
 		}
 	}
 
@@ -274,16 +277,14 @@ int main(int argc, char **argv){
 	}
  	mygrid_Ex.scalars["E x"] = &Ex_vec;
 
+
 	// Y component
-
-	// Global grid parameters	
+	
 	SPoints grid_Ey;
-	grid_Ey.o = Vec3d(10.0, 10.0, 10.0); // origin
-	grid_Ey.np1 = Vec3i(0, 0, 0);       // first index
-	grid_Ey.np2 = Vec3i(Nx-1, Ny, Nz-1); // last index
-	grid_Ey.dx = Vec3d(dx, dx, dx);  // compute spacing
-
-	// get my grid indices
+	grid_Ey.o = Vec3d(10.0, 10.0, 10.0); 
+	grid_Ey.np1 = Vec3i(0, 0, 0);      
+	grid_Ey.np2 = Vec3i(Nx-1, Ny, Nz-1); 
+	grid_Ey.dx = Vec3d(dx, dx, dx);  
 
 	SPoints mygrid_Ey;
 	mygrid_Ey.o = Vec3d(10.0, 10.0, 10.0);
@@ -294,8 +295,7 @@ int main(int argc, char **argv){
 
 	std::vector<SPoints> sgrids_Ey; // list of subgrids (used by rank0 for pvti file)
 
-	if (myrank == 0)
-	{
+	if (myrank == 0){
 		sgrids_Ey.resize(nbproc);
 		for (int l = 0; l < nbproc; ++l){
 			sgrids_Ey[l].o = Vec3d(10.0, 10.0, 10.0);
@@ -307,8 +307,7 @@ int main(int argc, char **argv){
 				sgrids_Ey[l].np2 = Vec3i(i_max_proc[l], j_max_proc[l]+1, k_max_proc[l]);
 			}
 			sgrids_Ey[l].dx = Vec3d(dx, dx, dx);	
-      			sgrids_Ey[l].id = l;	
-			// std::cout << l << ": " << sgrids_Ey[l] << '\n';	 		
+      			sgrids_Ey[l].id = l;		 		
 		}
 	}
 
@@ -320,16 +319,12 @@ int main(int argc, char **argv){
 	}
  	mygrid_Ey.scalars["E Y"] = &Ey_vec;
 
-
-
-
-
 	// Z component
 	SPoints grid_Ez;
-	grid_Ez.o = Vec3d(10.0, 10.0, 10.0); // origin
-	grid_Ez.np1 = Vec3i(0, 0, 0);       // first index
-	grid_Ez.np2 = Vec3i(Nx-1, Ny-1, Nz); // last index
-	grid_Ez.dx = Vec3d(dx, dx, dx);  // compute spacing
+	grid_Ez.o = Vec3d(10.0, 10.0, 10.0);
+	grid_Ez.np1 = Vec3i(0, 0, 0);       
+	grid_Ez.np2 = Vec3i(Nx-1, Ny-1, Nz); 
+	grid_Ez.dx = Vec3d(dx, dx, dx);  
 
 	SPoints mygrid_Ez;
 	mygrid_Ez.o = Vec3d(10.0, 10.0, 10.0);
@@ -340,8 +335,7 @@ int main(int argc, char **argv){
 
 	std::vector<SPoints> sgrids_Ez; // list of subgrids (used by rank0 for pvti file)
 
-	if (myrank == 0)
-	{
+	if (myrank == 0){
 		sgrids_Ez.resize(nbproc);
 		for (int l = 0; l < nbproc; ++l){
 			sgrids_Ez[l].o = Vec3d(10.0, 10.0, 10.0);
@@ -353,8 +347,7 @@ int main(int argc, char **argv){
 				sgrids_Ez[l].np2 = Vec3i(i_max_proc[l], j_max_proc[l], k_max_proc[l]+1);
 			}
 			sgrids_Ez[l].dx = Vec3d(dx, dx, dx);	
-      			sgrids_Ez[l].id = l;	
-			//std::cout << l << ": " << sgrids_Ez[l] << '\n';	 		
+      			sgrids_Ez[l].id = l;		 		
 		}
 	}
 
@@ -370,10 +363,10 @@ int main(int argc, char **argv){
 
 	// X component
 	SPoints grid_Hx;
-	grid_Hx.o = Vec3d(10.0, 10.0, 10.0); // origin
-	grid_Hx.np1 = Vec3i(0, 0, 0);       // first index
-	grid_Hx.np2 = Vec3i(Nx-1, Ny, Nz); // last index
-	grid_Hx.dx = Vec3d(dx, dx, dx);  // compute spacing
+	grid_Hx.o = Vec3d(10.0, 10.0, 10.0); 
+	grid_Hx.np1 = Vec3i(0, 0, 0);       
+	grid_Hx.np2 = Vec3i(Nx-1, Ny, Nz); 
+	grid_Hx.dx = Vec3d(dx, dx, dx);  
 
 	SPoints mygrid_Hx;
 	mygrid_Hx.o = Vec3d(10.0, 10.0, 10.0);
@@ -384,8 +377,7 @@ int main(int argc, char **argv){
 
 	std::vector<SPoints> sgrids_Hx; // list of subgrids (used by rank0 for pvti file)
 
-	if (myrank == 0)
-	{
+	if (myrank == 0){
 		sgrids_Hx.resize(nbproc);
 		for (int l = 0; l < nbproc; ++l){
 			sgrids_Hx[l].o = Vec3d(10.0, 10.0, 10.0);
@@ -403,8 +395,7 @@ int main(int argc, char **argv){
 				sgrids_Hx[l].np2 = Vec3i(i_max_proc[l], j_max_proc[l]+1, k_max_proc[l]+1);
 			}
 			sgrids_Hx[l].dx = Vec3d(dx, dx, dx);	
-      			sgrids_Hx[l].id = l;	
-			//std::cout << l << ": " << sgrids_Hx[l] << '\n';	 		
+      			sgrids_Hx[l].id = l;		 		
 		}
 	}
 	 // creation of the fields (over my subdomain)
@@ -417,10 +408,10 @@ int main(int argc, char **argv){
 
 	// Y component
 	SPoints grid_Hy;
-	grid_Hy.o = Vec3d(10.0, 10.0, 10.0); // origin
-	grid_Hy.np1 = Vec3i(0, 0, 0);       // first index
-	grid_Hy.np2 = Vec3i(Nx, Ny-1, Nz); // last index
-	grid_Hy.dx = Vec3d(dx, dx, dx);  // compute spacing
+	grid_Hy.o = Vec3d(10.0, 10.0, 10.0); 
+	grid_Hy.np1 = Vec3i(0, 0, 0);       
+	grid_Hy.np2 = Vec3i(Nx, Ny-1, Nz); 
+	grid_Hy.dx = Vec3d(dx, dx, dx);  
 
 	SPoints mygrid_Hy;
 	mygrid_Hy.o = Vec3d(10.0, 10.0, 10.0);
@@ -431,8 +422,7 @@ int main(int argc, char **argv){
 
 	std::vector<SPoints> sgrids_Hy; // list of subgrids (used by rank0 for pvti file)
 
-	if (myrank == 0)
-	{
+	if (myrank == 0){
 		sgrids_Hy.resize(nbproc);
 		for (int l = 0; l < nbproc; ++l){
 			sgrids_Hy[l].o = Vec3d(10.0, 10.0, 10.0);
@@ -450,8 +440,7 @@ int main(int argc, char **argv){
 				sgrids_Hy[l].np2 = Vec3i(i_max_proc[l]+1, j_max_proc[l], k_max_proc[l]+1);
 			}
 			sgrids_Hy[l].dx = Vec3d(dx, dx, dx);	
-      			sgrids_Hy[l].id = l;	
-			//std::cout << l << ": " << sgrids_Hy[l] << '\n';	 		
+      			sgrids_Hy[l].id = l;		 		
 		}
 	}
 
@@ -465,10 +454,10 @@ int main(int argc, char **argv){
 
 	// Z component
 	SPoints grid_Hz;
-	grid_Hz.o = Vec3d(10.0, 10.0, 10.0); // origin
-	grid_Hz.np1 = Vec3i(0, 0, 0);       // first index
-	grid_Hz.np2 = Vec3i(Nx, Ny, Nz-1); // last index
-	grid_Hz.dx = Vec3d(dx, dx, dx);  // compute spacing
+	grid_Hz.o = Vec3d(10.0, 10.0, 10.0); 
+	grid_Hz.np1 = Vec3i(0, 0, 0);       
+	grid_Hz.np2 = Vec3i(Nx, Ny, Nz-1); 
+	grid_Hz.dx = Vec3d(dx, dx, dx); 
 
 	SPoints mygrid_Hz;
 	mygrid_Hz.o = Vec3d(10.0, 10.0, 10.0);
@@ -479,8 +468,7 @@ int main(int argc, char **argv){
 
 	std::vector<SPoints> sgrids_Hz; // list of subgrids (used by rank0 for pvti file)
 
-	if (myrank == 0)
-	{
+	if (myrank == 0){
 		sgrids_Hz.resize(nbproc);
 		for (int l = 0; l < nbproc; ++l){
 			sgrids_Hz[l].o = Vec3d(10.0, 10.0, 10.0);
@@ -509,7 +497,8 @@ int main(int argc, char **argv){
 	}
  	mygrid_Hz.scalars["H z"] = &Hz_vec;		
 	
-	// Variables that will contain the previous and the updated value of the fields only on a division of the domain.
+
+	/* Variables that will contain the previous and the updated value of the fields only on a division of the domain.*/
 	double***Ex_prev;
 	double***Ex_new;
 	Ex_prev =(double***)malloc((point_per_proc_x[myrank]+lastx)*sizeof(double**));
@@ -615,7 +604,7 @@ int main(int argc, char **argv){
 		}
 	}
 
-	// Variables used to transfer the value of the field at certain places between the different process.
+	/*Variables used to transfer the value of the field at certain places between the different process.*/
 	double**Ex_left;
 	double**Ex_bottom;
 	Ex_left =(double**)malloc((point_per_proc_x[myrank]+lastx)*sizeof(double**));
@@ -789,9 +778,12 @@ int main(int argc, char **argv){
 	for(j=0;j<(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]);j++){
 		Hz_front_send[j] = 0;
 	}	
+ 
+
 /********************************************************************************
 			Begining of the algorithm.
 ********************************************************************************/
+
 	while(step<=step_max){
 		if(step!=1){
 		   /* Certain processes needs an information on Hx, Hy and Hz at places 
@@ -807,7 +799,7 @@ int main(int argc, char **argv){
 
 				else{
 					if(ip%2==1){ // I send then I receive
-         					Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hy_front_send,Hy_prev,Hz_front_send,Hz_prev,myrank,1);
+					  Update_prev_in_send(point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Hy_front_send,Hy_prev,Hz_front_send,Hz_prev,myrank,1);
 						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);						
 
@@ -969,64 +961,41 @@ int main(int argc, char **argv){
    		Boundary_condition_imosition(ip,jp,kp,lastx,lasty,lastz,point_per_proc_x,point_per_proc_y,point_per_proc_z,Ex_new,Ey_new,Ez_new,myrank);		
 
 		// Imposition of the value of the electric field for the node corresponding to the antenna.
-		if(P == 1){
-
-
-			if(i_min_proc[myrank]<= i_max_a && j_min_proc[myrank]<= j_max_a && k_min_proc[myrank]<= k_max_a && i_max_proc[myrank]>= i_min_a && j_max_proc[myrank]>= j_min_a && k_max_proc[myrank]>= k_min_a){
-				b_inf_x = i_min_a - i_min_proc[myrank];				
-				b_inf_y = j_min_a - j_min_proc[myrank];
-				b_inf_z = k_min_a - k_min_proc[myrank];
-				b_sup_x = i_max_a - i_min_proc[myrank];
-				b_sup_y = j_max_a - j_min_proc[myrank];
-				b_sup_z = k_max_a - k_min_proc[myrank];
-				if(b_inf_x<0){
-					b_inf_x = 0;		
-				}
-				if(b_inf_y<0){
-					b_inf_y = 0;		
-				}
-				if(b_inf_z<0){
-					b_inf_z = 0;		
-				}
-				if(point_per_proc_x[myrank]-1+lastx<b_sup_x){
-					b_sup_x = point_per_proc_x[myrank]-1+lastx;
-				}
-				if(point_per_proc_y[myrank]-1+lasty<b_sup_y){
-					b_sup_y = point_per_proc_y[myrank]-1+lasty;
-				}
-				if(point_per_proc_z[myrank]-1+lastz<b_sup_z){
-					b_sup_z = point_per_proc_z[myrank]-1+lastz;
-				}
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(i=b_inf_x;i<=b_sup_x;i++){
-					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
-						for(k=b_inf_z;k<=b_sup_z;k++){
-							Ey_new[i][j][k]= sin(omega*step*dt);					
-						}				
-					}
-				}
+		if(i_min_proc[myrank]<= i_max_a && j_min_proc[myrank]<= j_max_a && k_min_proc[myrank]<= k_max_a && i_max_proc[myrank]>= i_min_a && j_max_proc[myrank]>= j_min_a && k_max_proc[myrank]>= k_min_a){
+			b_inf_x = i_min_a - i_min_proc[myrank];				
+			b_inf_y = j_min_a - j_min_proc[myrank];
+			b_inf_z = k_min_a - k_min_proc[myrank];
+			b_sup_x = i_max_a - i_min_proc[myrank];
+			b_sup_y = j_max_a - j_min_proc[myrank];
+			b_sup_z = k_max_a - k_min_proc[myrank];
+			if(b_inf_x<0){
+				b_inf_x = 0;		
 			}
-
-		}
-		else if(P == 2){
-			if(ip == 0 && kp == 0){				
-				i = point_per_proc_x[myrank]-1 ;
-				k = point_per_proc_z[myrank]-1 ;
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					Ey_new[i][j][k] = 1;	
+			if(b_inf_y<0){
+				b_inf_y = 0;		
+			}
+			if(b_inf_z<0){
+				b_inf_z = 0;		
+			}
+			if(point_per_proc_x[myrank]-1+lastx<b_sup_x){
+				b_sup_x = point_per_proc_x[myrank]-1+lastx;
+			}
+			if(point_per_proc_y[myrank]-1+lasty<b_sup_y){
+				b_sup_y = point_per_proc_y[myrank]-1+lasty;
+			}
+			if(point_per_proc_z[myrank]-1+lastz<b_sup_z){
+				b_sup_z = point_per_proc_z[myrank]-1+lastz;
+			}
+			#pragma omp parallel for default(shared) private(i,j,k)
+			for(i=b_inf_x;i<=b_sup_x;i++){
+				for(j=b_inf_y;j<=b_sup_y+lasty;j++){
+					for(k=b_inf_z;k<=b_sup_z;k++){
+						Ey_new[i][j][k]= sin(omega*step*dt);					
+					}				
 				}
 			}
 		}
-
-		else if(P == 3){
-			if(ip == 0 && kp == 0){				
-				i = point_per_proc_x[myrank]-1 ;
-				k = point_per_proc_z[myrank]-1 ;
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					Ey_new[i][j][k] = sin(omega*step*dt);	
-				}
-			}
-		}
+		
 		//Storage of the new value of the electric field in E_prev.
 
 		New_in_old(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank],Ex_new,Ex_prev);
@@ -1178,7 +1147,6 @@ int main(int argc, char **argv){
 		int npz1 = mygrid_Ex.np1[2];
 		int npz2 = mygrid_Ex.np2[2];
 		Vec3i np = mygrid_Ex.np();
-
 		#pragma omp parallel for default(shared) private(i,j,k)
 		for (int k = npz1; k <= npz2; ++k){
 			int npy1 = mygrid_Ex.np1[1];
@@ -1197,7 +1165,6 @@ int main(int argc, char **argv){
 		npz1 = mygrid_Ey.np1[2];
 		npz2 = mygrid_Ey.np2[2];
 		np = mygrid_Ey.np();
-
 		#pragma omp parallel for default(shared) private(i,j,k)
 		for (int k = npz1; k <= npz2; ++k){
 			int npy1 = mygrid_Ey.np1[1];
@@ -1216,7 +1183,6 @@ int main(int argc, char **argv){
 		npz1 = mygrid_Ez.np1[2];
 		npz2 = mygrid_Ez.np2[2];
 		np = mygrid_Ez.np();
-
 		#pragma omp parallel for default(shared) private(i,j,k)
 		for (int k = npz1; k <= npz2; ++k){
 			int npy1 = mygrid_Ez.np1[1];
@@ -1235,7 +1201,6 @@ int main(int argc, char **argv){
 		npz1 = mygrid_Hx.np1[2];
 		npz2 = mygrid_Hx.np2[2];
 		np = mygrid_Hx.np();
-
 		#pragma omp parallel for default(shared) private(i,j,k)
 		for (int k = npz1; k <= npz2; ++k){
 			int npy1 = mygrid_Hx.np1[1];
@@ -1254,7 +1219,6 @@ int main(int argc, char **argv){
 		npz1 = mygrid_Hy.np1[2];
 		npz2 = mygrid_Hy.np2[2];
 		np = mygrid_Hy.np();
-
 		#pragma omp parallel for default(shared) private(i,j,k)
 		for (int k = npz1; k <= npz2; ++k){
 			int npy1 = mygrid_Hy.np1[1];
@@ -1274,7 +1238,6 @@ int main(int argc, char **argv){
 		npz1 = mygrid_Hz.np1[2];
 		npz2 = mygrid_Hz.np2[2];
 		np = mygrid_Hz.np();
-
 		#pragma omp parallel for default(shared) private(i,j,k)
 		for (int k = npz1; k <= npz2; ++k){
 			int npy1 = mygrid_Hz.np1[1];
@@ -1290,10 +1253,11 @@ int main(int argc, char **argv){
         	}
 
 
-		// Storage of the Results
+		/*Storage of the Results*/
+
 		if(step%SR==0){//save results of the mpi process to disk
 			//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED);
- 		  export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED);
+		  	//export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED);
 			//export_spoints_XML("Ez", step, grid_Ez, mygrid_Ez, ZIPPED);
 			//export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED);
 			//export_spoints_XML("Hy", step, grid_Hy, mygrid_Hy, ZIPPED);
@@ -1301,7 +1265,7 @@ int main(int argc, char **argv){
 
             		if (myrank == 0){	// save main pvti file by rank0
 				//export_spoints_XMLP("Ex", step, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-                		export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+                		//export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 				//export_spoints_XMLP("Ez", step, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
 				//export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 				//export_spoints_XMLP("Hy", step, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
@@ -1584,88 +1548,88 @@ void Update_send_in_mat(int*point_per_proc_x,int*point_per_proc_y,int*point_per_
   int k =0;
   if(Case == 1){
     #pragma omp parallel for default(shared) private(i,j,k)		
-	  			for(j=0;j<point_per_proc_y[myrank];j++){
-		  			for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-			  			M1[j][k] = V1[j*(point_per_proc_z[myrank]+lastz) + k];			
-				  	}	
-  				}
-	  			#pragma omp parallel for default(shared) private(i,j,k)					
-		  		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-			  		for(k=0;k<point_per_proc_z[myrank];k++){
-				  		M2[j][k] = V2[j*(point_per_proc_z[myrank])+ k];
-					  }
-				  }
+	for(j=0;j<point_per_proc_y[myrank];j++){
+		for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+ 			M1[j][k] = V1[j*(point_per_proc_z[myrank]+lastz) + k];			
+	  	}	
+	}
+    #pragma omp parallel for default(shared) private(i,j,k)					
+	for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+		for(k=0;k<point_per_proc_z[myrank];k++){
+	  		M2[j][k] = V2[j*(point_per_proc_z[myrank])+ k];
+		  }
+	}
   }
   else if(Case==2){
-      					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank];i++){
-						for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-							M1[i][k] = V1[i*(point_per_proc_z[myrank]+lastz)+k];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-						for(k=0;k<point_per_proc_z[myrank];k++){
-							M2[i][k] = V2[i*(point_per_proc_z[myrank])+k];
-						}
-					}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<point_per_proc_x[myrank];i++){
+		for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+			M1[i][k] = V1[i*(point_per_proc_z[myrank]+lastz)+k];
+		}
+	}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		for(k=0;k<point_per_proc_z[myrank];k++){
+			M2[i][k] = V2[i*(point_per_proc_z[myrank])+k];
+		}
+	}
   }
   else if(Case==3){
-    					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank];i++){
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							M1[i][j] = V1[i*(point_per_proc_y[myrank]+lasty)+j];
-						}
-					}
-					#pragma omp parallel for default(shared) private(i,j,k)
-					for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							M2[i][j] = V2[i*(point_per_proc_y[myrank])+j];
-						}
-					}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<point_per_proc_x[myrank];i++){
+		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+			M1[i][j] = V1[i*(point_per_proc_y[myrank]+lasty)+j];
+		}
+	}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		for(j=0;j<point_per_proc_y[myrank];j++){
+			M2[i][j] = V2[i*(point_per_proc_y[myrank])+j];
+		}
+	}
   }
-	else if(Case==4){
-		#pragma omp parallel for default(shared) private(i,j,k)
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					M1[j][k] = V1[j*(point_per_proc_z[myrank])+k];
-				}
-			}	
-			#pragma omp parallel for default(shared) private(i,j,k)				
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					M2[j][k] = V2[j*(point_per_proc_z[myrank]+lastz)+k];
-				}
-			}
+  else if(Case==4){
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+		for(k=0;k<point_per_proc_z[myrank];k++){
+			M1[j][k] = V1[j*(point_per_proc_z[myrank])+k];
+		}
+	}	
+  #pragma omp parallel for default(shared) private(i,j,k)				
+	for(j=0;j<point_per_proc_y[myrank];j++){
+		for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+			M2[j][k] = V2[j*(point_per_proc_z[myrank]+lastz)+k];
+		}
 	}
-	else if(Case==5){
-		#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					M1[i][k] = V1[i*(point_per_proc_z[myrank])+k];
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					M2[i][k] = V2[i*(point_per_proc_z[myrank]+lastz)+k];
-				}
-			}
+   }
+  else if(Case==5){
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		for(k=0;k<point_per_proc_z[myrank];k++){
+			M1[i][k] = V1[i*(point_per_proc_z[myrank])+k];
+		}
 	}
-	else if(Case==6){
-		#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					M1[i][j] = V1[i*(point_per_proc_y[myrank])+ j];
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					M2[i][j] = V2[i*(point_per_proc_y[myrank]+lasty) + j]; 
-				}
-			}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<point_per_proc_x[myrank];i++){
+		for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+			M2[i][k] = V2[i*(point_per_proc_z[myrank]+lastz)+k];
+		}
 	}
+  }
+  else if(Case==6){
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		for(j=0;j<point_per_proc_y[myrank];j++){
+			M1[i][j] = V1[i*(point_per_proc_y[myrank])+ j];
+		}
+	}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<point_per_proc_x[myrank];i++){
+		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+			M2[i][j] = V2[i*(point_per_proc_y[myrank]+lasty) + j]; 
+		}
+	}
+  }
 }
 
 
@@ -1673,51 +1637,51 @@ void Update_send_in_mat(int*point_per_proc_x,int*point_per_proc_y,int*point_per_
 void Update_prev_in_send(int*point_per_proc_x,int*point_per_proc_y,int*point_per_proc_z,int lastx,int lasty,int lastz,double*V1,double***M1,double*V2,double***M2,int myrank,int Case){
  	 int i =0;
  	 int j =0;
-	  int k =0;
-	  if(Case == 1){
+	 int k =0;
+	 if(Case == 1){
             #pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank];j++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								V1[j*(point_per_proc_z[myrank]+lastz)+k] = M1[0][j][k];
-							}	
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								V2[j*(point_per_proc_z[myrank])+k] = M2[0][j][k];
-							}
-						}
+		for(j=0;j<point_per_proc_y[myrank];j++){
+			for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+				V1[j*(point_per_proc_z[myrank]+lastz)+k] = M1[0][j][k];
+			}	
+		}
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+			for(k=0;k<point_per_proc_z[myrank];k++){
+				V2[j*(point_per_proc_z[myrank])+k] = M2[0][j][k];
+			}
+		}
   	}
- 	 else if(Case==2){
-    	  #pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-								V1[i*(point_per_proc_z[myrank]+lastz)+k] = M1[i][0][k] ;
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(k=0;k<point_per_proc_z[myrank];k++){
-								V2[i*(point_per_proc_z[myrank])+k] = M2[i][0][k];
-							}
-						}
-	  }
-	  else if(Case==3){
-	      #pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank];i++){
-							for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
-								V1[i*(point_per_proc_y[myrank]+lasty)+j]=M1[i][j][0];
-							}
-						}
-						#pragma omp parallel for default(shared) private(i,j,k)
-						for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-							for(j=0;j<point_per_proc_y[myrank];j++){								
-								V2[i*(point_per_proc_y[myrank])+j] = M2[i][j][0];
-							}
-						}
+ 	else if(Case==2){
+    	#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=0;i<point_per_proc_x[myrank];i++){
+			for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+				V1[i*(point_per_proc_z[myrank]+lastz)+k] = M1[i][0][k] ;
+			}
+		}
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+			for(k=0;k<point_per_proc_z[myrank];k++){
+				V2[i*(point_per_proc_z[myrank])+k] = M2[i][0][k];
+			}
+		}
+	}
+	else if(Case==3){
+	#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=0;i<point_per_proc_x[myrank];i++){
+			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){								
+				V1[i*(point_per_proc_y[myrank]+lasty)+j]=M1[i][j][0];
+			}
+		}
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+			for(j=0;j<point_per_proc_y[myrank];j++){								
+				V2[i*(point_per_proc_y[myrank])+j] = M2[i][j][0];
+			}
+		}
   	}
 	else if(Case==4){
-		#pragma omp parallel for default(shared) private(i,j,k)
+	#pragma omp parallel for default(shared) private(i,j,k)
 		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
 			for(k=0;k<point_per_proc_z[myrank];k++){						
 				V1[j*(point_per_proc_z[myrank])+k] = M1[point_per_proc_x[myrank]-1][j][k];
@@ -1767,34 +1731,34 @@ void Update_E_inside(int i_max,int j_max,int k_max,double***E_new,double***E_pre
   int k =0;
   if(Case==1){
     #pragma omp parallel for default(shared) private(i,j,k) 
-			for(i=0;i<i_max;i++){
-				for(j=0;j<j_max;j++){
-					for(k=0;k<k_max;k++){					
-						E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j+1][k]-H1_prev[i][j][k])-(H2_prev[i][j][k+1]-H2_prev[i][j][k]));	
-					}
-				}
+	for(i=0;i<i_max;i++){
+		for(j=0;j<j_max;j++){
+			for(k=0;k<k_max;k++){					
+				E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j+1][k]-H1_prev[i][j][k])-(H2_prev[i][j][k+1]-H2_prev[i][j][k]));	
 			}
+		}
+	}
   }
   else if(Case==2){
-    #pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<i_max;i++){
-				for(j=0;j<j_max;j++){
-					for(k=0;k<k_max;k++){					
-						E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j][k+1]-H1_prev[i][j][k])-(H2_prev[i+1][j][k]-H2_prev[i][j][k]));	
-					}
-				}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<i_max;i++){
+		for(j=0;j<j_max;j++){
+			for(k=0;k<k_max;k++){					
+				E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j][k+1]-H1_prev[i][j][k])-(H2_prev[i+1][j][k]-H2_prev[i][j][k]));	
 			}
+		}
+	}
   }
   else if(Case==3){
-      #pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<i_max;i++){
-				for(j=0;j<j_max;j++){
-					for(k=0;k<k_max;k++){						
-						E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i+1][j][k]-H1_prev[i][j][k])-(H2_prev[i][j+1][k]-H2_prev[i][j][k]));	
-					}
-				}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<i_max;i++){
+		for(j=0;j<j_max;j++){
+			for(k=0;k<k_max;k++){						
+				E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i+1][j][k]-H1_prev[i][j][k])-(H2_prev[i][j+1][k]-H2_prev[i][j][k]));	
 			}
-  }
+		}
+	}
+ }
 }
 
 // This function update the electric field at the boundary of the domain attributed to a given process
@@ -1804,57 +1768,57 @@ void Update_E_boundary(int i_max,int j_max,int k_max,double***E_new,double***E_p
   int k =0;
   if(Case==1){
     #pragma omp parallel for default(shared) private(i,j,k)
-			for(j=0;j<j_max;j++){
-				for(k=0;k<k_max;k++){
-					i = i_max;
-					E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j][k+1]-H1_prev[i][j][k])-(H_boundary[j][k]-H2_prev[i][j][k]));
-				}
-			}
+	for(j=0;j<j_max;j++){
+		for(k=0;k<k_max;k++){
+			i = i_max;
+			E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j][k+1]-H1_prev[i][j][k])-(H_boundary[j][k]-H2_prev[i][j][k]));
+		}
+	}
   }
   if(Case==2){
-		  #pragma omp parallel for default(shared) private(i,j,k)
-			for(j=0;j<j_max;j++){
-				for(k=0;k<k_max;k++){	
-					i = i_max;					
-					E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[j][k]-H1_prev[i][j][k])-(H2_prev[i][j+1][k]-H2_prev[i][j][k]));	
-				}
-			}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(j=0;j<j_max;j++){
+		for(k=0;k<k_max;k++){	
+			i = i_max;					
+			E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[j][k]-H1_prev[i][j][k])-(H2_prev[i][j+1][k]-H2_prev[i][j][k]));	
+		}
+	}
   }
   if(Case==3){
     #pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<i_max;i++){
-				for(k=0;k<k_max;k++){
-					j = j_max;
-					E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[i][k]-H1_prev[i][j][k])-(H2_prev[i][j][k+1]-H2_prev[i][j][k]));
-				}
-			}
+	for(i=0;i<i_max;i++){
+		for(k=0;k<k_max;k++){
+			j = j_max;
+			E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[i][k]-H1_prev[i][j][k])-(H2_prev[i][j][k+1]-H2_prev[i][j][k]));
+		}
+	}
   }
   else if(Case==4){
     #pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<i_max;i++){
-				for(k=0;k<k_max;k++){	
-					j = j_max;					
-					E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i+1][j][k]-H1_prev[i][j][k])-(H_boundary[i][k]-H2_prev[i][j][k]));	
-				}
-			}
+	for(i=0;i<i_max;i++){
+		for(k=0;k<k_max;k++){	
+			j = j_max;					
+			E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i+1][j][k]-H1_prev[i][j][k])-(H_boundary[i][k]-H2_prev[i][j][k]));	
+		}
+	}
   }
   else if(Case==5){
     #pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<i_max;i++){
-				for(j=0;j<j_max;j++){
-					k = k_max;
-					E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j+1][k]-H1_prev[i][j][k])-(H_boundary[i][j]-H2_prev[i][j][k]));
-				}
-			}
+	for(i=0;i<i_max;i++){
+		for(j=0;j<j_max;j++){
+			k = k_max;
+			E_new[i][j][k] = E_prev[i][j][k] +(dt/(e_0*e_r[i][j][k]*dx))*((H1_prev[i][j+1][k]-H1_prev[i][j][k])-(H_boundary[i][j]-H2_prev[i][j][k]));
+		}
+	}
   }
   else if(Case==6){
-		#pragma omp parallel for default(shared) private(i,j,k)
-			for(i=0;i<i_max;i++){
-				for(j=0;j<j_max;j++){
-					k = k_max;
-					E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[i][j]-H1_prev[i][j][k])-(H2_prev[i+1][j][k]-H2_prev[i][j][k]));
-				}
-			}
+  #pragma omp parallel for default(shared) private(i,j,k)
+	for(i=0;i<i_max;i++){
+		for(j=0;j<j_max;j++){
+			k = k_max;
+			E_new[i][j][k] = E_prev[i][j][k] + (dt/(e_0*e_r[i][j][k]*dx))*((H_boundary[i][j]-H1_prev[i][j][k])-(H2_prev[i+1][j][k]-H2_prev[i][j][k]));
+		}
+	}
   }
 }
 
@@ -2046,96 +2010,98 @@ void Boundary_condition_imosition(int ip,int jp,int kp,int lastx,int lasty,int l
   int j = 0;
   int k = 0;
   if(ip==0){
-			i = 0;
-			#pragma omp parallel for default(shared) private(j,k)
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){						
-					Ey_new[i][j][k] = 0;	
-				}
-			}
-			#pragma omp parallel for default(shared) private(j,k)
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_new[i][j][k] = 0;	
-				}
-			}
+	i = 0;
+	#pragma omp parallel for default(shared) private(j,k)
+	for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+		for(k=0;k<point_per_proc_z[myrank];k++){						
+			Ey_new[i][j][k] = 0;	
 		}
-		if(lastx==1){
-			i = point_per_proc_x[myrank]-1;
-			#pragma omp parallel for default(shared) private(j,k)
-			for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-				for(k=0;k<point_per_proc_z[myrank];k++){						
-					Ey_new[i][j][k] = 0;	
-				}
-			}
-			#pragma omp parallel for default(shared) private(j,k)
-			for(j=0;j<point_per_proc_y[myrank];j++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_new[i][j][k] = 0;	
-				}
-			}
+	}
+	#pragma omp parallel for default(shared) private(j,k)
+	for(j=0;j<point_per_proc_y[myrank];j++){
+		for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+			Ez_new[i][j][k] = 0;	
 		}
-		if(jp==0){
-			j = 0;
-			#pragma omp parallel for default(shared) private(i,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					Ex_new[i][j][k] = 0;	
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,k)				
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_new[i][j][k] = 0;	
-				}
-			}				
+	}
+  }
+  if(lastx==1){
+	i = point_per_proc_x[myrank]-1;
+	#pragma omp parallel for default(shared) private(j,k)
+	for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+		for(k=0;k<point_per_proc_z[myrank];k++){						
+			Ey_new[i][j][k] = 0;	
 		}
-		if(lasty==1){
-			j = point_per_proc_y[myrank]-1;
-			#pragma omp parallel for default(shared) private(i,k)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(k=0;k<point_per_proc_z[myrank];k++){
-					Ex_new[i][j][k] = 0;	
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,k)				
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
-					Ez_new[i][j][k] = 0;	
-				}
-			}
+	}
+	#pragma omp parallel for default(shared) private(j,k)
+	for(j=0;j<point_per_proc_y[myrank];j++){
+		for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+			Ez_new[i][j][k] = 0;	
 		}
-		if(kp==0){
-			k=0;
-			#pragma omp parallel for default(shared) private(i,j)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					Ex_new[i][j][k] = 0;						
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					Ey_new[i][j][k] = 0;	
-				}
-			}
+	}
+  }
+  if(jp==0){
+	j = 0;
+	#pragma omp parallel for default(shared) private(i,k)
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		for(k=0;k<point_per_proc_z[myrank];k++){
+			Ex_new[i][j][k] = 0;	
 		}
-		if(lastz==1){
-			k=point_per_proc_z[myrank]-1;
-			#pragma omp parallel for default(shared) private(i,j)
-			for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
-				for(j=0;j<point_per_proc_y[myrank];j++){
-					Ex_new[i][j][k] = 0;						
-				}
-			}
-			#pragma omp parallel for default(shared) private(i,j)
-			for(i=0;i<point_per_proc_x[myrank];i++){
-				for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
-					Ey_new[i][j][k] = 0;	
-				}
-			}
+	}
+	#pragma omp parallel for default(shared) private(i,k)				
+	for(i=0;i<point_per_proc_x[myrank];i++){
+		for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+			Ez_new[i][j][k] = 0;	
 		}
+	}				
+  }
+  if(lasty==1){
+	j = point_per_proc_y[myrank]-1;
+	#pragma omp parallel for default(shared) private(i,k)
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		for(k=0;k<point_per_proc_z[myrank];k++){
+			Ex_new[i][j][k] = 0;	
+		}
+	}
+	#pragma omp parallel for default(shared) private(i,k)				
+	for(i=0;i<point_per_proc_x[myrank];i++){
+		for(k=0;k<point_per_proc_z[myrank]+lastz;k++){
+			Ez_new[i][j][k] = 0;	
+		}
+	}
+  }
+  if(kp==0){
+	k=0;
+	#pragma omp parallel for default(shared) private(i,j)
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		for(j=0;j<point_per_proc_y[myrank];j++){
+			Ex_new[i][j][k] = 0;						
+		}
+	}
+	#pragma omp parallel for default(shared) private(i,j)
+	for(i=0;i<point_per_proc_x[myrank];i++){
+		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+			Ey_new[i][j][k] = 0;	
+			}
+	}
+  }
+  if(lastz==1){
+	k=point_per_proc_z[myrank]-1;
+	#pragma omp parallel for default(shared) private(i,j)
+	for(i=0;i<point_per_proc_x[myrank]+lastx;i++){
+		for(j=0;j<point_per_proc_y[myrank];j++){
+			Ex_new[i][j][k] = 0;						
+		}
+	}
+	#pragma omp parallel for default(shared) private(i,j)
+	for(i=0;i<point_per_proc_x[myrank];i++){
+		for(j=0;j<point_per_proc_y[myrank]+lasty;j++){
+			Ey_new[i][j][k] = 0;	
+		}
+	}
+  }
 }
+
+// This function place the content of a matrix in an other matrix
 void New_in_old(int i_max,int j_max,int k_max,double***New,double***Old){
 	int i = 0;
   	int j = 0;
@@ -2150,6 +2116,7 @@ void New_in_old(int i_max,int j_max,int k_max,double***New,double***Old){
 	}
 }
 
+//This function place one or more objects inside the domain
 void insert_obj(double***e_r,int nb_obj,double*prop_obj,double dx,double point_per_proc_x,double point_per_proc_y,double point_per_proc_z,int lastx,int lasty,int lastz,int i_min_proc,int j_min_proc,int k_min_proc,int i_max_proc,int j_max_proc,int k_max_proc){
 	int i = 0;
   	int j = 0;
