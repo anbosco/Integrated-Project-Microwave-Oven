@@ -1,0 +1,701 @@
+// solves a Laplacian over a cube with mumps
+
+#include "vtl.h"
+#include "vtlSPoints.h"
+#include "laplace.h"
+
+#include <string>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <map>
+#include <cmath>
+
+using namespace vtl;
+
+// from c_example.c ------
+#include "mpi.h"
+#include "dmumps_c.h"
+#define ICNTL(I) icntl[(I)-1] // macro s.t. indices match documentation
+
+// -----------------------
+
+void Compute_RHS(std::vector<double> pre_mat, std::vector<int> irn , std::vector<int> jcn , std::vector<double> Temp, std::vector<double> Source, std::vector<double> Temp2, int X, int Y, int Z, int NNZ);
+void Compute_a_T0(std::vector<int> irn , std::vector<int> jcn, int X, int Y, int Z,std::vector<int> ip_h,std::vector<int> jp_h,std::vector<int> kp_h,std::vector<int> lastx_h,std::vector<int> lasty_h,std::vector<int> lastz_h, std::vector<double> a, std::vector<double> b,std::vector<double> Temp,std::vector<double> constant);
+
+int get_my_rank()
+{
+    int myid;
+    int ierr = MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    return myid;
+}
+
+void check_MUMPS(DMUMPS_STRUC_C &id)
+{
+    if (id.infog[0] < 0)
+    {
+        std::cout << "[" << get_my_rank() << "] MUMPS Error:\n";
+        std::cout << "\tINFOG(1)=" << id.infog[0] << '\n';
+        std::cout << "\tINFOG(2)=" << id.infog[1] << std::endl;
+    }
+}
+
+void init_MUMPS(DMUMPS_STRUC_C &id)
+{
+    id.comm_fortran = -987654; //USE_COMM_WORLD;
+    id.par = 1;                // 1=host involved in factorization phase
+    id.sym = 0;                // 0=unsymmetric
+    id.job = -1;
+    std::cout << "[" << get_my_rank() << "] Init MUMPS package." << std::endl;
+    dmumps_c(&id);
+    check_MUMPS(id);
+}
+
+void end_MUMPS(DMUMPS_STRUC_C &id)
+{
+    id.job = -2;
+    std::cout << "[" << get_my_rank() << "] Terminate MUMPS instance." << std::endl;
+    dmumps_c(&id);
+    check_MUMPS(id);
+}
+
+void solve_MUMPS(DMUMPS_STRUC_C &id)
+{
+    
+    id.ICNTL(1) = -1; // stream for error messages [def=6]
+    id.ICNTL(2) = -1; // stream for diag printing, statistics, warnings [def=0]
+    id.ICNTL(3) = -1; // stream for global information [def=6]
+    id.ICNTL(4) = 0;  // level of printing [def=2]
+    
+    // id.ICNTL(5)   // matrix input format
+    // id.ICNTL(6)   // permutation/scaling
+    // id.ICNTL(7)   // ordering
+    // id.ICNTL(8)   // scaling strategy [def=auto]
+    // id.ICNTL(9)   // use A or A^T [def=A]
+    // id.ICNTL(10)  // iterative refinement [def=0=disabled]
+    // id.ICNTL(11)  // compute statistics on error [def=0=disabled]
+    // id.ICNTL(12)  // ordering strategy for sym matrices [def=0=auto]
+    // id.ICNTL(13)  // parallelism of root node (scalapack) [def=0=parallel with scalapack]
+    // id.ICNTL(14)  // % incr of working space [def=20=20%]
+    // id.ICNTL(15-17)  // NOT USED
+    // id.ICNTL(18)  // distributed input matrix [def=0=centralized]
+    // id.ICNTL(19)  // Schur complement [def=0=no schur cplt]
+    // id.ICNTL(20)  // format of rhs [def=0=dense]
+    // id.ICNTL(21)  // distribution of solution vectors [def=0=centralized]
+    // id.ICNTL(22)  // out-of-core [def=0=in-core]
+    // id.ICNTL(23)  // max memory [def=0=estimate]
+    // id.ICNTL(24)  // null pivot detectio [def=0=disabled]
+    // id.ICNTL(25)  // solution for deficiant matrix [def=0=1 sol is returned]
+    // id.ICNTL(26)  // [see schur cplt]
+    // id.ICNTL(27)  // blocking size for multiple rhs [def=-32=auto]
+    // id.ICNTL(28)  // parallel ordering [def=0=auto]
+    // id.ICNTL(29)  // parallel ordering method (if scotch/parmetis) [def=0=auto]
+    // id.ICNTL(30)  // compute some A^-1 entries
+    // id.ICNTL(31)  // keep factors [def=0=yes]
+    // id.ICNTL(32)  // forward elimination during factorization [def=0=disabled]
+    // id.ICNTL(33)  // compute det(A)
+    // id.ICNTL(34)  // NOT USED
+    // id.ICNTL(35)  // BLR factorization (def=0=disabled)
+
+    std::cout << "[" << get_my_rank()
+              << "] Call the MUMPS package (analyse, factorization and solve)." << std::endl;
+    id.job = 6;
+    dmumps_c(&id);
+    check_MUMPS(id);
+}
+
+void host_work(DMUMPS_STRUC_C &id)
+{
+    bool matlab = false; // save matrix to file [debug]
+
+    SPoints grid;
+
+    // setup grid
+
+    grid.o = Vec3d(10.0, 10.0, 10.0); // origin
+    Vec3d L(2.0, 2.0, 2.0);        // box dimensions
+
+    grid.np1 = Vec3i(0, 0, 0);    // first index
+    grid.np2 = Vec3i(20, 20, 20); // last index
+
+    int X = 21;
+    int Y = 21;
+    int Z = 21;
+
+    int i = 0;
+    int i_vec=0;
+    int count=0;
+    int col=0;
+
+    grid.dx = L / (grid.np() - 1); // compute spacing
+
+    // creation of dummy fields
+    int nbp = grid.nbp();
+
+    //std::cout << nbp << " points created\n";
+    //std::cout << grid;
+
+    MUMPS_INT n = X*Y*Z;
+    MUMPS_INT8 nnz = 7*(X-2)*(Y-2)*(Z-2)+2*Z*X+ 4*(Y-2)*(Z+X-1);
+    std::vector<MUMPS_INT> irn(nnz);
+    std::vector<MUMPS_INT> jcn(nnz);
+    std::vector<double> a(nnz);
+    std::vector<double> b(nnz);
+    std::vector<double> Temp(n);
+    grid.scalars["Temp"] = &Temp;
+    std::vector<double> Temp2(n);    
+    std::vector<double> Source(n);
+    for(i=0;i<n;i++){
+    	Source[i] = 0;
+    }
+
+    //Declaration and Initialization of variables managing the boundaries. They are computed before entering the loops.
+    std::vector<int> ip_h(n);
+    std::vector<int> jp_h(n);
+    std::vector<int> kp_h(n);
+    std::vector<int> lastx_h(n);
+    std::vector<int> lasty_h(n);
+    std::vector<int> lastz_h(n);   
+	#pragma omp parallel for default(shared) private(i_vec)
+	for(i_vec=0;i_vec<X*Y*Z;i_vec++){
+		ip_h[i_vec] = (i_vec/(Y*Z));
+		jp_h[i_vec] = (i_vec%(Y*Z))%Y;
+		kp_h[i_vec] = (i_vec%(Y*Z))/Y;
+		lastx_h[i_vec] = 0;
+		lasty_h[i_vec]= 0;
+		lastz_h[i_vec] = 0;
+		if(X == 1){	
+			lastx_h[i_vec] = 1;
+		}
+		else{
+			lastx_h[i_vec] = ip_h[i_vec]/(X-1);
+		}	
+		if(Y == 1){	
+			lasty_h[i_vec] = 1;
+		}
+		else{
+			lasty_h[i_vec] = jp_h[i_vec]/(Y-1);
+		}	
+		if(Z == 1){	
+			lastz_h[i_vec] = 1;
+		}
+		else{
+			lastz_h[i_vec] = kp_h[i_vec]/(Z-1);
+		}
+	}
+
+    /*Declaration and Initialization of physical characteristics.
+*/
+    double delta_t=1;
+    double delta_x=1;		
+   
+    std::vector<double> k_heat(n);
+    std::vector<double> rho(n);
+    std::vector<double> cp(n);
+    std::vector<double> constant(n);
+  #pragma omp parallel for default(shared) private(i)
+  for(i=0;i<X*Y*Z;i++){
+	k_heat[i] = 1;
+	rho[i] = 1;
+	cp[i] = 1;
+  	constant[i] = (0.5)*(k_heat[i]*delta_t)/(rho[i]*cp[i]*delta_x*delta_x);
+  }
+
+
+
+
+    /* Define A and rhs */
+    
+   //Compute_a_T0(irn ,jcn, X, Y, Z, ip_h, jp_h, kp_h, lastx_h, lasty_h, lastz_h, a, b,Temp,constant);
+  // #pragma omp parallel for default(shared) private(i_vec,count)
+  for(i_vec=0;i_vec<X*Y*Z;i_vec++){
+    if(jp_h[i_vec]==0){
+    	Temp[i_vec] = 50;
+    }
+    else if(lasty_h[i_vec]==1){
+    	Temp[i_vec] = 0;
+    }
+    else{
+    	Temp[i_vec] = 20;
+    }
+    
+    if((jp_h[i_vec]==0)||(lasty_h[i_vec]==1)){ //Dirichlet BC			
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;
+			count++;
+	}
+	else{
+		if (ip_h[i_vec]==0 && kp_h[i_vec]==0){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=2;
+			b[count]=2;
+			count++;
+		}
+		else if(ip_h[i_vec]==0 && lastz_h[i_vec]==1 ){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=2;
+			b[count]=2;
+			count++;
+		}
+		else if(kp_h[i_vec]==0 && lastx_h[i_vec]==1){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=2;
+			b[count]=2;
+			count++;
+		}
+		else if(lastx_h[i_vec]==1 && lastz_h[i_vec]==1){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;	
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=2;
+			b[count]=2;
+			count++;
+		}
+		else if(ip_h[i_vec]==0){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;
+			count++;
+		}
+		else if(lastx_h[i_vec]==1){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;	
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;
+			count++;
+		}
+		else if(kp_h[i_vec]==0){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;			
+			count++;
+		}
+		else if(lastz_h[i_vec]==1){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;
+			count++;
+		}
+
+		if(kp_h[i_vec]!=0 && ip_h[i_vec]!=0 && lastz_h[i_vec]!=1 && lastx_h[i_vec]!=1){
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec+1;
+				a[count]=1+6*constant[i_vec];
+				b[count]=1-6*constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec;
+				a[count]=-constant[i_vec];
+				b[count]= constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec+2;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec+Y+1;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec-Y+1;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec+Y*Z+1;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec-Y*Z+1;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+			}
+		}
+	}
+    
+    int step = 1;
+
+    // save results to disk
+    //export_spoints_XML("laplace", step, grid, grid, Zip::ZIPPED);
+    
+    	id.n = n;
+        id.nnz = a.size();
+        id.irn = &irn[0];
+        id.jcn = &jcn[0];
+        id.a = &a[0];
+    while(step<50){
+	//Compute_RHS(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz); 
+ 	#pragma omp parallel for default(shared) private(i)
+	for(i=0;i<X*Y*Z;i++){
+		Temp2[i]=0;
+	}
+	#pragma omp parallel for default(shared) private(i)
+	for(i=0;i<nnz;i++){
+		Temp2[irn[i]-1]+=b[i]*Temp[jcn[i]-1];
+	}
+	#pragma omp parallel for default(shared) private(i)
+	for(i=0;i<X*Y*Z;i++){
+		Temp2[i]+=Source[i];		
+	}
+	#pragma omp parallel for default(shared) private(i)
+	for(i=0;i<X*Y*Z;i++){
+		Temp[i]=Temp2[i];
+	}
+
+    	id.rhs = &Temp[0];
+    	solve_MUMPS(id);
+	#pragma omp parallel for default(shared) private(i)
+	for(i=0;i<X*Y*Z;i++){
+		Temp[i] = id.rhs[i];
+	}
+	step++;
+    // save results to disk
+    //export_spoints_XML("laplace", step, grid, grid, Zip::ZIPPED);
+    }
+
+    if (matlab)
+        save_vector("sol", Temp);
+
+    
+}
+
+void slave_work(DMUMPS_STRUC_C &id)
+{
+ int step = 1;
+
+
+    while(step<50){
+    solve_MUMPS(id);  
+	step++;
+}
+}
+
+int main(int argc, char *argv[])
+{
+    // initialise MUMPS/MPI
+    MPI_Init(&argc, &argv);
+    DMUMPS_STRUC_C id;
+    init_MUMPS(id);
+
+    int i = 0;
+    FILE *FileR; 
+    FileR = fopen(argv[1],"r");
+    if(FileR == NULL){ 
+    	printf("Impossible to open the data file. \n");
+    	return 1; 
+    }
+
+    double data[7];	
+    char chain[150];
+    for (i=0 ; i<7; i++){
+ 	   if (fgets(chain, 150, FileR) == NULL){
+		printf("Impossible to read the data file. \n");
+		return 1; 
+  	  }	
+   	 else{
+		data[i] = atof(chain);
+   	 }
+    }
+    fclose(FileR);
+    double Lx = data[0];
+    double Ly = data[1];
+    double Lz = data[2];
+    double dx = data[3];
+    double dt = data[4];
+    double Tf = data[5];
+    double temp = Tf/dt;
+    int step_max = (int) temp;
+    int nb_source = (int) data[6];
+
+
+    // split work among processes
+    if (get_my_rank() == 0)
+        host_work(id);
+    else
+        slave_work(id);
+
+    // finalise MUMPS/MPI
+    end_MUMPS(id);
+    MPI_Finalize();
+
+    return 0;
+}
+
+void Compute_RHS(std::vector<double> pre_mat, std::vector<int> irn , std::vector<int> jcn , std::vector<double> Temp, std::vector<double> Source, std::vector<double> Temp2, int X, int Y, int Z, int NNZ){
+	int i = 0;
+	for(i=0;i<X*Y*Z;i++){
+		Temp2[i]=0;
+	}
+	for(i=0;i<NNZ;i++){
+		Temp2[irn[i]-1]+=pre_mat[i]*Temp[jcn[i]-1];
+	}
+	for(i=0;i<X*Y*Z;i++){
+		Temp2[i]+=Source[i];		
+	}
+	for(i=0;i<X*Y*Z;i++){
+		Temp[i]=Temp2[i];
+	}
+}
+
+void Compute_a_T0(std::vector<int> irn , std::vector<int> jcn, int X, int Y, int Z,std::vector<int> ip_h,std::vector<int> jp_h,std::vector<int> kp_h,std::vector<int> lastx_h,std::vector<int> lasty_h,std::vector<int> lastz_h, std::vector<double> a, std::vector<double> b,std::vector<double> Temp,std::vector<double> constant){
+  int i_vec = 0;
+  int count = 0;
+  for(i_vec=0;i_vec<X*Y*Z;i_vec++){
+    if(jp_h[i_vec]==0){
+    	Temp[i_vec] = 50;
+    }
+    else if(lasty_h[i_vec]==1){
+    	Temp[i_vec] = 0;
+    }
+    else{
+    	Temp[i_vec] = 20;
+    }
+    
+    if((jp_h[i_vec]==0)||(lasty_h[i_vec]==1)){ //Dirichlet BC			
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;
+			count++;
+	}
+	else{
+		if (ip_h[i_vec]==0 && kp_h[i_vec]==0){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=2;
+			b[count]=2;
+			count++;
+		}
+		else if(ip_h[i_vec]==0 && lastz_h[i_vec]==1 ){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=2;
+			b[count]=2;
+			count++;
+		}
+		else if(kp_h[i_vec]==0 && lastx_h[i_vec]==1){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=2;
+			b[count]=2;
+			count++;
+		}
+		else if(lastx_h[i_vec]==1 && lastz_h[i_vec]==1){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;	
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=2;
+			b[count]=2;
+			count++;
+		}
+		else if(ip_h[i_vec]==0){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;
+			count++;
+		}
+		else if(lastx_h[i_vec]==1){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y*Z+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;	
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;
+			count++;
+		}
+		else if(kp_h[i_vec]==0){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;			
+			count++;
+		}
+		else if(lastz_h[i_vec]==1){
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec-Y+1;
+			a[count]=-1;
+			b[count]=-1;
+			count++;
+			irn[count]=i_vec+1;
+			jcn[count]=i_vec+1;
+			a[count]=1;
+			b[count]=1;
+			count++;
+		}
+
+		if(kp_h[i_vec]!=0 && ip_h[i_vec]!=0 && lastz_h[i_vec]!=1 && lastx_h[i_vec]!=1){
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec+1;
+				a[count]=1+6*constant[i_vec];
+				b[count]=1-6*constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec;
+				a[count]=-constant[i_vec];
+				b[count]= constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec+2;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec+Y+1;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec-Y+1;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec+Y*Z+1;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+					
+				irn[count]=i_vec+1;
+				jcn[count]=i_vec-Y*Z+1;
+				a[count]=-constant[i_vec];
+				b[count]=constant[i_vec];
+				count++;
+			}
+		}
+	}
+}
