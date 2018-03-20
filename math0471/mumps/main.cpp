@@ -20,9 +20,11 @@ using namespace vtl;
 
 // -----------------------
 
-void Compute_RHS(std::vector<double> pre_mat, std::vector<int> irn , std::vector<int> jcn , std::vector<double> Temp, std::vector<double> Source, std::vector<double> Temp2, int X, int Y, int Z, int NNZ);
-
-void Compute_a_T0(std::vector<int> irn , std::vector<int> jcn, int X, int Y, int Z,std::vector<int> ip_h,std::vector<int> jp_h,std::vector<int> kp_h,std::vector<int> lastx_h,std::vector<int> lasty_h,std::vector<int> lastz_h, std::vector<double> a, std::vector<double> b,std::vector<double> Temp,std::vector<double> constant);
+void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int NNZ,std::vector<double> &rho, std::vector<double> &cp);
+void Compute_a_T0(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y, int Z,std::vector<int> &ip_h,std::vector<int> &jp_h,std::vector<int> &kp_h,std::vector<int> &lastx_h,std::vector<int> &lasty_h,std::vector<int> &lastz_h, std::vector<double> &a, std::vector<double> &b,std::vector<double> &Temp,std::vector<double> &constant,std::vector<int> &BC,std::vector<double> &T_Dir,double T_0);
+void insert_obj(std::vector<double> &temp, std::vector<double> &k_heat, std::vector<double> &rho, std::vector<double> &cp,int nb_obj, std::vector<double> &prop_obj, int X,int Y,int Z, double dx);
+void insert_Source(std::vector<double> &Source,int nb_source, std::vector<double> &prop_source, int X,int Y,int Z, double dx, std::vector<double> &rho, std::vector<double> &cp);
+void export_coupe(int direction, double pos1, double pos2, int Nx, int Ny, int Nz, std::vector<double> &temp,	double dx);
 
 int get_my_rank()
 {
@@ -110,10 +112,7 @@ void solve_MUMPS(DMUMPS_STRUC_C &id, int step)
     check_MUMPS(id);
 }
 
-void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,double delta_t,int step_max,int nb_source)
-{    
-    bool matlab = false; // save matrix to file [debug]
-
+void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,double delta_t,int step_max,int nb_source, std::vector<double> &prop_source, int nb_obj,std::vector<double> &prop_obj,std::vector<int> &BC,std::vector<double> &T_Dir,double T_0,double kheat_param,double rho_param,double cp_param,int SR){   
     SPoints grid;
 
     // setup grid
@@ -134,18 +133,18 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
 
     grid.dx = L / (grid.np() - 1); // compute spacing
 
-    // creation of dummy fields
     int nbp = grid.nbp();
-
     std::cout << nbp << " points created\n";
     std::cout << grid;
 
+    // Declaration of MUMPS variable
     MUMPS_INT n = X*Y*Z;
-    MUMPS_INT8 nnz = 7*(X-2)*(Y-2)*(Z-2)+2*Z*X+ 4*(Y-2)*(Z+X-1);
-    std::vector<MUMPS_INT> irn(nnz);
-    std::vector<MUMPS_INT> jcn(nnz);
-    std::vector<double> a(nnz);
-    std::vector<double> b(nnz);
+    std::vector<MUMPS_INT> irn;
+    std::vector<MUMPS_INT> jcn;
+    std::vector<double> a;
+    std::vector<double> b;
+    
+    // Variables used to solve the system
     std::vector<double> Temp(n);
     grid.scalars["Temp"] = &Temp;
     std::vector<double> Temp2(n);    
@@ -154,14 +153,15 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
     	Source[i] = 0;
     }
 
-    //Declaration and Initialization of variables managing the boundaries. They are computed before entering the loops.
+    //Declaration and Initialization of variables managing the boundaries. 
     std::vector<int> ip_h(n);
     std::vector<int> jp_h(n);
     std::vector<int> kp_h(n);
     std::vector<int> lastx_h(n);
     std::vector<int> lasty_h(n);
     std::vector<int> lastz_h(n);  
-	//#pragma omp parallel for default(shared) private(i_vec)
+
+	#pragma omp parallel for default(shared) private(i_vec)
 	for(i_vec=0;i_vec<X*Y*Z;i_vec++){
 		ip_h[i_vec] = (i_vec/(Y*Z));
 		jp_h[i_vec] = (i_vec%(Y*Z))%Y;
@@ -189,256 +189,81 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
 		}
 	}
 
-    /*Declaration and Initialization of physical characteristics.
-*/
-		
+    /*Declaration and Initialization of physical characteristics.*/	
    
     std::vector<double> k_heat(n);
     std::vector<double> rho(n);
     std::vector<double> cp(n);
     std::vector<double> constant(n);
   #pragma omp parallel for default(shared) private(i)
+  for(i=0;i<X*Y*Z;i++){ 
+ 	k_heat[i] = kheat_param;
+	rho[i] = rho_param;
+	cp[i] = cp_param;
+  }  
+
+  // Insertion of one or more objects inside the domain
+  if(nb_obj!=0){
+  	insert_obj(Temp, k_heat, rho, cp,nb_obj, prop_obj, X, Y, Z, delta_x);
+  }  
+
+  // Insertion of one or more power source inside the domain
+  if(nb_source!=0){
+  	insert_Source(Source,nb_source, prop_source, X,Y,Z, delta_x, rho, cp);
+  }
+
+ #pragma omp parallel for default(shared) private(i)
   for(i=0;i<X*Y*Z;i++){
-	k_heat[i] = 1;
-	rho[i] = 1;
-	cp[i] = 1;
   	constant[i] = (0.5)*(k_heat[i]*delta_t)/(rho[i]*cp[i]*delta_x*delta_x);
   }
 
+  // Computation of the matrix and of the initial temperature
+  Compute_a_T0(irn ,jcn, X, Y, Z, ip_h, jp_h, kp_h, lastx_h, lasty_h, lastz_h, a, b,Temp,constant,BC,T_Dir,T_0);
+  MUMPS_INT8 nnz =  irn.size();
 
-
-
-    /* Define A and rhs */
+  // Modification of the temperature in the region corresponding to the objects
+  if(nb_obj!=0){
+  	insert_obj(Temp, k_heat, rho, cp,nb_obj, prop_obj, X, Y, Z, delta_x);
+  }
     
-   //Compute_a_T0(irn ,jcn, X, Y, Z, ip_h, jp_h, kp_h, lastx_h, lasty_h, lastz_h, a, b,Temp,constant);
-  // #pragma omp parallel for default(shared) private(i_vec,count)
-  for(i_vec=0;i_vec<X*Y*Z;i_vec++){
-    if(jp_h[i_vec]==0){
-    	Temp[i_vec] = 50;
-    }
-    else if(lasty_h[i_vec]==1){
-    	Temp[i_vec] = 0;
-    }
-    else{
-    	Temp[i_vec] = 20;
-    }
-    
-    if((jp_h[i_vec]==0)||(lasty_h[i_vec]==1)){ //Dirichlet BC			
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;
-			count++;
-	}
-	else{
-		if (ip_h[i_vec]==0 && kp_h[i_vec]==0){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=2;
-			b[count]=2;
-			count++;
-		}
-		else if(ip_h[i_vec]==0 && lastz_h[i_vec]==1 ){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=2;
-			b[count]=2;
-			count++;
-		}
-		else if(kp_h[i_vec]==0 && lastx_h[i_vec]==1){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=2;
-			b[count]=2;
-			count++;
-		}
-		else if(lastx_h[i_vec]==1 && lastz_h[i_vec]==1){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;	
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=2;
-			b[count]=2;
-			count++;
-		}
-		else if(ip_h[i_vec]==0){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;
-			count++;
-		}
-		else if(lastx_h[i_vec]==1){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;	
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;
-			count++;
-		}
-		else if(kp_h[i_vec]==0){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;			
-			count++;
-		}
-		else if(lastz_h[i_vec]==1){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;
-			count++;
-		}
+    // Preparation of MUMPS job
+    id.n = n;
+    id.nnz = a.size();
+    id.irn = &irn[0];
+    id.jcn = &jcn[0];
+    id.a = &a[0];
 
-		if(kp_h[i_vec]!=0 && ip_h[i_vec]!=0 && lastz_h[i_vec]!=1 && lastx_h[i_vec]!=1){
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec+1;
-				a[count]=1+6*constant[i_vec];
-				b[count]=1-6*constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec;
-				a[count]=-constant[i_vec];
-				b[count]= constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec+2;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec+Y+1;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec-Y+1;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec+Y*Z+1;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec-Y*Z+1;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-			}
-		}
-	}
-    
     int step = 1;
-
     // save results to disk
-    export_spoints_XML("laplace", step, grid, grid, Zip::ZIPPED);
-    
-    	id.n = n;
-        id.nnz = a.size();
-        id.irn = &irn[0];
-        id.jcn = &jcn[0];
-        id.a = &a[0];
+    export_spoints_XML("laplace", step, grid, grid, Zip::ZIPPED, X, Y, Z, 1);
 
     while(step<step_max){
-	Compute_RHS(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz); 
-	/*#pragma omp parallel for default(shared) private(i)
-	for(i=0;i<X*Y*Z;i++){
-		Temp2[i]=0;
-	}
-	#pragma omp parallel for default(shared) private(i)
-	for(i=0;i<nnz;i++){
-		Temp2[irn[i]-1]+=b[i]*Temp[jcn[i]-1];
-	}
-	#pragma omp parallel for default(shared) private(i)
-	for(i=0;i<X*Y*Z;i++){
-		Temp2[i]+=Source[i];		
-	}
-	#pragma omp parallel for default(shared) private(i)
-	for(i=0;i<X*Y*Z;i++){
-		Temp[i]=Temp2[i];
-	}
+	/*if(step==2){ // Used to create a pulse of power
+		for(i=0;i<X*Y*Z;i++){
+			Source[i] = 0;		// To be parametrized!
+		}
+	}*/
 
+	//Computation of the right hand side
+	Compute_RHS(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz, rho, cp); 
     	id.rhs = &Temp[0];
+
+	// Resolution of the system
     	solve_MUMPS(id,step);
 	#pragma omp parallel for default(shared) private(i)
 	for(i=0;i<X*Y*Z;i++){
 		Temp[i] = id.rhs[i];
-	}*/
+	}
+	if(step == 400){// To extract a cut
+		export_coupe(1,0.15,0.15, X, Y, Z, Temp, delta_x);		//To be parametrized!
+	}
 	step++;
-    // save results to disk
-    export_spoints_XML("laplace", step, grid, grid, Zip::ZIPPED);
-    }
 
-    if (matlab)
-        save_vector("sol", Temp);
-
-    
+        // Save results to disk if needed	
+    	if(step%SR==0){
+    		export_spoints_XML("laplace", step, grid, grid, Zip::ZIPPED, X, Y,  Z, 1);
+  	  }
+    }  
 }
 
 void slave_work(DMUMPS_STRUC_C &id, int step_max)
@@ -457,7 +282,14 @@ int main(int argc, char *argv[])
     DMUMPS_STRUC_C id;
     init_MUMPS(id);
 
+   /* Reading of the input files */
+
     int i = 0;
+    std::vector<int>  BC(6);
+    std::vector<double> T_Dir(6);
+    double T_0;
+
+    // Parameter of the simulation and boundary conditions
     FILE *FileR; 
     FileR = fopen(argv[1],"r");
     if(FileR == NULL){ 
@@ -465,9 +297,9 @@ int main(int argc, char *argv[])
     	return 1; 
     }
 
-    double data[7];	
+    double data[25];	
     char chain[150];
-    for (i=0 ; i<7; i++){
+    for (i=0 ; i<25; i++){
  	   if (fgets(chain, 150, FileR) == NULL){
 		printf("Impossible to read the data file. \n");
 		return 1; 
@@ -477,20 +309,73 @@ int main(int argc, char *argv[])
    	 }
     }
     fclose(FileR);
-    double Lx = data[0];
+    double Lx = data[0];    // Length of the domain
     double Ly = data[1];
     double Lz = data[2];
-    double dx = data[3];
-    double dt = data[4];
-    double Tf = data[5];
+    double dx = data[3];    // Grid spacing
+    double dt = data[4];    // Time step
+    double Tf = data[5];    // Final time
     double temp = Tf/dt;
     int step_max = (int) temp;
-    int nb_source = (int) data[6];
+    int nb_source = (int) data[6];   // Number of power source
+    int nb_obj = (int) data[7];      // Number of objects inside the domain
+    for(i=0;i<6;i++){
+    	BC[i] = data[8+i];
+    	T_Dir[i] = data[14+i];
+    }
+    T_0 = data[20];
+    double kheat_param = data[21];
+    double rho_param = data[22];
+    double cp_param = data[23];
+    double S = data[24];    // Sampling rate
+    int SR = (int) 1/S;
+    printf("        SR = %d    \n", SR);
 
+
+    int prop_per_obj = 10;         // Number of properties per object
+    int prop_per_source = 7;       // Number of properties per power source
+    std::vector<double> prop_obj(prop_per_obj*nb_obj);
+    std::vector<double> prop_source(prop_per_source*nb_source);
+
+
+    // Properties of the power sources
+    FileR = fopen(argv[2],"r");
+    if(FileR == NULL){ 
+    	printf("Impossible to open the Source file. \n");
+    	return 1; 
+    }
+    for (i=0 ; i<prop_per_source*nb_source; i++){
+ 	   if (fgets(chain, 150, FileR) == NULL){
+		printf("Impossible to read the source file. \n");
+		return 1; 
+  	  }	
+   	 else{
+		prop_source[i] = atof(chain);
+   	 }
+    }
+    fclose(FileR);
+
+
+    // Properties of the objects
+    FileR = fopen(argv[3],"r");
+    if(FileR == NULL){ 
+    	printf("Impossible to open the Source file. \n");
+    	return 1; 
+    }
+    for (i=0 ; i<prop_per_obj*nb_obj; i++){
+ 	   if (fgets(chain, 150, FileR) == NULL){
+		printf("Impossible to read the source file. \n");
+		return 1; 
+  	  }	
+   	 else{
+		prop_obj[i] = atof(chain);
+   	 }
+    }
+    fclose(FileR);
 
     // split work among processes
     if (get_my_rank() == 0)
-        host_work(id, Lx, Ly, Lz, dx, dt, step_max, nb_source);
+        host_work(id, Lx, Ly, Lz, dx, dt, step_max, nb_source, prop_source, nb_obj,prop_obj,BC,T_Dir,T_0,kheat_param,rho_param,cp_param,SR);
     else
         slave_work(id,step_max);
 
@@ -501,204 +386,393 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void Compute_RHS(std::vector<double> pre_mat, std::vector<int> irn , std::vector<int> jcn , std::vector<double> Temp, std::vector<double> Source, std::vector<double> Temp2, int X, int Y, int Z, int NNZ){
+// This function computes the right hand side of the system to be solved
+void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int nnz ,std::vector<double> &rho, std::vector<double> &cp){
 	int i = 0;
+	#pragma omp parallel for default(shared) private(i)
 	for(i=0;i<X*Y*Z;i++){
 		Temp2[i]=0;
 	}
-	for(i=0;i<NNZ;i++){
+	#pragma omp parallel for default(shared) private(i)
+	for(i=0;i<nnz;i++){
 		Temp2[irn[i]-1]+=pre_mat[i]*Temp[jcn[i]-1];
 	}
+	#pragma omp parallel for default(shared) private(i)
 	for(i=0;i<X*Y*Z;i++){
-		Temp2[i]+=Source[i];		
+		Temp2[i]+=(Source[i])/(rho[i]*cp[i]);		
 	}
+	#pragma omp parallel for default(shared) private(i)
 	for(i=0;i<X*Y*Z;i++){
 		Temp[i]=Temp2[i];
 	}
 }
 
-void Compute_a_T0(std::vector<int> irn , std::vector<int> jcn, int X, int Y, int Z,std::vector<int> ip_h,std::vector<int> jp_h,std::vector<int> kp_h,std::vector<int> lastx_h,std::vector<int> lasty_h,std::vector<int> lastz_h, std::vector<double> a, std::vector<double> b,std::vector<double> Temp,std::vector<double> constant){
-  int i_vec = 0;
-  int count = 0;
+// This function imposes the boundary conditions, computes the A matrix and set an initial temperature over the domain
+void Compute_a_T0(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y, int Z,std::vector<int> &ip_h,std::vector<int> &jp_h,std::vector<int> &kp_h,std::vector<int> &lastx_h,std::vector<int> &lasty_h,std::vector<int> &lastz_h, std::vector<double> &a, std::vector<double> &b,std::vector<double> &Temp,std::vector<double> &constant,std::vector<int> &BC,std::vector<double> &T_Dir,double T_0){
+int i_vec = 0;
+for(i_vec=0;i_vec<X*Y*Z;i_vec++){
+  	Temp[i_vec] = T_0;	
+  }
   for(i_vec=0;i_vec<X*Y*Z;i_vec++){
-    if(jp_h[i_vec]==0){
-    	Temp[i_vec] = 50;
-    }
-    else if(lasty_h[i_vec]==1){
-    	Temp[i_vec] = 0;
-    }
-    else{
-    	Temp[i_vec] = 20;
-    }
-    
-    if((jp_h[i_vec]==0)||(lasty_h[i_vec]==1)){ //Dirichlet BC			
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;
-			count++;
-	}
-	else{
-		if (ip_h[i_vec]==0 && kp_h[i_vec]==0){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=2;
-			b[count]=2;
-			count++;
-		}
-		else if(ip_h[i_vec]==0 && lastz_h[i_vec]==1 ){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=2;
-			b[count]=2;
-			count++;
-		}
-		else if(kp_h[i_vec]==0 && lastx_h[i_vec]==1){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=2;
-			b[count]=2;
-			count++;
-		}
-		else if(lastx_h[i_vec]==1 && lastz_h[i_vec]==1){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;	
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=2;
-			b[count]=2;
-			count++;
-		}
-		else if(ip_h[i_vec]==0){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;
-			count++;
-		}
-		else if(lastx_h[i_vec]==1){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y*Z+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;	
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;
-			count++;
-		}
-		else if(kp_h[i_vec]==0){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;			
-			count++;
-		}
-		else if(lastz_h[i_vec]==1){
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec-Y+1;
-			a[count]=-1;
-			b[count]=-1;
-			count++;
-			irn[count]=i_vec+1;
-			jcn[count]=i_vec+1;
-			a[count]=1;
-			b[count]=1;
-			count++;
+      if(jp_h[i_vec]==0){
+	  		if(BC[0]==1){ //Dirichlet
+			  	Temp[i_vec] = T_Dir[0];
+	  		}
 		}
 
-		if(kp_h[i_vec]!=0 && ip_h[i_vec]!=0 && lastz_h[i_vec]!=1 && lastx_h[i_vec]!=1){
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec+1;
-				a[count]=1+6*constant[i_vec];
-				b[count]=1-6*constant[i_vec];
-				count++;
+		if(lasty_h[i_vec]==1){
+			if(BC[1]==1){ //Dirichlet
+				Temp[i_vec] = T_Dir[1];
+			}
+		}
+		if(kp_h[i_vec]==0){
+			if(BC[2]==1){ //Dirichlet
+				Temp[i_vec] = T_Dir[2];
+			}
+		}
+		if(lastz_h[i_vec]==1){
+			if(BC[3]==1){ //Dirichlet
+				Temp[i_vec] = T_Dir[3];
+			}
+		}
+		if(ip_h[i_vec]==0){
+			if(BC[4]==1){ //Dirichlet
+				Temp[i_vec] = T_Dir[4];
+			}
+		}
+		if(lastx_h[i_vec]==1){
+			if(BC[5]==1){ //Dirichlet
+				Temp[i_vec] = T_Dir[5];
+			}
+		}
+      
+		if(jp_h[i_vec]==0){
+			if(BC[0]==1){ //Dirichlet
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(1);
+				b.push_back(1);
+			}
+			else{  // Neuman
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(-1);
+				b.push_back(-1);
+
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1+1);
+				a.push_back(1);
+				b.push_back(1);
+			}
+		}
+
+		else if(lasty_h[i_vec]==1){
+			if(BC[1]==1){ //Dirichlet
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(1);
+				b.push_back(1);
+			}
+			else{  // Neuman
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(-1);
+				b.push_back(-1);
+
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1-1);
+				a.push_back(1);
+				b.push_back(1);        
+			}
+
+		}
+		else if(kp_h[i_vec]==0){
+			if(BC[2]==1){ //Dirichlet
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(1);
+				b.push_back(1);
+			}
+			else{  // Neuman
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(-1);
+				b.push_back(-1);
+
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1+Y);
+				a.push_back(1);
+				b.push_back(1);  
+
+			}
+		}
+		else if(lastz_h[i_vec]==1){
+			if(BC[3]==1){ //Dirichlet
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(1);
+				b.push_back(1);
+			}
+			else{  // Neuman
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(-1);
+				b.push_back(-1);
+
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1-Y);
+				a.push_back(1);
+				b.push_back(1);        
+			}
+		}
+		else if(ip_h[i_vec]==0){
+			if(BC[4]==1){ //Dirichlet
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(1);
+				b.push_back(1);
+			}
+			else{  // Neuman
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(-1);
+				b.push_back(-1);
+
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1+Y*Z);
+				a.push_back(1);
+				b.push_back(1);        
+			}
+		}
+		else if(lastx_h[i_vec]==1){
+			if(BC[5]==1){ //Dirichlet
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(1);
+				b.push_back(1);
+			}
+			else{  // Neuman
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1);
+				a.push_back(-1);
+				b.push_back(-1);
+
+				irn.push_back(i_vec+1);
+				jcn.push_back(i_vec+1-Y*Z);
+				a.push_back(1);
+				b.push_back(1);        
+			}
+		}
+		else{   // Inside of the domain
+			irn.push_back(i_vec+1);
+			jcn.push_back(i_vec+1);
+			a.push_back(1+6*constant[i_vec]);
+			b.push_back(1-6*constant[i_vec]);
+				
+			irn.push_back(i_vec+1);
+			jcn.push_back(i_vec);
+			a.push_back(-constant[i_vec]);
+			b.push_back(constant[i_vec]);
+				
+			irn.push_back(i_vec+1);
+			jcn.push_back(i_vec+2);
+			a.push_back(-constant[i_vec]);
+			b.push_back(constant[i_vec]);
 					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec;
-				a[count]=-constant[i_vec];
-				b[count]= constant[i_vec];
-				count++;
+			irn.push_back(i_vec+1);
+			jcn.push_back(i_vec+Y+1);
+			a.push_back(-constant[i_vec]);
+			b.push_back(constant[i_vec]);
+				
+			irn.push_back(i_vec+1);
+			jcn.push_back(i_vec-Y+1);
+			a.push_back(-constant[i_vec]);
+			b.push_back(constant[i_vec]);
+				
+			irn.push_back(i_vec+1);
+			jcn.push_back(i_vec+Y*Z+1);
+			a.push_back(-constant[i_vec]);
+			b.push_back(constant[i_vec]);
 					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec+2;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec+Y+1;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec-Y+1;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec+Y*Z+1;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
-					
-				irn[count]=i_vec+1;
-				jcn[count]=i_vec-Y*Z+1;
-				a[count]=-constant[i_vec];
-				b[count]=constant[i_vec];
-				count++;
+			irn.push_back(i_vec+1);
+			jcn.push_back(i_vec-Y*Z+1);
+			a.push_back(-constant[i_vec]);
+			b.push_back(constant[i_vec]);      
+		}
+
+	} 
+}
+
+// This function inserts one or more objects inside the domain
+void insert_obj(std::vector<double> &temp, std::vector<double> &k_heat, std::vector<double> &rho, std::vector<double> &cp,int nb_obj, std::vector<double> &prop_obj, int X,int Y,int Z, double dx){
+	int i = 0;
+  	int j = 0;
+  	int k = 0;
+	int l = 0;
+	int prop_per_obj = 10;
+	
+	for(l=0;l<nb_obj;l++){
+		double n_x_double = (prop_obj[prop_per_obj*l]/dx)+1;
+		int n_x = (int) n_x_double;
+		double pos_x = (prop_obj[prop_per_obj*l+3]/dx);	
+		int i_min = (int)pos_x;
+		i_min = i_min - (n_x/2);
+		int i_max = i_min + n_x-1;
+	
+		double n_y_double = (prop_obj[prop_per_obj*l+1]/dx)+1;
+		int n_y = (int) n_y_double;
+		double pos_y = (prop_obj[prop_per_obj*l+4]/dx);	
+		int j_min = (int)pos_y;
+		j_min = j_min - (n_y/2);
+		int j_max = j_min + n_y-1;
+	
+		double n_z_double = (prop_obj[prop_per_obj*l+2]/dx)+1;
+		int n_z = (int) n_z_double;
+		double pos_z = (prop_obj[prop_per_obj*l+5]/dx);	
+		int k_min = (int)pos_z;
+		k_min = k_min - (n_z/2);
+		int k_max = k_min + n_z-1;
+	
+		int b_inf_x =0;
+		int b_inf_y =0;
+		int b_inf_z =0;
+		int b_sup_x = 0;
+		int b_sup_y = 0;
+		int b_sup_z = 0;
+
+		b_inf_x = i_min;				
+		b_inf_y = j_min;
+		b_inf_z = k_min;
+		b_sup_x = i_max;
+		b_sup_y = j_max;
+		b_sup_z = k_max;
+		if(b_inf_x<0){
+			b_inf_x = 0;		
+		}
+		if(b_inf_y<0){
+			b_inf_y = 0;		
+		}
+		if(b_inf_z<0){
+			b_inf_z = 0;		
+		}
+		if(X-1<b_sup_x){
+			b_sup_x = X-1;
+		}
+		if(Y-1<b_sup_y){
+			b_sup_y = Y-1;
+		}
+		if(Z-1<b_sup_z){
+			b_sup_z = Z-1;
+		}
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=b_inf_x;i<=b_sup_x;i++){
+			for(j=b_inf_y;j<=b_sup_y;j++){
+				for(k=b_inf_z;k<=b_sup_z;k++){
+					temp[i*Y*Z+j+k*Y]= prop_obj[prop_per_obj*l+6];
+					k_heat[i*Y*Z+j+k*Y]= prop_obj[prop_per_obj*l+7];
+					rho[i*Y*Z+j+k*Y]= prop_obj[prop_per_obj*l+8];
+					cp[i*Y*Z+j+k*Y]= prop_obj[prop_per_obj*l+9];					
+				}				
 			}
 		}
 	}
 }
+
+// This function inserts one or more sources inside the domain
+void insert_Source(std::vector<double> &Source,int nb_source, std::vector<double> &prop_source, int X,int Y,int Z, double dx, std::vector<double> &rho, std::vector<double> &cp){
+	int i = 0;
+  	int j = 0;
+  	int k = 0;
+	int l = 0;
+	int prop_per_source = 7;
+	
+	for(l=0;l<nb_source;l++){
+		double n_x_double = (prop_source[prop_per_source*l]/dx)+1;
+		int n_x = (int) n_x_double;
+		double pos_x = (prop_source[prop_per_source*l+3]/dx);	
+		int i_min = (int)pos_x;
+		i_min = i_min - (n_x/2);
+		int i_max = i_min + n_x-1;
+	
+		double n_y_double = (prop_source[prop_per_source*l+1]/dx)+1;
+		int n_y = (int) n_y_double;
+		double pos_y = (prop_source[prop_per_source*l+4]/dx);	
+		int j_min = (int)pos_y;
+		j_min = j_min - (n_y/2);
+		int j_max = j_min + n_y-1;
+	
+		double n_z_double = (prop_source[prop_per_source*l+2]/dx)+1;
+		int n_z = (int) n_z_double;
+		double pos_z = (prop_source[prop_per_source*l+5]/dx);	
+		int k_min = (int)pos_z;
+		k_min = k_min - (n_z/2);
+		int k_max = k_min + n_z-1;
+	
+		int b_inf_x =0;
+		int b_inf_y =0;
+		int b_inf_z =0;
+		int b_sup_x = 0;
+		int b_sup_y = 0;
+		int b_sup_z = 0;
+
+		b_inf_x = i_min;				
+		b_inf_y = j_min;
+		b_inf_z = k_min;
+		b_sup_x = i_max;
+		b_sup_y = j_max;
+		b_sup_z = k_max;
+		if(b_inf_x<0){
+			b_inf_x = 0;		
+		}
+		if(b_inf_y<0){
+			b_inf_y = 0;		
+		}
+		if(b_inf_z<0){
+			b_inf_z = 0;		
+		}
+		if(X-1<b_sup_x){
+			b_sup_x = X-1;
+		}
+		if(Y-1<b_sup_y){
+			b_sup_y = Y-1;
+		}
+		if(Z-1<b_sup_z){
+			b_sup_z = Z-1;
+		}
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=b_inf_x;i<=b_sup_x;i++){
+			for(j=b_inf_y;j<=b_sup_y;j++){
+				for(k=b_inf_z;k<=b_sup_z;k++){
+					Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6]/(rho[i*Y*Z+j+k*Y]*cp[i*Y*Z+j+k*Y]);					
+				}				
+			}
+		}
+	}
+}
+
+// This function export the value of the temperature on a line inside the domain directed along a given direction (This function is still in progress)
+void export_coupe(int direction, double pos1, double pos2, int Nx, int Ny, int Nz, std::vector<double> &temp,	double dx){
+	pos1 = pos1/dx ;
+	pos2 = pos2/dx ;
+	int pos1_int = (int) pos1;
+	int pos2_int = (int) pos2;
+	int i =0;
+	printf("%d %d \n",pos1_int,pos2_int);
+	FILE *FileW;
+    	FileW = fopen("Cut.txt","w");
+	if(direction==1){	
+		for(i=0;i<Nx;i++){
+			fprintf(FileW," %lf \n ",temp[pos1_int+pos2_int*Ny+i*Ny*Nz]);
+		}
+	}
+	fclose(FileW);
+}
+
+
+
+
+
+
+
+
+
