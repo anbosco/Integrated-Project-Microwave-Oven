@@ -1,3 +1,0 @@
-/home/ulg/info0939/mhoubart/Integrated_project/math0471/mumps/build/CMakeFiles/rebuild_cache.dir
-/home/ulg/info0939/mhoubart/Integrated_project/math0471/mumps/build/CMakeFiles/test_mumps.dir
-/home/ulg/info0939/mhoubart/Integrated_project/math0471/mumps/build/CMakeFiles/edit_cache.dir
