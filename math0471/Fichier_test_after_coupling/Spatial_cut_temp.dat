@@ -1,0 +1,13 @@
+0		! CutX ?
+0.22		! CutX Posy
+0.22		! CutX Posz
+0		! CutY ?
+0		! CutY Posx
+0.14		! CutY Posz
+0		! CutZ ?
+0		! CutZ Posx
+0.14		! CutZ Posy
+3		! Nb Cuts
+30	! Time for cut 1
+60	! Time for cut 2
+90	! Time for cut 3
