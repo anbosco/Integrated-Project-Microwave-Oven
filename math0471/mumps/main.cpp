@@ -83,6 +83,9 @@ void set_T0(std::vector<double> &Temp,std::vector<double> &geometry,double T_0,d
 void rotate_Power_grid_th(std::vector<double> &Source_init,std::vector<double> &Source_curr,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, double theta);
 void rotate_T_grid(std::vector<double> &T_init,std::vector<double> &T_curr,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, double theta, double T_air);
 void set_source_from_elec(std::vector<double> &Source,std::vector<double> &Source_elec,double x_min_th,double y_min_th,double z_min_th,double dx,double dx_electro,int X_th,int Y_th,int Z_th,int X_elec,int Y_elec,int Z_elec);
+void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &M ,std::vector<double> &vec_val,double dx, std::vector<double> &properties, int val);
+void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val,double dx,std::vector<double> &properties,double val);
+void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val, double dx, std::vector<double> &properties, double val);
 int get_my_rank();
 void check_MUMPS(DMUMPS_STRUC_C &id);
 void init_MUMPS(DMUMPS_STRUC_C &id);
@@ -1877,7 +1880,7 @@ while(step_pos<=step_pos_max){
 				//export_spoints_XMLP("Hz", step, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
             		}        
         	}  
-     // Extraction of a cut if needed
+     /******************************** Extraction of a cut if needed ***********************************/
 	if(step == step_cut[next_cut]){// To extract a cut
 		next_cut++;
 		if(Cut[0]==1){// Cut along x
@@ -1905,6 +1908,7 @@ while(step_pos<=step_pos_max){
       export_coupe(3, 6, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
 		}				
 	}
+/*****************************************************************************************/
 
 	// Computation of the power grid (TO BE PARAMETRIZED)
 		nx = point_per_proc_x[myrank];
@@ -1920,7 +1924,7 @@ while(step_pos<=step_pos_max){
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(e_ry[(i-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
-        }
+      				}
 			}
 		}
    
@@ -1934,7 +1938,7 @@ while(step_pos<=step_pos_max){
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(e_ry[(i)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
-        }
+        			}
 			}
 		}
    }   
@@ -1948,7 +1952,7 @@ while(step_pos<=step_pos_max){
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(e_ry[(i-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
-        }
+        			}
 			}
 		}   
    }      
@@ -1962,7 +1966,7 @@ while(step_pos<=step_pos_max){
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(e_ry[(i-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
-        }
+        			}
 			}
 		}  
    }
@@ -1981,7 +1985,7 @@ while(step_pos<=step_pos_max){
         
         	//z
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i+1-firstx][k]*Ex_left[i+1-firstx][k])+(e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
-        }
+        			}
 			}
 		}
    }
@@ -1996,7 +2000,7 @@ while(step_pos<=step_pos_max){
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i+1-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(e_ry[(i)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
 					//z
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
-        }
+        			}
 			}
 		}  
    }
@@ -2011,7 +2015,7 @@ while(step_pos<=step_pos_max){
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(e_ry[(i-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
 					//z
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
-        }
+        			}
 			}
 		} 
    }
@@ -2025,18 +2029,19 @@ while(step_pos<=step_pos_max){
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i+1-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(e_ry[(i)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/9;
 					//z
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/9;		        
-        }
+        			}
 			}
 		}
    } 
  
 
 		if(step%step_mean==0){ 
+
 			/**************************************
 				Steady state verification
 			**************************************/
 
-			// Check if steady state is reached on the current process
+			/****************** Check if steady state is reached on the current process **********************/
 			Residual = 0;
 			for(i=0;i<nx;i++){
 				for(j=0;j<ny;j++){
@@ -2061,8 +2066,9 @@ while(step_pos<=step_pos_max){
 			else{
 				steady_state_reached = 0;
 			}
+			/**************************************************************************************************/
 
-			// Communication between the process in order to determine if the algorithm must continue or not.
+			/* Communication between the process in order to determine if the algorithm must continue or not. */
 			if(myrank==0){
 				for(k=1;k<nbproc;k++){
 					MPI_Recv(&test_steady,1,MPI_INT,k,k, MPI_COMM_WORLD, &mystatus );
@@ -2079,6 +2085,7 @@ while(step_pos<=step_pos_max){
 				MPI_Recv(&steady_state_reached,1,MPI_INT,0,0, MPI_COMM_WORLD, &mystatus );
 			}    
        			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
+			/****************************************************************************************************/
 
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
@@ -2092,7 +2099,7 @@ while(step_pos<=step_pos_max){
 
  	step++;	
 	}
-if(solve_electro==1){
+if(solve_electro==1){	// We save the last step of the electro calculation if there was any
 	if(myrank==0){
 	     for(i=i_min_proc[myrank];i<=i_max_proc[myrank];i++){
 	       for(j=j_min_proc[myrank];j<=j_max_proc[myrank];j++){
@@ -2139,12 +2146,13 @@ if(solve_electro==1){
 		step_prec += step;
 		step = 1;
 }	
+
 /********************************************************************************
 			Thermic calculation
 *******************************************************************************/
 if(solve_thermo){
 	if(myrank==0){
-	printf("\nSOLVING OF THE HEAT EQUATION...\n");
+	printf("\n SOLVING OF THE HEAT EQUATION...\n");
 	}
 	rotate_Power_grid(Power_tot,Power_tot_rotated_back,Nx,Ny,Nz,Lx,Ly,Lz,dx,theta);
 	main_th(Power_tot_rotated_back, Temperature,BC, T_Dir,  T_0,dx_th,h_air,Lx_th,Ly_th,Lz_th,dt_th,step_max_th,nb_source_th,SR_th,theta_th,n_sphere,n_cylinder,n_cube,prop_sphere,prop_cylinder,prop_cube,T_food_init_th,x_min_th,y_min_th,z_min_th,dx,Lx,Ly_electro,Lz_electro,prop_per_source_th, prop_source_th, Cut_th,Pos_cut_th,N_cut_th,step_cut_th,nb_probe_th,Pos_probe_th, id,k_heat_x,k_heat_y,k_heat_z,rho,cp,vec_k,vec_rho,vec_cp,constant,geometry_th,step_pos,thermo_domain);
@@ -2341,6 +2349,11 @@ step_pos++;
 }
 
 
+
+
+/*****************************************************************************************
+			ELECTRO-MAGNETIC FUNCTIONS
+*****************************************************************************************/
 
 // This function split the spatial domain over the different processes
 void divisor(int n_p,int*r){
@@ -2706,7 +2719,7 @@ void Update_H_boundary(int i_max,int j_max,int k_max,int last,double***H_new,dou
 					H_new[i][j][k] = H_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-E1_prev[i-1][j][k])-(temp2-E_boundary[i][j]));
 				}
 			}
-	  }
+	 	}
 	}
 }
 
@@ -2753,7 +2766,7 @@ void New_in_old(int i_max,int j_max,int k_max,double***New,double***Old){
 	}
 }
 
-//This function place one or more objects inside the domain
+//This function place one or more objects inside the domain (To be supressed)
 void insert_obj(double***e_r,int nb_obj,double*prop_obj,double dx,double point_per_proc_x,double point_per_proc_y,double point_per_proc_z,int lastx,int lasty,int lastz,int i_min_proc,int j_min_proc,int k_min_proc,int i_max_proc,int j_max_proc,int k_max_proc){
 	int i = 0;
   int j = 0;
@@ -2867,7 +2880,7 @@ void init_geom_one_proc(std::vector<double> &e_rx,double***mu_r,std::vector<doub
 	set_rel_perm_one_proc(e_rz,e_r_totz,i_min_proc,j_min_proc,k_min_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Nx,Ny,Nz,2);	
 }
 
-// This function make the objects rotate inside the domain
+// This function make the objects rotate inside the electromagnetic grid
 void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta){
 	int i = 0;
 	int j = 0;
@@ -3054,7 +3067,7 @@ void rotate_Power_grid(std::vector<double> &Power_electro,std::vector<double> &P
 				if(x_after<=0||y_after<=0||Lx<=x_after||Ly<=y_after){ // The dissipated power is set to 0 for points leaving the domain after rotation
 					Power_thermo[i*Ny*Nz+k*Ny+j] = 0;
 				}
-				else{	// Bilinear approximation of the power
+				else{	// Bilinear interpolation of the power
 					x1 = x_after/dx;
 					y1 = y_after/dx;
 					i1 = (int) x1;
@@ -3072,6 +3085,7 @@ void rotate_Power_grid(std::vector<double> &Power_electro,std::vector<double> &P
 	}
 }
 
+// This function places a cubic object inside the domain
 void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er) {
 	int i = 0;
 	int j = 0;
@@ -3100,6 +3114,7 @@ void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<
 		}
 }
 
+// This function places a cylindrical object inside the domain
 void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er){
 	int i = 0;
 	int j = 0;
@@ -3151,6 +3166,7 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vec
 	}
 }
 
+// This function places a spherical object inside the domain
 void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er){
 	double i = 0;
 	double j = 0;
@@ -3170,9 +3186,9 @@ void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vecto
 		for(k=0;k<Z+zz;k++){
 			for(j=0;j<Y+yy;j++){
 				for(i=0;i<X+xx;i++){
-          double xp = (i*dx)-0.5*xx*dx;
-          double yp = (j*dx)-0.5*yy*dx;
-          double zp = (k*dx)-0.5*zz*dx;
+         				double xp = (i*dx)-0.5*xx*dx;
+         				double yp = (j*dx)-0.5*yy*dx;
+          				double zp = (k*dx)-0.5*zz*dx;
 					if(((properties[0]-(xp))*(properties[0]-(xp))+(properties[1]-(yp))*(properties[1]-(yp))+(properties[2]-(zp))*(properties[2]-(zp)))<=properties[3]*properties[3]){
 						e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
 					}
@@ -3181,6 +3197,7 @@ void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vecto
 		}
 }
 
+// This function set the grid of relative permittivity on the current process
 void set_rel_perm_one_proc(std::vector<double> &e_r,std::vector<double> &e_r_tot,int i_min_proc,int j_min_proc,int k_min_proc,int point_per_proc_x,int point_per_proc_y,int point_per_proc_z,int lastx,int lasty,int lastz,int Nx, int Ny, int Nz, int component){
 	int i=0;
 	int j=0;
@@ -3213,6 +3230,7 @@ void set_rel_perm_one_proc(std::vector<double> &e_r,std::vector<double> &e_r_tot
 	}
 }
 
+// This function rotate the total grid of relative permitivitty
 void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta,int component){
 	double xx = 0;
 	double yy = 0;
@@ -3295,6 +3313,8 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,in
 		}
 	}
 }
+
+// This function initialise the value of a std vector
 void set_vec(std::vector<double> &vec, int nbp, double val){
   int i;
   for(i=0;i<nbp;i++){
@@ -3302,6 +3322,7 @@ void set_vec(std::vector<double> &vec, int nbp, double val){
   }
 }
 
+// This function extract a cut of the electro magnetic calculation
 void export_coupe(int direction, int component, double pos1,double pos2,int Nx_tot,int Ny_tot,int Nz_tot,double***M,double dx,int step,int myrank, int i_min,int i_max,int j_min ,int j_max ,int k_min ,int k_max ,int Nx,int Ny,int Nz,int lastx,int lasty,int lastz){
   double xx = 0;
 	double yy = 0;
@@ -3368,38 +3389,40 @@ void export_coupe(int direction, int component, double pos1,double pos2,int Nx_t
     	  }
 	}
 	else if(direction==2){// Cut along y
-     if(pos1>=x_min && pos1<=x_max && pos2>=z_min && pos2<=z_max){
-  		strcat(file_name,"_alongY_step");
-	  	strcat(file_name,stepnumber);
-      		strcat(file_name,"_rank");
-		strcat(file_name,rank);
-		strcat(file_name,".txt");
-		FileW = fopen(file_name,"w");
-  		pos1_int = pos1_int - x_min;
-    		pos2_int = pos2_int - z_min;
-		for(i=0;i<Ny+yy*lasty;i++){
-			 fprintf(FileW," %lf \n ",M[pos1_int][i][pos2_int]);
-		}
-    		fclose(FileW);
-    }
+	     if(pos1>=x_min && pos1<=x_max && pos2>=z_min && pos2<=z_max){
+	  		strcat(file_name,"_alongY_step");
+		  	strcat(file_name,stepnumber);
+	      		strcat(file_name,"_rank");
+			strcat(file_name,rank);
+			strcat(file_name,".txt");
+			FileW = fopen(file_name,"w");
+	  		pos1_int = pos1_int - x_min;
+	    		pos2_int = pos2_int - z_min;
+			for(i=0;i<Ny+yy*lasty;i++){
+				 fprintf(FileW," %lf \n ",M[pos1_int][i][pos2_int]);
+			}
+	    		fclose(FileW);
+	    }
 	}
 	else if(direction==3){// Cut along z	
-     if(pos1>=x_min && pos1<=x_max && pos2>=y_min && pos2<=y_max){
-  		strcat(file_name,"_alongZ_step");
-	  	strcat(file_name,stepnumber);
-     		strcat(file_name,"_rank");
-		strcat(file_name,rank);
-		strcat(file_name,".txt");
-		FileW = fopen(file_name,"w");
-     		pos1_int = pos1_int - x_min;
-      		pos2_int = pos2_int - y_min;
-		  for(i=0;i<Nz+zz*lastz;i++){
-		  	fprintf(FileW," %lf \n ",M[pos1_int][pos2_int][i]);
-		  }
-     		fclose(FileW);
-    }
+	     if(pos1>=x_min && pos1<=x_max && pos2>=y_min && pos2<=y_max){
+	  		strcat(file_name,"_alongZ_step");
+		  	strcat(file_name,stepnumber);
+	     		strcat(file_name,"_rank");
+			strcat(file_name,rank);
+			strcat(file_name,".txt");
+			FileW = fopen(file_name,"w");
+	     		pos1_int = pos1_int - x_min;
+	      		pos2_int = pos2_int - y_min;
+			  for(i=0;i<Nz+zz*lastz;i++){
+			  	fprintf(FileW," %lf \n ",M[pos1_int][pos2_int][i]);
+			  }
+	     		fclose(FileW);
+	    }
 	}
 }
+
+// This function export the power grid in a txt file (Will not be used after coupling is done) 
 void export_power_thermo(std::vector<double> &Power_tot,int Nx,int Ny,int Nz){
    int i = 0;
    int j = 0;
@@ -3424,18 +3447,17 @@ void export_power_thermo(std::vector<double> &Power_tot,int Nx,int Ny,int Nz){
  
  
  
+/*****************************************************************************************
+				THERMIC FUNCTIONS
+*****************************************************************************************/ 
  
- 
- 
- int get_my_rank()
-{
+ int get_my_rank(){
     int myid;
     int ierr = MPI_Comm_rank(MPI_COMM_WORLD, &myid);
     return myid;
 }
 
-void check_MUMPS(DMUMPS_STRUC_C &id)
-{
+void check_MUMPS(DMUMPS_STRUC_C &id){
     if (id.infog[0] < 0)
     {
         std::cout << "[" << get_my_rank() << "] MUMPS Error:\n";
@@ -3444,8 +3466,7 @@ void check_MUMPS(DMUMPS_STRUC_C &id)
     }
 }
 
-void init_MUMPS(DMUMPS_STRUC_C &id)
-{
+void init_MUMPS(DMUMPS_STRUC_C &id){
     id.comm_fortran = -987654; //USE_COMM_WORLD;
     id.par = 1;                // 1=host involved in factorization phase
     id.sym = 0;                // 0=unsymmetric
@@ -3455,16 +3476,14 @@ void init_MUMPS(DMUMPS_STRUC_C &id)
     check_MUMPS(id);
 }
 
-void end_MUMPS(DMUMPS_STRUC_C &id)
-{
+void end_MUMPS(DMUMPS_STRUC_C &id){
     id.job = -2;
     std::cout << "[" << get_my_rank() << "] Terminate MUMPS instance." << std::endl;
     dmumps_c(&id);
     check_MUMPS(id);
 }
 
-void solve_MUMPS(DMUMPS_STRUC_C &id, int step)
-{
+void solve_MUMPS(DMUMPS_STRUC_C &id, int step){
     
     id.ICNTL(1) = -1; // stream for error messages [def=6]
     id.ICNTL(2) = -1; // stream for diag printing, statistics, warnings [def=0]
@@ -3516,35 +3535,29 @@ void solve_MUMPS(DMUMPS_STRUC_C &id, int step)
  			HOST WORK	
  *********************************************************************/    
 void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,double delta_t,int step_max,double theta,int nb_source, std::vector<double> &prop_source,std::vector<int> &BC,std::vector<double> &T_Dir,double T_0,int SR,std::vector<double> &Cut, std::vector<double> &Pos_cut, std::vector<double> &step_cut, double nb_probe, std::vector<double> &Pos_probe,int n_sphere,std::vector<double> &prop_sphere,int n_cylinder,std::vector<double> &prop_cylinder,int n_cube,std::vector<double> &prop_cube, double T_init_food,double h_air,double x_min_th,double y_min_th, double z_min_th,double dx_electro,int X_elec,int Y_elec,int Z_elec,std::vector<double> &Source_elec,std::vector<double> &k_heat_x,std::vector<double> &k_heat_y,std::vector<double> &k_heat_z,std::vector<double> &rho,std::vector<double> &cp,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &constant,std::vector<double> &geometry,int step_pos,std::vector<double> &Temp,int thermo_domain){   
-	 SPoints grid2;
+	SPoints grid2;
 
-    // setup grids
-
+    // setup source grid
     grid2.o = Vec3d(10.0, 10.0, 10.0); // origin
-    Vec3d L2(0.3, 0.3, 0.3);        // box dimensions
-
-    
+    Vec3d L2(0.3, 0.3, 0.3);        // box dimensions    
     grid2.np1 = Vec3i(0, 0, 0);    // first index
     grid2.np2 = Vec3i(X_elec-1, Y_elec-1, Z_elec-1); // last index
-
     grid2.dx = L2 / (grid2.np() - 1); // compute spacing
-
     grid2.scalars["Power"] = &Source_elec;
 
 
     SPoints grid;
 
-    // setup grids
-
+    // setup thermic grid
     grid.o = Vec3d(x_min_th+10.0, y_min_th+10.0, z_min_th+10.0); // origin
     Vec3d L(Lx, Ly, Lz);        // box dimensions
     int X = (int) (Lx/delta_x)+1;
     int Y = (int) (Ly/delta_x)+1;
     int Z = (int) (Lz/delta_x)+1;
-
     grid.np1 = Vec3i(0, 0, 0);    // first index
     grid.np2 = Vec3i(X-1, Y-1, Z-1); // last index
 
+    // Loop variables
     int i = 0;
     int i_vec=0;
     int count=0;
@@ -3554,7 +3567,8 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
 
     int nbp = grid.nbp();
 
-    double theta_angle = 0;
+    double theta_angle = 0;		// Used to make the rotation inside the thermic solver (to be suppressed after coupling is done)
+
     // Declaration of MUMPS variable
     MUMPS_INT n = X*Y*Z;
     std::vector<MUMPS_INT> irn;
@@ -3621,15 +3635,14 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
      // Source from electro calculation
   set_source_from_elec(Source,Source_elec,x_min_th,y_min_th,z_min_th,delta_x,dx_electro,X,Y,Z,X_elec,Y_elec,Z_elec);
   
-  // Insertion of one or more power source inside the domain (Will disappear when coupling is done)
+  // Insertion of one or more power source inside the domain (Different from the one coming from the electro magnetic calculation)
   if(nb_source!=0){
   	insert_Source_th(Source,nb_source, prop_source, X,Y,Z, delta_x, rho, cp,x_min_th,y_min_th,z_min_th);
   }
-
   #pragma omp parallel for default(shared) private(i)
   for(i=0;i<n;i++){
     	Source_init[i] = Source[i];
-    }
+  }
 	
 
   // Computation of the matrix and of the initial temperature
@@ -3640,7 +3653,6 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
   Compute_a_T0_2(irn ,jcn,  X,  Y,  Z,ip_h,jp_h,kp_h,lastx_h,lasty_h,lastz_h, a, b,Temp,constant,BC,T_Dir, T_0,theta, k_heat_x,k_heat_y,k_heat_z,geometry,delta_x,h_air);		// New boundary conditions  
   }
   MUMPS_INT8 nnz =  irn.size();
-  //set_T0(Temp,geometry,T_0,T_init_food,  X,  Y,  Z );
     
     // Preparation of MUMPS job
     id.n = n;
@@ -3687,17 +3699,18 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
 			export_coupe_th(3, Pos_cut[4], Pos_cut[5], X, Y, Z, Temp, delta_x, step+step_pos*step_max,x_min_th,y_min_th,z_min_th);
 		}
 				
-	}
-	
+	}	
 
-       // The value at the probe is registered
+       // The value at the temporal probe is registered
 	for(i=0;i<nb_probe;i++){
 		int nx = (int) Pos_probe[i*3];
 		int ny = (int) Pos_probe[i*3+1];
 		int nz = (int) Pos_probe[i*3+2];
 		probe[step+step_max*i] = Temp[ny+nz*Y+nx*Y*Z];
 	}
+
   	step++;
+
         // Save results to disk if needed	
     	if(step%SR==0){
     		export_spoints_XML("Temperature_field", step+step_pos*step_max, grid, grid, Zip::ZIPPED, X, Y,  Z, 1);
@@ -3739,9 +3752,8 @@ void slave_work(DMUMPS_STRUC_C &id, int step_max){
 
 
 /**********************************************************************
- 			Main	
+ 			Main Thermic Solver	
  *********************************************************************/
-
 void main_th(std::vector<double> &Source_elec, std::vector<double> &Temperature, std::vector<int> &BC, std::vector<double> &T_Dir, double T_0,double dx,double h_air, double Lx, double Ly, double Lz, double dt, int step_max, int nb_source, int SR, double theta, int n_sphere, int n_cylinder, int n_cube, std::vector<double> &prop_sphere, std::vector<double> &prop_cylinder, std::vector<double> &prop_cube, double T_food_init, double x_min_th, double y_min_th, double z_min_th, double dx_electro, double Lx_electro, double Ly_electro, double Lz_electro, int prop_per_source, std::vector<double> &prop_source, std::vector<double> &Cut, std::vector<double> &Pos_cut, int N_cut,std::vector<double> &step_cut, int nb_probe, std::vector<double> &Pos_probe, DMUMPS_STRUC_C &id,std::vector<double> &k_heat_x,std::vector<double> &k_heat_y,std::vector<double> &k_heat_z,std::vector<double> &rho,std::vector<double> &cp,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &constant,std::vector<double> &geometry,int step_pos,int thermo_domain){
 	int X_electro = (int) (Lx_electro/dx_electro)+1;
     	int Y_electro = (int) (Ly_electro/dx_electro)+1;
@@ -3752,6 +3764,7 @@ void main_th(std::vector<double> &Source_elec, std::vector<double> &Temperature,
     else
         slave_work(id,step_max);
 }
+
 
 // This function computes the right hand side of the system to be solved
 void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int nnz ,std::vector<double> &rho, std::vector<double> &cp,std::vector<double> &geometry,double dt,int thermo_domain){
@@ -3768,7 +3781,7 @@ void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vect
 	#pragma omp parallel for default(shared) private(i)
 	for(i=0;i<X*Y*Z;i++){
     if(geometry[i]!=0&&(geometry[i-Y*Z]==0||geometry[i+Y*Z]==0||geometry[i-1]==0||geometry[i+1]==0||geometry[i-Y]==0||geometry[i+Y]==0)&& (thermo_domain==1)){// Neuman
-      Temp2[i] = -T_inf;
+      Temp2[i] = -T_inf;	// Associated to the convection condition on the surface of the food (activated only when it is specified that the heat equation has to be solved only inside the food).
     }
     else if(geometry[i]!=0 || thermo_domain==0){
 		  Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);		
@@ -3780,7 +3793,7 @@ void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vect
 	}
 }
 
-// This function imposes the boundary conditions, computes the A matrix and set an initial temperature over the domain (Old version)
+// This function imposes the boundary conditions, computes the A matrix and set an initial temperature over the domain (The heat equation is solved over the whole domain)
 void Compute_a_T0(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y, int Z,std::vector<int> &ip_h,std::vector<int> &jp_h,std::vector<int> &kp_h,std::vector<int> &lastx_h,std::vector<int> &lasty_h,std::vector<int> &lastz_h, std::vector<double> &a, std::vector<double> &b,std::vector<double> &Temp,std::vector<double> &constant,std::vector<int> &BC,std::vector<double> &T_Dir,double T_0, double theta,std::vector<double> &k_heat_x,std::vector<double> &k_heat_y,std::vector<double> &k_heat_z){
 	int i_vec = 0;
 	int i=0;
@@ -3986,36 +3999,6 @@ void Compute_a_T0(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y, i
 	}
 }
 
-
-// This function inserts one or more objects inside the domain (No longer used) 
-void insert_obj_th(std::vector<double> &temp, std::vector<double> &k_heat_x, std::vector<double> &k_heat_y, std::vector<double> &k_heat_z, std::vector<double> &rho, std::vector<double> &cp,int nb_obj, std::vector<double> &properties, int X,int Y,int Z, double dx,std::vector<double> &geometry){
-  	int i = 0;
-  	int j = 0;
-  	int k = 0;
-  	int l = 0;
-	int prop_per_obj = 10;
-	for(l=0;l<nb_obj;l++){
-		for(i=0;i<X;i++){
-			for(j=0;j<Y;j++){
-				for(k=0;k<Z;k++){
-					if(((i*dx)<=properties[prop_per_obj*l+3]+properties[prop_per_obj*l+0]/2)&&((i*dx)>=properties[prop_per_obj*l+3]-properties[prop_per_obj*l+0]/2)&&((j*dx)<=properties[prop_per_obj*l+4]+properties[prop_per_obj*l+1]/2)&&((j*dx)>=properties[prop_per_obj*l+4]-properties[prop_per_obj*l+1]/2)&&((k*dx)<=properties[prop_per_obj*l+5]+properties[prop_per_obj*l+2]/2)&&((k*dx)>=properties[prop_per_obj*l+5]-properties[prop_per_obj*l+2]/2)){
-						temp[i*Y*Z+j+k*Y]= properties[prop_per_obj*l+6];
-						rho[i*Y*Z+j+k*Y]= properties[prop_per_obj*l+8];
-						cp[i*Y*Z+j+k*Y]= properties[prop_per_obj*l+9];
-						geometry[i*Y*Z+j+k*Y]= 1;
-					}
-					else{
-						geometry[i*Y*Z+j+k*Y]= 0;
-					}						
-				}
-			}		
-		}	
-  set_kheat(0, X, Y, Z, properties, l, dx, k_heat_x);
-  set_kheat(1, X, Y, Z, properties, l, dx, k_heat_y);
-  set_kheat(2, X, Y, Z, properties, l, dx, k_heat_z);
-	}	
-}
-
 // This function inserts one or more sources inside the domain
 void insert_Source_th(std::vector<double> &Source,int nb_source, std::vector<double> &prop_source, int X,int Y,int Z, double dx, std::vector<double> &rho, std::vector<double> &cp,double x_min_th,double y_min_th,double z_min_th){
 	int i = 0;
@@ -4164,36 +4147,7 @@ void export_probe_th(double nb_probe , std::vector<double> &probe,int step_max,i
   }
 }
 
-// This function set the value of the heat conductivity of a given object inside the domain (No longer used)
-void set_kheat(int Case,int X,int Y,int Z, std::vector<double> &properties,int l,double dx,std::vector<double> &k_heat){
-  int i = 0;
-  int j = 0;
-  int k = 0;
-  int xx=0;
-  int yy=0;
-  int zz=0; 
-  int prop_per_obj = 10;
-  if(Case==0){
-    xx++;
-  }
-  else if(Case==1){
-    yy++;
-  }
-  else if(Case==2){
-    zz++;
-  }
-  for(i=0;i<X+xx;i++){
-		for(j=0;j<Y+yy;j++){
-			for(k=0;k<Z+zz;k++){
-				if(((i*dx-0.5*xx)<=properties[prop_per_obj*l+3]+properties[prop_per_obj*l+0]/2)&&((i*dx-0.5*xx)>=properties[prop_per_obj*l+3]-properties[prop_per_obj*l+0]/2)&&((j*dx-0.5*yy)<=properties[prop_per_obj*l+4]+properties[prop_per_obj*l+1]/2)&&((j*dx-0.5*yy)>=properties[prop_per_obj*l+4]-properties[prop_per_obj*l+1]/2)&&((k*dx-0.5*zz)<=properties[prop_per_obj*l+5]+properties[prop_per_obj*l+2]/2)&&((k*dx-0.5*zz)>=properties[prop_per_obj*l+5]-properties[prop_per_obj*l+2]/2)){
-					k_heat[i*(Y+yy)*(Z+zz)+j+k*(Y+yy)]= properties[prop_per_obj*l+7];
-				}
-				}
-			}
-		}
-}
-
-// This function compute the A matrix and set the temperature everywhere at the temperature of the air
+// This function compute the A matrix and set the temperature everywhere at the temperature of the air (The heat equation is solved only inside the food and a convection condition is imposed on the food boundaries)
 void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y, int Z,std::vector<int> &ip_h,std::vector<int> &jp_h,std::vector<int> &kp_h,std::vector<int> &lastx_h,std::vector<int> &lasty_h,std::vector<int> &lastz_h, std::vector<double> &a, std::vector<double> &b,std::vector<double> &Temp,std::vector<double> &constant,std::vector<int> &BC,std::vector<double> &T_Dir,double T_0, double theta,std::vector<double> &k_heat_x,std::vector<double> &k_heat_y,std::vector<double> &k_heat_z,std::vector<double> &geometry,double dx, double h){
 	int i_vec = 0;
 	int i=0;
@@ -4205,13 +4159,17 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 		for(k=0;k<Z;k++){
 			for(i=0;i<X;i++){	
 				i_vec = i*Y*Z+k*Y+j;
-				if(geometry[i_vec]==0){
+				/**** For the point in air, we put a 1 on the diagonal *****/
+				if(geometry[i_vec]==0){ 
 					Temp[i_vec] = T_inf;
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec+1);
 					a.push_back(1);
 					b.push_back(1);
 				}
+				/**********************************************************/
+
+				/***** Imposition of a heat flux on the boundary **********/
 				else if(geometry[i_vec-Y*Z]==0&&geometry[i_vec+Y*Z]!=0){
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec+1);
@@ -4278,7 +4236,10 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 					a.push_back(+k_heat_z[i*Y*(Z+1)+(k)*Y+j]/(h*dx));
 					b.push_back(+k_heat_z[i*Y*(Z+1)+(k)*Y+j]/(h*dx));
 				}
-					else{// Inside of the domain
+				/***************************************************************/
+
+				/********* Heat equation is solved inside the domain ***********/
+					else{
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec+1);
 					a.push_back(1+theta*(constant[i_vec]*(k_heat_x[i*Y*Z+k*Y+j]+k_heat_x[(i+1)*Y*Z+k*Y+j]+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j]+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+1]+k_heat_z[i*Y*(Z+1)+k*Y+j]+k_heat_z[i*Y*(Z+1)+(k+1)*Y+j])));	// I- A(theta)
@@ -4314,6 +4275,7 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 					a.push_back(-theta*constant[i_vec]*k_heat_x[i*Y*Z+k*Y+j]);		// I- A(theta)
 					b.push_back((1-theta)*constant[i_vec]*k_heat_x[i*Y*Z+k*Y+j]);      	// I+ A(1-theta)
 				}
+			    /********************************************************************/
 			}
 		}
 	}
@@ -4321,208 +4283,30 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 
 // This function can place different geometry of objects inside the domain (Need to be parametrized!!)
 void place_geometry_th(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &k_heatx,std::vector<double> &k_heaty,std::vector<double> &k_heatz,std::vector<double> &rho,std::vector<double> &cp, double x_min_th, double y_min_th, double z_min_th){	
-	int i=0;
-	int j=0;
-	int k=0;
-
-	if(P==2){
-		for(i=0;i<X;i++){
-			for(j=0;j<Y;j++){
-				for(k=0;k<Z;k++){
-					if(((x_min_th+(i*dx))<=properties[3]+properties[0]/2)&&((x_min_th+i*dx)>=properties[3]-properties[0]/2)&&((y_min_th+j*dx)<=properties[4]+properties[1]/2)&&((y_min_th+j*dx)>=properties[4]-properties[1]/2)&&((z_min_th+k*dx)<=properties[5]+properties[2]/2)&&((z_min_th+k*dx)>=properties[5]-properties[2]/2)){
-						geometry[i*Y*Z+k*Y+j]=val;
-						rho[i*Y*Z+k*Y+j] = vec_rho[val];
-						cp[i*Y*Z+k*Y+j] = vec_cp[val];
-					}
-				}
-			}
-		}
-		for(i=0;i<X+1;i++){
-			for(j=0;j<Y;j++){
-				for(k=0;k<Z;k++){
-					if(((x_min_th+i*dx)-0.5<=properties[3]+properties[0]/2)&&((x_min_th+i*dx)-0.5>=properties[3]-properties[0]/2)&&((y_min_th+j*dx)<=properties[4]+properties[1]/2)&&((y_min_th+j*dx)>=properties[4]-properties[1]/2)&&((z_min_th+k*dx)<=properties[5]+properties[2]/2)&&((z_min_th+k*dx)>=properties[5]-properties[2]/2)){
-						k_heatx[i*Y*Z+k*Y+j] = vec_k[val];
-					}
-				}
-			}
-		}
-		for(i=0;i<X;i++){
-			for(j=0;j<Y+1;j++){
-				for(k=0;k<Z;k++){
-					if(((x_min_th+i*dx)<=properties[3]+properties[0]/2)&&((x_min_th+i*dx)>=properties[3]-properties[0]/2)&&((y_min_th+j*dx)-0.5<=properties[4]+properties[1]/2)&&((y_min_th+j*dx)-0.5>=properties[4]-properties[1]/2)&&((z_min_th+k*dx)<=properties[5]+properties[2]/2)&&((z_min_th+k*dx)>=properties[5]-properties[2]/2)){
-						k_heaty[i*(Y+1)*Z+k*(Y+1)+j] = vec_k[val];
-					}
-				}
-			}
-		}
-		for(i=0;i<X;i++){
-			for(j=0;j<Y;j++){
-				for(k=0;k<Z+1;k++){
-					if(((x_min_th+i*dx)<=properties[3]+properties[0]/2)&&((x_min_th+i*dx)>=properties[3]-properties[0]/2)&&((y_min_th+j*dx)<=properties[4]+properties[1]/2)&&((y_min_th+j*dx)>=properties[4]-properties[1]/2)&&((z_min_th+k*dx)-0.5<=properties[5]+properties[2]/2)&&((z_min_th+k*dx)-0.5>=properties[5]-properties[2]/2)){
-						k_heatz[i*(Y)*(Z+1)+k*(Y)+j] = vec_k[val];
-					}
-				}
-			}
-		}
-
-
-
-
+	if(P==2){ // Cube
+		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,vec_rho,dx,properties,val);
+		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,vec_rho,dx,properties,val);
+		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,vec_cp,dx,properties,val);
+		place_cube_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k,dx,properties,val);
+		place_cube_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k,dx,properties,val);
+		place_cube_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k,dx,properties,val);
 
 	}
-	else if(P==1){
-		double xc = properties[1];
-		double yc = properties[2];
-		double zc = properties[3];
-		double r = properties[4];
-		double l = properties[6];
-		double xp;
-		double yp;
-		double zp;		
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y;j++){
-				for(i=0;i<X;i++){
-					xp = x_min_th+i*dx;
-					yp = y_min_th+j*dx;
-					zp = z_min_th+k*dx;
-					if(properties[0]==0){
-						if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
-							geometry[i*Y*Z+k*Y+j]=val;
-							rho[i*Y*Z+k*Y+j] = vec_rho[val];
-							cp[i*Y*Z+k*Y+j] = vec_cp[val];
-						}
-					}
-					else if(properties[0]==1){
-						if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
-							geometry[i*Y*Z+k*Y+j]=val;
-							rho[i*Y*Z+k*Y+j] = vec_rho[val];
-							cp[i*Y*Z+k*Y+j] = vec_cp[val];
-						}
-					}
-					else if(properties[0]==2){						
-						if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
-							geometry[i*Y*Z+k*Y+j]=val;
-							rho[i*Y*Z+k*Y+j] = vec_rho[val];
-							cp[i*Y*Z+k*Y+j] = vec_cp[val];
-						}
-					}
-				}
-			}
-		}
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y;j++){
-				for(i=0;i<X+1;i++){
-					xp = x_min_th+i*dx-0.5;
-					yp = y_min_th+j*dx;
-					zp = z_min_th+k*dx;
-					if(properties[0]==0){
-						if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
-							k_heatx[i*Y*Z+k*Y+j] = vec_k[val];
-						}
-					}
-					else if(properties[0]==1){
-						if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
-							k_heatx[i*Y*Z+k*Y+j] = vec_k[val];
-						}
-					}
-					else if(properties[0]==2){						
-						if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
-							k_heatx[i*Y*Z+k*Y+j] = vec_k[val];
-						}
-					}
-				}
-			}
-		}
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y+1;j++){
-				for(i=0;i<X;i++){
-					xp = x_min_th+i*dx;
-					yp = y_min_th+j*dx-0.5;
-					zp = z_min_th+k*dx;
-					if(properties[0]==0){
-						if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
-							k_heaty[i*(Y+1)*Z+k*(Y+1)+j] = vec_k[val];
-						}
-					}
-					else if(properties[0]==1){
-						if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
-							k_heaty[i*(Y+1)*Z+k*(Y+1)+j] = vec_k[val];
-						}
-					}
-					else if(properties[0]==2){						
-						if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
-							k_heaty[i*(Y+1)*Z+k*(Y+1)+j] = vec_k[val];
-						}
-					}
-				}
-			}
-		}
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y;j++){
-				for(i=0;i<X+1;i++){
-					xp = x_min_th+i*dx;
-					yp = x_min_th+j*dx;
-					zp = z_min_th+k*dx+0.5;
-					if(properties[0]==0){
-						if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
-							k_heatz[i*(Y)*(Z+1)+k*(Y)+j] = vec_k[val];
-						}
-					}
-					else if(properties[0]==1){
-						if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
-							k_heatz[i*(Y)*(Z+1)+k*(Y)+j] = vec_k[val];
-						}
-					}
-					else if(properties[0]==2){						
-						if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
-							k_heatz[i*(Y)*(Z+1)+k*(Y)+j] = vec_k[val];
-						}
-					}
-				}
-			}
-		}
-
+	else if(P==1){ // Cylinder
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,vec_rho ,dx,properties,val);
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,vec_rho ,dx,properties,val);
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,vec_cp ,dx,properties,val);
+		place_cylinder_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k ,dx,properties,val);
+		place_cylinder_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k ,dx,properties,val);
+		place_cylinder_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k ,dx,properties,val);
 	}
-	else if(P==0){
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y;j++){
-				for(i=0;i<X;i++){
-					if(((properties[0]-(x_min_th+i*dx))*(properties[0]-(x_min_th+i*dx))+(properties[1]-(y_min_th+j*dx))*(properties[1]-(y_min_th+j*dx))+(properties[2]-(z_min_th+k*dx))*(properties[2]-(z_min_th+k*dx)))<=properties[3]*properties[3]){
-						geometry[i*Y*Z+k*Y+j]=val;
-						rho[i*Y*Z+k*Y+j] = vec_rho[val];
-						cp[i*Y*Z+k*Y+j] = vec_cp[val];
-					}
-				}
-			}
-		}
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y;j++){
-				for(i=0;i<X+1;i++){
-					if(((properties[0]-(x_min_th+i*dx+0.5))*(properties[0]-(x_min_th+i*dx+0.5))+(properties[1]-(y_min_th+j*dx))*(properties[1]-(y_min_th+j*dx))+(properties[2]-(z_min_th+k*dx))*(properties[2]-(z_min_th+k*dx)))<=properties[3]*properties[3]){
-						k_heatx[i*Y*Z+k*Y+j] = vec_k[val];
-					}
-				}
-			}
-		}
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y+1;j++){
-				for(i=0;i<X;i++){
-					if(((properties[0]-(x_min_th+i*dx))*(properties[0]-(x_min_th+i*dx))+(properties[1]-(y_min_th+j*dx+0.5))*(properties[1]-(y_min_th+j*dx+0.5))+(properties[2]-(z_min_th+k*dx))*(properties[2]-(z_min_th+k*dx)))<=properties[3]*properties[3]){
-						k_heaty[i*(Y+1)*Z+k*(Y+1)+j] = vec_k[val];
-					}
-				}
-			}
-		}
-		for(k=0;k<Z+1;k++){
-			for(j=0;j<Y;j++){
-				for(i=0;i<X;i++){
-					if(((properties[0]-(x_min_th+i*dx))*(properties[0]-(x_min_th+i*dx))+(properties[1]-(y_min_th+j*dx))*(properties[1]-(y_min_th+j*dx))+(properties[2]-(z_min_th+k*dx+0.5))*(properties[2]-(z_min_th+k*dx+0.5)))<=properties[3]*properties[3]){
-						k_heatz[i*(Y)*(Z+1)+k*(Y)+j] = vec_k[val];
-					}
-				}
-			}
-		}
-
+	else if(P==0){// Sphere
+		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry, vec_rho ,dx,properties,val);
+		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho, vec_rho ,dx,properties,val);
+		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp, vec_cp ,dx,properties,val);
+		place_sphere_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx, vec_k ,dx,properties,val);
+		place_sphere_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty, vec_k ,dx,properties,val);
+		place_sphere_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz, vec_k ,dx,properties,val);
 	}
 }
 
@@ -4589,7 +4373,7 @@ void rotate_Power_grid_th(std::vector<double> &Source_init,std::vector<double> &
 
 }
 
-// This function rotate the temperature grid (will not be used because of different problems, see report)
+// This function rotate the temperature grid (Just used to show how bad it is)
 void rotate_T_grid(std::vector<double> &T_init,std::vector<double> &T_curr,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, double theta, double T_air){
 	int i = 0;
 	int j = 0;
@@ -4632,6 +4416,7 @@ void rotate_T_grid(std::vector<double> &T_init,std::vector<double> &T_curr,int N
 
 }
 
+// This function interpolate the power grid coming from the electromagnetic calculation on the thermic source grid
 void set_source_from_elec(std::vector<double> &Source,std::vector<double> &Source_elec,double x_min_th,double y_min_th,double z_min_th,double dx,double dx_electro,int X_th,int Y_th,int Z_th,int X_elec,int Y_elec,int Z_elec){
 	double x_elec;
 	double y_elec;
@@ -4676,9 +4461,9 @@ void set_source_from_elec(std::vector<double> &Source,std::vector<double> &Sourc
 
 				Source[i*Y_th*Z_th+k*Y_th+j] = 0;
 				
-				// z_inf
+				// z_inf (1-zeta)
 				Source[i*Y_th*Z_th+k*Y_th+j] = Source[i*Y_th*Z_th+k*Y_th+j] +(1-xi)*(1-eta)*(1-zeta)*Source_elec[(i1)*Z_elec*Y_elec+(j1)+(k1)*Y_elec] + (1+xi)*(1-eta)*(1-zeta)*Source_elec[(i1+1)*Y_elec*Z_elec+(j1)+(k1)*Y_elec] + (1-xi)*(1+eta)*(1-zeta)*Source_elec[(i1)*Y_elec*Z_elec+(j1+1)+(k1)*Y_elec] +( 1+xi)*(1+eta)*(1-zeta)*Source_elec[(i1+1)*Y_elec*Z_elec+(j1+1)+(k1)*Y_elec];
-				// z_sup
+				// z_sup (1+zeta)
 				Source[i*Y_th*Z_th+k*Y_th+j] = Source[i*Y_th*Z_th+k*Y_th+j] +(1-xi)*(1-eta)*(1+zeta)*Source_elec[(i1)*Y_elec*Z_elec+(j1)+(k1+1)*Y_elec] + (1+xi)*(1-eta)*(1+zeta)*Source_elec[(i1+1)*Y_elec*Z_elec+(j1)+(k1+1)*Y_elec] + (1-xi)*(1+eta)*(1+zeta)*Source_elec[(i1)*Y_elec*Z_elec+(j1+1)+(k1+1)*Y_elec] +( 1+xi)*(1+eta)*(1+zeta)*Source_elec[(i1+1)*Y_elec*Z_elec+(j1+1)+(k1+1)*Y_elec];
 
 				Source[i*Y_th*Z_th+k*Y_th+j] = Source[i*Y_th*Z_th+k*Y_th+j]/8;
@@ -4687,13 +4472,71 @@ void set_source_from_elec(std::vector<double> &Source,std::vector<double> &Sourc
 		}
 	}
 }
- 
- 
- 
- 
- 
- 
 
+// This function places a cubic object inside the thermal grid
+void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &M ,std::vector<double> &vec_val,double dx, std::vector<double> &properties, int val){
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	for(i=0;i<X+xx;i++){
+		for(j=0;j<Y+yy;j++){
+			for(k=0;k<Z+zz;k++){
+				if(((x_min_th+(i*dx)-0.5*dx*xx)<=properties[3]+properties[0]/2)&&((x_min_th+i*dx-0.5*dx*xx)>=properties[3]-properties[0]/2)&&((y_min_th+j*dx-0.5*dx*yy)<=properties[4]+properties[1]/2)&&((y_min_th+j*dx-0.5*dx*yy)>=properties[4]-properties[1]/2)&&((z_min_th+k*dx-0.5*dx*zz)<=properties[5]+properties[2]/2)&&((z_min_th+k*dx-0.5*dx*zz)>=properties[5]-properties[2]/2)){
+					M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
+				}
+			}
+		}
+	}
+}
 
+// This function places a cylindrical object inside the thermal grid
+void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val,double dx,std::vector<double> &properties,double val){
+	int i = 0;
+	int j = 0;
+	int k = 0;	
+	double xc = properties[1];
+	double yc = properties[2];
+	double zc = properties[3];
+	double r = properties[4];
+	double l = properties[6];			
+	for(k=0;k<Z+zz;k++){
+		for(j=0;j<Y+yy;j++){
+			for(i=0;i<X+xx;i++){	
+				double xp = x_min_th+i*dx-xx*0.5*dx;
+				double yp = y_min_th+j*dx-yy*0.5*dx;
+				double zp = z_min_th+k*dx-zz*0.5*dx;			
+				if(properties[0]==0){
+					if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
+						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]=vec_val[val];
+					}
+				}
+				else if(properties[0]==1){
+					if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
+						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]=vec_val[val];
+					}
+				}
+				else if(properties[0]==2){						
+					if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
+						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]=vec_val[val];
+					}
+				}
+			}
+		}
+	}
+}
 
-
+// This function places a spherical object inside the thermal grid
+void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val, double dx, std::vector<double> &properties, double val){
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	for(k=0;k<Z+zz;k++){
+		for(j=0;j<Y+yy;j++){
+			for(i=0;i<X+xx;i++){
+				if(((properties[0]-(x_min_th+i*dx-xx*0.5*dx))*(properties[0]-(x_min_th+i*dx-xx*0.5*dx))+(properties[1]-(y_min_th+j*dx-yy*0.5*dx))*(properties[1]-(y_min_th+j*dx-yy*0.5*dx))+(properties[2]-(z_min_th+k*dx-zz*0.5*dx))*(properties[2]-(z_min_th+k*dx-zz*0.5*dx)))<=properties[3]*properties[3]){
+					M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]=vec_val[val];
+				}
+			}
+		}
+	}
+}
