@@ -51,14 +51,14 @@ void Update_send_in_mat(int i_max1,int j_max1, int i_max2,int j_max2,double**M1,
 void Update_prev_in_send(int i_max1,int jmax1,int k_max1,int i_max2,int j_max2,int k_max2,double*V1,double***M1,double*V2,double***M2, int Case, int point_max);
 void Hom_BC(int i_min, int j_min, int k_min, int i_max, int j_max, int k_max,double*** M);
 void init_geometry(std::vector<double> &geometry_init,std::vector<double> &vec_e_r,std::vector<double> &vec_mu_r,std::vector<double> &e_r_tot, std::vector<double> &mu_r_tot, int Nx, int Ny, int Nz);
-void init_geom_one_proc(std::vector<double> &e_rx,double***mu_r,std::vector<double> &e_ry,std::vector<double> &e_rz,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &mu_r_tot,int i_min_proc,int j_min_proc,int k_min_proc,int point_per_proc_x,int point_per_proc_y,int point_per_proc_z,int lastx,int lasty,int lastz,int Nx, int Ny, int Nz);
-void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta);
-void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx, double val,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz , std::vector<double> &vec_er);
-void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er);
-void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er);
-void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er);
+void init_geom_one_proc(std::vector<double> &e_rx,double***mu_r,std::vector<double> &e_ry,std::vector<double> &e_rz,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &mu_r_tot,int i_min_proc,int j_min_proc,int k_min_proc,int point_per_proc_x,int point_per_proc_y,int point_per_proc_z,int lastx,int lasty,int lastz,int Nx, int Ny, int Nz,std::vector<double> &e_diel,std::vector<double> &e_diel_tot);
+void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta,std::vector<double> &e_diel_tot,std::vector<double> &vec_e_diel, std::vector<double> &Temperature, std::vector<double> &vec_e_diel_hot,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change, double dx_th, double x_min_th, double y_min_th, double z_min_th,double X_th,double Y_th, double Z_th);
+void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx, double val,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz , std::vector<double> &vec_er,std::vector<double> &e_diel_tot, std::vector<double> &vec_e_diel,double T_food_init_th,std::vector<double> &vec_e_r_hot, std::vector<double> &vec_e_diel_hot,std::vector<double> &Temp_phase_change);
+void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er,double T_food_init_th,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change);
+void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er,double T_food_init_th,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change);
+void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er,double T_food_init_th,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change);
 void set_rel_perm_one_proc(std::vector<double> &e_r,std::vector<double> &e_r_tot,int i_min_proc,int j_min_proc,int k_min_proc,int point_per_proc_x,int point_per_proc_y,int point_per_proc_z,int lastx,int lasty,int lastz,int Nx, int Ny, int Nz, int comp);
-void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta,int component);
+void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta,int component, std::vector<double> &Temperature, std::vector<double> &vec_e_diel_hot,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change, double dx_th, double x_min_th, double y_min_th, double z_min_th,double X_th,double Y_th, double Z_th);
 void set_vec(std::vector<double> &vec, int nbp, double val);
 void export_coupe(int direction, int component, double pos1,double pos2,int Nx_tot,int Ny_tot,int Nz_tot,double***M,double dx,int step,int myrank, int i_min,int i_max,int j_min ,int j_max ,int k_min ,int k_max ,int Nx,int Ny,int Nz,int lastx,int lasty,int lastz);
 void export_power_thermo(std::vector<double> &Power_tot,int Nx,int Ny,int Nz);
@@ -78,14 +78,14 @@ void export_coupe_th(int direction, double pos1, double pos2, int Nx, int Ny, in
 void export_probe_th(double nb_probe , std::vector<double> &probe,int step_max,int step_pos);
 void set_kheat(int Case,int X,int Y,int Z, std::vector<double> &properties,int l,double dx,std::vector<double> &k_heat);
 void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y, int Z,std::vector<int> &ip_h,std::vector<int> &jp_h,std::vector<int> &kp_h,std::vector<int> &lastx_h,std::vector<int> &lasty_h,std::vector<int> &lastz_h, std::vector<double> &a, std::vector<double> &b,std::vector<double> &Temp,std::vector<double> &constant,std::vector<int> &BC,std::vector<double> &T_Dir,double T_0, double theta,std::vector<double> &k_heat_x,std::vector<double> &k_heat_y,std::vector<double> &k_heat_z,std::vector<double> &geometry,double dx, double h);
-void place_geometry_th(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &k_heatx,std::vector<double> &k_heaty,std::vector<double> &k_heatz,std::vector<double> &rho,std::vector<double> &cp, double x_min_th, double y_min_th, double z_min_th);
+void place_geometry_th(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &k_heatx,std::vector<double> &k_heaty,std::vector<double> &k_heatz,std::vector<double> &rho,std::vector<double> &cp, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &vec_rho_hot,std::vector<double> &vec_cp_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature);
 void set_T0(std::vector<double> &Temp,std::vector<double> &geometry,double T_0,double T_init_food,int  X,int  Y,int  Z );
 void rotate_Power_grid_th(std::vector<double> &Source_init,std::vector<double> &Source_curr,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, double theta);
 void rotate_T_grid(std::vector<double> &T_init,std::vector<double> &T_curr,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, double theta, double T_air);
 void set_source_from_elec(std::vector<double> &Source,std::vector<double> &Source_elec,double x_min_th,double y_min_th,double z_min_th,double dx,double dx_electro,int X_th,int Y_th,int Z_th,int X_elec,int Y_elec,int Z_elec);
-void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &M ,std::vector<double> &vec_val,double dx, std::vector<double> &properties, int val);
-void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val,double dx,std::vector<double> &properties,double val);
-void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val, double dx, std::vector<double> &properties, double val);
+void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &M ,std::vector<double> &vec_val,double dx, std::vector<double> &properties, int val, std::vector<double> &vec_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature);
+void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val,double dx,std::vector<double> &properties,double val, std::vector<double> &vec_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature);
+void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val, double dx, std::vector<double> &properties, double val, std::vector<double> &vec_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature);
 int get_my_rank();
 void check_MUMPS(DMUMPS_STRUC_C &id);
 void init_MUMPS(DMUMPS_STRUC_C &id);
@@ -465,17 +465,41 @@ int main(int argc, char **argv){
 		Declaration of variables. (ELECTRO)
 ********************************************************************************/     
 	std::vector<double> vec_e_r;
+	std::vector<double> vec_e_r_hot;
 	std::vector<double> vec_mu_r;
+	std::vector<double> vec_e_diel;
+	std::vector<double> vec_e_diel_hot;
+	std::vector<double> Temp_phase_change;
  
-	vec_e_r.push_back(1);
-	vec_e_r.push_back(5);
-	vec_e_r.push_back(10);
-	vec_e_r.push_back(15);
+	vec_e_r.push_back(1);	//air
+	vec_e_r.push_back(51.5);	// potato
+	vec_e_r.push_back(52.5);
+	vec_e_r.push_back(53.5);
+
+	vec_e_r_hot.push_back(1);	//air
+	vec_e_r_hot.push_back(1000);	// potato
+	vec_e_r_hot.push_back(1000);
+	vec_e_r_hot.push_back(1000);
 	
 	vec_mu_r.push_back(1);
 	vec_mu_r.push_back(1);
 	vec_mu_r.push_back(1);
 	vec_mu_r.push_back(1);
+
+	vec_e_diel.push_back(0);	//air
+	vec_e_diel.push_back(16.3);	//potato
+	vec_e_diel.push_back(17.3);
+	vec_e_diel.push_back(18.3);
+
+	vec_e_diel_hot.push_back(0);	//air
+	vec_e_diel_hot.push_back(100);	//potato
+	vec_e_diel_hot.push_back(100);
+	vec_e_diel_hot.push_back(100);
+
+	Temp_phase_change.push_back(0);	//air
+	Temp_phase_change.push_back(20);	//potato
+	Temp_phase_change.push_back(20);
+	Temp_phase_change.push_back(20);
 
 	/* Division of the domain along x, y and z depending on the number of process.
 	   Each process will process a portion of the domain.*/
@@ -550,6 +574,8 @@ int main(int argc, char **argv){
 	std::vector<double> e_rx((point_per_proc_x[myrank]+lastx)*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]));
 	std::vector<double> e_ry((point_per_proc_x[myrank])*(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]));
 	std::vector<double> e_rz((point_per_proc_x[myrank])*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz));
+	std::vector<double> e_diel((point_per_proc_x[myrank])*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]));
+	set_vec(e_diel, (point_per_proc_x[myrank])*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]) , 0);
   	set_vec(e_rx, (point_per_proc_x[myrank]+lastx)*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]), 1);
  	set_vec(e_ry, (point_per_proc_x[myrank])*(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]), 1);
  	set_vec(e_rz, (point_per_proc_x[myrank])*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz), 1);	
@@ -557,10 +583,12 @@ int main(int argc, char **argv){
 	std::vector<double> e_r_totx(Nx*Ny*Nz+(Ny*Nz));
 	std::vector<double> e_r_toty(Nx*Ny*Nz+(Nx*Nz));
 	std::vector<double> e_r_totz(Nx*Ny*Nz+(Nx*Ny));
+	std::vector<double> e_diel_tot(Nx*Ny*Nz);
 	std::vector<double> mu_r_tot(Nx*Ny*Nz);
   	set_vec(e_r_totx, Nx*Ny*Nz+(Ny*Nz), 1);
   	set_vec(e_r_toty, Nx*Ny*Nz+(Nx*Nz), 1);
   	set_vec(e_r_totz, Nx*Ny*Nz+(Nx*Ny), 1);
+	set_vec(e_diel_tot, Nx*Ny*Nz, 0);
 
 
 
@@ -587,7 +615,7 @@ int main(int argc, char **argv){
 		prop_temp[3] = prop_sphere[5*i+3];
 		prop_temp[4] = prop_sphere[5*i+4];
 		int Config = 0;
-		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init , dx, prop_temp[4],e_r_totx,e_r_toty,e_r_totz ,vec_e_r);
+		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init , dx, prop_temp[4],e_r_totx,e_r_toty,e_r_totz ,vec_e_r ,e_diel_tot, vec_e_diel,T_food_init_th,vec_e_r_hot, vec_e_diel_hot,Temp_phase_change);
 	}
 	// Cylinder
 	for(i=0;i<n_cylinder;i++){
@@ -599,7 +627,7 @@ int main(int argc, char **argv){
 		prop_temp[5] = prop_cylinder[7*i+5];
 		prop_temp[6] = prop_cylinder[7*i+6];
 		int Config = 1;
-		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init , dx, prop_temp[5],e_r_totx,e_r_toty,e_r_totz ,vec_e_r);
+		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init , dx, prop_temp[5],e_r_totx,e_r_toty,e_r_totz ,vec_e_r,e_diel_tot, vec_e_diel,T_food_init_th,vec_e_r_hot, vec_e_diel_hot,Temp_phase_change);
 	}
 	// Cube
 	for(i=0;i<n_cube;i++){
@@ -611,10 +639,10 @@ int main(int argc, char **argv){
 		prop_temp[5] = prop_cube[7*i+5];
 		prop_temp[6] = prop_cube[7*i+6];
 		int Config = 2;
-		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init , dx, prop_temp[6],e_r_totx,e_r_toty,e_r_totz ,vec_e_r);
+		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init , dx, prop_temp[6],e_r_totx,e_r_toty,e_r_totz ,vec_e_r,e_diel_tot, vec_e_diel,T_food_init_th,vec_e_r_hot, vec_e_diel_hot,Temp_phase_change);
 	}
  	// Set the geometry on the current proc
-	init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,e_r_totz,mu_r_tot, i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz);
+	init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,e_r_totz,mu_r_tot, i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz,e_diel,e_diel_tot);
 
 
 	// Calculation of the position of the antenna.
@@ -690,11 +718,12 @@ int main(int argc, char **argv){
 	std::vector<double> Power_old(mynbp_Power);
 	set_vec(Power_old, mynbp_Power , 0);
 	mygrid_Power.scalars["Power"] = &Power_new;
-  std::vector<double> Power_tot(Nx*Ny*Nz);
-  std::vector<double> Power_tot_rotated_back(Nx*Ny*Nz);
+	mygrid_Power.scalars["diel_perm"] = &e_diel;
+  	std::vector<double> Power_tot(Nx*Ny*Nz);
+ 	std::vector<double> Power_tot_rotated_back(Nx*Ny*Nz);
 	set_vec(Power_tot, Nx*Ny*Nz , 0);
 	set_vec(Power_tot_rotated_back, Nx*Ny*Nz , 0);
-  std::vector<double> Power_send(mynbp_Power);
+ 	std::vector<double> Power_send(mynbp_Power);
 	set_vec(Power_send, mynbp_Power , 0);
 
 
@@ -1264,21 +1293,36 @@ int main(int argc, char **argv){
     std::vector<double> vec_k;
     std::vector<double> vec_rho;
     std::vector<double> vec_cp;
+    std::vector<double> vec_rho_hot;
+    std::vector<double> vec_cp_hot;
  
     // Air
     vec_k.push_back(0.025);
     vec_rho.push_back(1.2);
     vec_cp.push_back(1004);
+    vec_rho_hot.push_back(1.2);
+    vec_cp_hot.push_back(1004);
 
     // Chicken
     vec_k.push_back(0.5);
     vec_rho.push_back(1080);
     vec_cp.push_back(3132);
+    vec_rho_hot.push_back(100);
+    vec_cp_hot.push_back(100);
+
+    // potato
+    vec_k.push_back(0.56);
+    vec_rho.push_back(1130);
+    vec_cp.push_back(3530);
+    vec_rho_hot.push_back(100);
+    vec_cp_hot.push_back(100);
 
     // Not physical
     vec_k.push_back(1);
     vec_rho.push_back(1);
     vec_cp.push_back(1000000);
+    vec_rho_hot.push_back(100);
+    vec_cp_hot.push_back(100);
     
     std::vector<double> constant(n_th);
     #pragma omp parallel for default(shared) private(i)
@@ -1300,7 +1344,7 @@ int main(int argc, char **argv){
     }
 
 
-    // Placement of the geometry
+    // Placement of the geometry(Thermo)
 	// Sphere	
 	for(i=0;i<n_sphere;i++){
 		int j=0;
@@ -1309,7 +1353,7 @@ int main(int argc, char **argv){
 			prop_temp[j] = prop_sphere[prop_per_obj*i+j];
 		}		
 		int Config = 0;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
 	}
 	//Cylinder
 	for(i=0;i<n_cylinder;i++){
@@ -1319,7 +1363,7 @@ int main(int argc, char **argv){
 			prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
 		}
 		int Config = 1;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
 	}
 	// Cube
 	for(i=0;i<n_cube;i++){
@@ -1329,7 +1373,7 @@ int main(int argc, char **argv){
 			prop_temp[j] = prop_cube[prop_per_obj*i+j];
 		}
 		int Config = 2;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
 	}    
         #pragma omp parallel for default(shared) private(i)
   for(i=0;i<X_th*Y_th*Z_th;i++){
@@ -1342,7 +1386,7 @@ int main(int argc, char **argv){
 ********************************************************************************/
 
 
-step_pos_max = 3;    // To be suppressed afterwards
+//step_pos_max = 0;    // To be suppressed afterwards
 
 
 if(solve_electro==0){	// Desactivation of the electro magnetic solver
@@ -1374,13 +1418,13 @@ while(step_pos<=step_pos_max){
 	set_vec(Power_old, mynbp_Power, 0);
 
 	if(myrank==0){
-		printf("\n*********************************************************\n          POSITION DE LA NOURRITURE : %d sur %d \n*********************************************************\n",step_pos,step_pos_max);
+		printf("\n*********************************************************\n          POSITION DE LA NOURRITURE : %d sur %d \n*********************************************************\n",step_pos ,step_pos_max);
 		if(solve_electro==1){
 			printf("      SOLVING OF THE ELECTRO MAGNETIC EQUATION... \n",step_pos,step_pos_max);
 		}
 	}
 
-	while(step<=step_max){
+	while(step!=-1){
 		   /* Certain processes needs an information on Hx, Hy and Hz at places 
 		   attributed to another process to update the electric field.*/
 			if(divx!=1){ // Communication in the x direction
@@ -1919,11 +1963,11 @@ while(step_pos<=step_pos_max){
 			for(j=1;j<(ny-lasty);j++){
 				for(k=1;k<(nz-lastz);k++) {
            //x    
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((e_rx[(i)*(ny)*(nz)+(k-firstz)*(ny)+(j-firsty)]*Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz)*(ny)+j+1-firsty]*Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(e_rx[(i)*(ny)*(nz)+(k+1-firstz)*(ny)+j-firsty]*Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz+1)*(ny)+j+1-firsty]*Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
 					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(e_ry[(i-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
       				}
 			}
 		}
@@ -1933,11 +1977,11 @@ while(step_pos<=step_pos_max){
 		  	for(j=1;j<(ny-lasty);j++){
 				for(k=1;k<(nz-lastz);k++) {    
            //x    
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((e_rx[(i)*(ny)*(nz)+(k-firstz)*(ny)+(j-firsty)]*Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz)*(ny)+j+1-firsty]*Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(e_rx[(i)*(ny)*(nz)+(k+1-firstz)*(ny)+j-firsty]*Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz+1)*(ny)+j+1-firsty]*Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
 					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(e_ry[(i)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
         			}
 			}
 		}
@@ -1947,11 +1991,11 @@ while(step_pos<=step_pos_max){
 			for(j=0;j<=0;j++){
 				for(k=1;k<(nz-lastz);k++) {    
            //x    
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((e_rx[(i)*(ny)*(nz)+(k-firstz)*(ny)+(j)]*Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz)*(ny)+j+1-firsty]*Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(e_rx[(i)*(ny)*(nz)+(k+1-firstz)*(ny)+j]*Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz+1)*(ny)+j+1-firsty]*Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
 					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(e_ry[(i-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
         			}
 			}
 		}   
@@ -1961,11 +2005,11 @@ while(step_pos<=step_pos_max){
 			for(j=1;j<(ny-lasty);j++){
 				for(k=0;k<=0;k++) {    
            //x    
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((e_rx[(i)*(ny)*(nz)+(k)*(ny)+(j-firsty)]*Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(e_rx[(i)*(ny)*(nz)+(k)*(ny)+j+1-firsty]*Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(e_rx[(i)*(ny)*(nz)+(k+1-firstz)*(ny)+j-firsty]*Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz+1)*(ny)+j+1-firsty]*Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
 					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(e_ry[(i-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;		        
         			}
 			}
 		}  
@@ -1976,15 +2020,15 @@ while(step_pos<=step_pos_max){
 		  	for(j=0;j<=0;j++){
 				for(k=1;k<(nz-lastz);k++) {    
            //x    
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((e_rx[(i)*(ny)*(nz)+(k-firstz)*(ny)+(j)]*Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz)*(ny)+j+1-firsty]*Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(e_rx[(i)*(ny)*(nz)+(k+1-firstz)*(ny)+j]*Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz+1)*(ny)+j+1-firsty]*Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
 					
           
           //y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(e_ry[(i)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
 				
         
         	//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i+1-firstx][k]*Ex_left[i+1-firstx][k])+(e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
         			}
 			}
 		}
@@ -1995,11 +2039,11 @@ while(step_pos<=step_pos_max){
 		  	for(j=1;j<(ny-lasty);j++){
 				for(k=0;k<=0;k++) {    
            //x    
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((e_rx[(i)*(ny)*(nz)+(k)*(ny)+(j-firsty)]*Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(e_rx[(i)*(ny)*(nz)+(k)*(ny)+j+1-firsty]*Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(e_rx[(i)*(ny)*(nz)+(k+1-firstz)*(ny)+j-firsty]*Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz+1)*(ny)+j+1-firsty]*Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
 					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i+1-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(e_ry[(i)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
 					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j-firsty]*Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
         			}
 			}
 		}  
@@ -2010,11 +2054,11 @@ while(step_pos<=step_pos_max){
 			for(j=0;j<=0;j++){
 				for(k=0;k<=0;k++) {    
            //x    
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((e_rx[(i)*(ny)*(nz)+(k)*(ny)+j+1-firsty]*Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(e_rx[(i)*(ny)*(nz)+(k+1-firstz)*(ny)+j]*Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz+1)*(ny)+j+1-firsty]*Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
 					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(e_ry[(i-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
 					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(e_rz[(i-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;		        
         			}
 			}
 		} 
@@ -2024,11 +2068,11 @@ while(step_pos<=step_pos_max){
 			for(j=0;j<=0;j++){
 				for(k=0;k<=0;k++) {    
            //x    
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((e_rx[(i)*(ny)*(nz)+(k)*(ny)+j+1-firsty]*Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(e_rx[(i)*(ny)*(nz)+(k+1-firstz)*(ny)+j]*Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(e_rx[(i)*(ny)*(nz)+(k-firstz+1)*(ny)+j+1-firsty]*Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/9;
+           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/9;
 					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_ry[(i+1-firstx)*(ny+lasty)*nz+(k)*(ny+lasty)+j]*Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(e_ry[(i)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(e_ry[(i+1-firstx)*(ny+lasty)*nz+(k+1-firstz)*(ny+lasty)+j]*Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/9;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/9;
 					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j]*Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(e_rz[(i)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(e_rz[(i+1-firstx)*(ny)*(nz+lastz)+(k)*ny+j+1-firsty]*Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/9;		        
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/9;		        
         			}
 			}
 		}
@@ -2046,15 +2090,16 @@ while(step_pos<=step_pos_max){
 			for(i=0;i<nx;i++){
 				for(j=0;j<ny;j++){
 					for(k=0;k<(nz);k++) {                         
-						Power_new[i+j*nx+k*(ny)*nx] = (f*Power_new[i+j*nx+k*(ny)*nx])/(step_mean);						
+						Power_new[i+j*nx+k*(ny)*nx] = (3.141692*f*Power_new[i+j*nx+k*(ny)*nx])/(step_mean);						
 						Residual = Residual + (Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]);
+						Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
 						Power_old[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx];
 					}
 				}
 			}		
      			 if((step/step_mean)==1||(step/step_mean)%5==0){
 				if(Residual==0){
-					Residual = 1;
+					Residual = 1; 
 					steady_state_reached=1;
 				}		
         			Residual_0 = Residual;
@@ -2156,18 +2201,61 @@ if(solve_thermo){
 	}
 	rotate_Power_grid(Power_tot,Power_tot_rotated_back,Nx,Ny,Nz,Lx,Ly,Lz,dx,theta);
 	main_th(Power_tot_rotated_back, Temperature,BC, T_Dir,  T_0,dx_th,h_air,Lx_th,Ly_th,Lz_th,dt_th,step_max_th,nb_source_th,SR_th,theta_th,n_sphere,n_cylinder,n_cube,prop_sphere,prop_cylinder,prop_cube,T_food_init_th,x_min_th,y_min_th,z_min_th,dx,Lx,Ly_electro,Lz_electro,prop_per_source_th, prop_source_th, Cut_th,Pos_cut_th,N_cut_th,step_cut_th,nb_probe_th,Pos_probe_th, id,k_heat_x,k_heat_y,k_heat_z,rho,cp,vec_k,vec_rho,vec_cp,constant,geometry_th,step_pos,thermo_domain);
-}
+	if(myrank==0){
+		for(l=1;l<nbproc;l++){		
+	    		MPI_Send(&Temperature[0],X_th*Y_th*Z_th,MPI_DOUBLE,l,myrank,MPI_COMM_WORLD);  
+		}
+	}
+	else{
+		MPI_Recv(&Temperature[0],X_th*Y_th*Z_th,MPI_DOUBLE,0,0,MPI_COMM_WORLD, &mystatus);
+	}
 
+	// Update of the parameter(Thermo)
+	// Sphere	
+	for(i=0;i<n_sphere;i++){
+		int j=0;
+		int prop_per_obj = 5;
+		for(j=0;j<prop_per_obj;j++){
+			prop_temp[j] = prop_sphere[prop_per_obj*i+j];
+		}		
+		int Config = 0;
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+	}
+	//Cylinder
+	for(i=0;i<n_cylinder;i++){
+		int j=0;
+		int prop_per_obj = 7;
+		for(j=0;j<prop_per_obj;j++){
+			prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
+		}
+		int Config = 1;
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+	}
+	// Cube
+	for(i=0;i<n_cube;i++){
+		int j=0;
+		int prop_per_obj = 7;
+		for(j=0;j<prop_per_obj;j++){
+			prop_temp[j] = prop_cube[prop_per_obj*i+j];
+		}
+		int Config = 2;
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+	}    
+        #pragma omp parallel for default(shared) private(i)
+  for(i=0;i<X_th*Y_th*Z_th;i++){
+  	constant[i] = (dt_th)/(rho[i]*cp[i]*dx_th*dx_th);
+  }
+}
 /*******************************************************************************
 			   Rotation
 *******************************************************************************/
    
       	theta += delta_theta;
-      	rotate_geometry(geometry_init,e_r_totx,e_r_toty,e_r_totz ,vec_e_r, Nx, Ny, Nz, Lx, Ly, Lz, dx,n_sphere, prop_sphere, n_cylinder,prop_cylinder, n_cube,prop_cube, theta);                    
-	init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,e_r_totz,mu_r_tot, i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz      , Nx, Ny, Nz);
-
+      	rotate_geometry(geometry_init,e_r_totx,e_r_toty,e_r_totz ,vec_e_r, Nx, Ny, Nz, Lx, Ly, Lz, dx,n_sphere, prop_sphere, n_cylinder,prop_cylinder, n_cube,prop_cube, theta,e_diel_tot,vec_e_diel, Temperature, vec_e_diel_hot,vec_e_r_hot,Temp_phase_change, dx_th,x_min_th,y_min_th,z_min_th,X_th,Y_th,Z_th);                    
+	init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,e_r_totz,mu_r_tot, i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz,e_diel,e_diel_tot);
 step_pos++;	  
 }
+			
    
 
 
@@ -2874,14 +2962,18 @@ void init_geometry(std::vector<double> &geometry_init,std::vector<double> &vec_e
 }
 
 // This function initialize the value of the permitivity on the domain associated to the current process
-void init_geom_one_proc(std::vector<double> &e_rx,double***mu_r,std::vector<double> &e_ry,std::vector<double> &e_rz,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &mu_r_tot,int i_min_proc,int j_min_proc,int k_min_proc,int point_per_proc_x,int point_per_proc_y,int point_per_proc_z,int lastx,int lasty,int lastz,int Nx, int Ny, int Nz){
+void init_geom_one_proc(std::vector<double> &e_rx,double***mu_r,std::vector<double> &e_ry,std::vector<double> &e_rz,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &mu_r_tot,int i_min_proc,int j_min_proc,int k_min_proc,int point_per_proc_x,int point_per_proc_y,int point_per_proc_z,int lastx,int lasty,int lastz,int Nx, int Ny, int Nz,std::vector<double> &e_diel,std::vector<double> &e_diel_tot){int i;
+int j;
+int k;
 	set_rel_perm_one_proc(e_rx,e_r_totx,i_min_proc,j_min_proc,k_min_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Nx,Ny,Nz,0);
 	set_rel_perm_one_proc(e_ry,e_r_toty,i_min_proc,j_min_proc,k_min_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Nx,Ny,Nz,1);
-	set_rel_perm_one_proc(e_rz,e_r_totz,i_min_proc,j_min_proc,k_min_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Nx,Ny,Nz,2);	
+	set_rel_perm_one_proc(e_rz,e_r_totz,i_min_proc,j_min_proc,k_min_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Nx,Ny,Nz,2);
+	set_rel_perm_one_proc(e_diel,e_diel_tot,i_min_proc,j_min_proc,k_min_proc,point_per_proc_x,point_per_proc_y,point_per_proc_z,lastx,lasty,lastz,Nx,Ny,Nz,3);	
+
 }
 
 // This function make the objects rotate inside the electromagnetic grid
-void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta){
+void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta,std::vector<double> &e_diel_tot,std::vector<double> &vec_e_diel, std::vector<double> &Temperature, std::vector<double> &vec_e_diel_hot,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change, double dx_th, double x_min_th, double y_min_th, double z_min_th,double X_th,double Y_th, double Z_th){
 	int i = 0;
 	int j = 0;
 	int k = 0;
@@ -2951,12 +3043,13 @@ void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r
 		}
 	}
  
- rotate_rel_perm(e_r_totx,vec_er,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,ncube,info_cube,theta,0);
- rotate_rel_perm(e_r_toty,vec_er,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,ncube,info_cube,theta,1);
- rotate_rel_perm(e_r_totz,vec_er,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,ncube,info_cube,theta,2);
+ rotate_rel_perm(e_r_totx,vec_er,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,ncube,info_cube,theta,0, Temperature, vec_e_r_hot,vec_e_r_hot,Temp_phase_change, dx_th,x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th);
+ rotate_rel_perm(e_r_toty,vec_er,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,ncube,info_cube,theta,1, Temperature, vec_e_r_hot,vec_e_r_hot,Temp_phase_change, dx_th,x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th);
+ rotate_rel_perm(e_r_totz,vec_er,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,ncube,info_cube,theta,2, Temperature, vec_e_r_hot,vec_e_r_hot,Temp_phase_change, dx_th,x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th);
+ rotate_rel_perm(e_diel_tot,vec_e_diel,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,ncube,info_cube,theta,3, Temperature, vec_e_diel_hot,vec_e_diel_hot,Temp_phase_change, dx_th,x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th);
 }
 
-void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz , std::vector<double> &vec_er){
+void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &e_r_totx,std::vector<double> &e_r_toty,std::vector<double> &e_r_totz , std::vector<double> &vec_er,std::vector<double> &e_diel_tot, std::vector<double> &vec_e_diel,double T_food_init_th,std::vector<double> &vec_e_r_hot, std::vector<double> &vec_e_diel_hot,std::vector<double> &Temp_phase_change){
 	
 	int i=0;
 	int j=0;
@@ -2973,9 +3066,10 @@ void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,s
 				}
 			}
 		}
-		place_cube(X,Y,Z,properties,geometry,dx,val,0,e_r_totx ,vec_er);
-		place_cube(X,Y,Z,properties,geometry,dx,val,1,e_r_toty ,vec_er);
-		place_cube(X,Y,Z,properties,geometry,dx,val,2,e_r_totz ,vec_er);
+		place_cube(X,Y,Z,properties,geometry,dx,val,0,e_r_totx ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);
+		place_cube(X,Y,Z,properties,geometry,dx,val,1,e_r_toty ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);
+		place_cube(X,Y,Z,properties,geometry,dx,val,2,e_r_totz ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);
+		place_cube(X,Y,Z,properties,geometry,dx,val,3,e_diel_tot ,vec_e_diel,T_food_init_th,vec_e_diel_hot,Temp_phase_change);
 	}
 	else if(P==1){	//Cylinder
 		double xc = properties[1];
@@ -3011,9 +3105,10 @@ void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,s
 				}
 			}
 		}
-		place_cylinder(X,Y,Z,properties,geometry,dx,val,0,e_r_totx ,vec_er);
-		place_cylinder(X,Y,Z,properties,geometry,dx,val,1,e_r_toty ,vec_er);
-		place_cylinder(X,Y,Z,properties,geometry,dx,val,2,e_r_totz ,vec_er);
+		place_cylinder(X,Y,Z,properties,geometry,dx,val,0,e_r_totx ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);
+		place_cylinder(X,Y,Z,properties,geometry,dx,val,1,e_r_toty ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);
+		place_cylinder(X,Y,Z,properties,geometry,dx,val,2,e_r_totz ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);
+		place_cylinder(X,Y,Z,properties,geometry,dx,val,3,e_diel_tot ,vec_e_diel,T_food_init_th,vec_e_diel_hot,Temp_phase_change);
 	}
 	else if(P==0){	//Sphere
 		#pragma omp parallel for default(shared) private(i,j,k)
@@ -3026,9 +3121,10 @@ void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,s
 				}
 			}
 		}
-		place_sphere(X,Y,Z,properties,geometry,dx,val,0,e_r_totx ,vec_er);
-		place_sphere(X,Y,Z,properties,geometry,dx,val,1,e_r_toty ,vec_er);
-		place_sphere(X,Y,Z,properties,geometry,dx,val,2,e_r_totz ,vec_er);                                                     
+		place_sphere(X,Y,Z,properties,geometry,dx,val,0,e_r_totx ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);
+		place_sphere(X,Y,Z,properties,geometry,dx,val,1,e_r_toty ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);
+		place_sphere(X,Y,Z,properties,geometry,dx,val,2,e_r_totz ,vec_er,T_food_init_th,vec_e_r_hot,Temp_phase_change);  
+		place_sphere(X,Y,Z,properties,geometry,dx,val,3,e_diel_tot ,vec_e_diel,T_food_init_th,vec_e_diel_hot,Temp_phase_change);                                                   
 	}
 }
 
@@ -3086,7 +3182,7 @@ void rotate_Power_grid(std::vector<double> &Power_electro,std::vector<double> &P
 }
 
 // This function places a cubic object inside the domain
-void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er) {
+void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er,double T_food_init_th,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change) {
 	int i = 0;
 	int j = 0;
 	int k = 0;	
@@ -3107,7 +3203,12 @@ void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<
 			for(j=0;j<Y+yy;j++){
 				for(k=0;k<Z+zz;k++){
 					if(((i*dx-0.5*xx*dx)<=properties[3]+properties[0]/2)&&((i*dx-0.5*xx*dx)>=properties[3]-properties[0]/2)&&((j*dx-0.5*yy*dx)<=properties[4]+properties[1]/2)&&((j*dx-0.5*yy*dx)>=properties[4]-properties[1]/2)&&((k*dx-0.5*zz*dx)<=properties[5]+properties[2]/2)&&((k*dx-0.5*zz*dx)>=properties[5]-properties[2]/2)){
-						e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						if(T_food_init_th<Temp_phase_change[(int) val]){
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						}
+						else{
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_e_r_hot[(int) val];
+						}
 					}
 				}
 			}
@@ -3115,7 +3216,7 @@ void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<
 }
 
 // This function places a cylindrical object inside the domain
-void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er){
+void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er,double T_food_init_th,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change){
 	int i = 0;
 	int j = 0;
 	int k = 0;	
@@ -3148,17 +3249,32 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vec
 				zp = k*dx-0.5*zz*dx;
 				if(properties[0]==0){
 					if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
-						e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						if(T_food_init_th<Temp_phase_change[(int) val]){
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						}
+						else{
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_e_r_hot[(int) val];
+						}
 					}
 				}
 				else if(properties[0]==1){
 					if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
-						e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						if(T_food_init_th<Temp_phase_change[(int) val]){
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						}
+						else{
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_e_r_hot[(int) val];
+						}
 					}
 				}
 				else if(properties[0]==2){						
 					if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
-						e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						if(T_food_init_th<Temp_phase_change[(int) val]){
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						}
+						else{
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_e_r_hot[(int) val];
+						}
 					}
 				}
 			}
@@ -3167,7 +3283,7 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vec
 }
 
 // This function places a spherical object inside the domain
-void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er){
+void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vector<double> &geometry, double dx,double val, int component,std::vector<double> &e_r_tot , std::vector<double> &vec_er,double T_food_init_th,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change){
 	double i = 0;
 	double j = 0;
 	double k = 0;	
@@ -3190,7 +3306,12 @@ void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vecto
          				double yp = (j*dx)-0.5*yy*dx;
           				double zp = (k*dx)-0.5*zz*dx;
 					if(((properties[0]-(xp))*(properties[0]-(xp))+(properties[1]-(yp))*(properties[1]-(yp))+(properties[2]-(zp))*(properties[2]-(zp)))<=properties[3]*properties[3]){
-						e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						if(T_food_init_th<Temp_phase_change[(int) val]){
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
+						}
+						else{
+							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_e_r_hot[(int) val];
+						}
 					}
 				}
 			}
@@ -3199,6 +3320,7 @@ void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vecto
 
 // This function set the grid of relative permittivity on the current process
 void set_rel_perm_one_proc(std::vector<double> &e_r,std::vector<double> &e_r_tot,int i_min_proc,int j_min_proc,int k_min_proc,int point_per_proc_x,int point_per_proc_y,int point_per_proc_z,int lastx,int lasty,int lastz,int Nx, int Ny, int Nz, int component){
+
 	int i=0;
 	int j=0;
 	int k=0;
@@ -3223,7 +3345,7 @@ void set_rel_perm_one_proc(std::vector<double> &e_r,std::vector<double> &e_r_tot
 	#pragma omp parallel for default(shared) private(i,j,k)
 	for(i=0;i<point_per_proc_x+xx;i++){
 		for(j=0;j<point_per_proc_y+yy;j++){
-			for(k=0;k<point_per_proc_z+zz;k++){
+			for(k=0;k<point_per_proc_z+zz;k++){                        				
 				e_r[(i)*(point_per_proc_y+yy)*(point_per_proc_z+zz)+(k)*(point_per_proc_y+yy)+(j)] = e_r_tot[(i+i_min_proc)*(Ny+yyb)*(Nz+zzb)+(k+k_min_proc)*(Ny+yyb)+(j+j_min_proc)];
 			}
 		}
@@ -3231,7 +3353,7 @@ void set_rel_perm_one_proc(std::vector<double> &e_r,std::vector<double> &e_r_tot
 }
 
 // This function rotate the total grid of relative permitivitty
-void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta,int component){
+void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, int nsphere,std::vector<double> &info_sphere, int ncylinder,std::vector<double> &info_cylinder, int ncube,std::vector<double> &info_cube, double theta,int component, std::vector<double> &Temperature, std::vector<double> &vec_e_diel_hot,std::vector<double> &vec_e_r_hot,std::vector<double> &Temp_phase_change, double dx_th, double x_min_th, double y_min_th, double z_min_th,double X_th,double Y_th, double Z_th){
 	double xx = 0;
 	double yy = 0;
 	double zz = 0;	
@@ -3260,12 +3382,24 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,in
 	double zc;
 	double r;
 	double l;
+	double x1;
+	double y1;
+	double z1;
+	int i1;
+	int j1;
+	double xi;
+	double eta;
 
 	//#pragma omp parallel for default(shared) private(i,j,k,x_after,y_after,z_after,x_before,y_before,xc,yc,zc,r,l)
 	for(i=0;i<Nx+xx;i++){
 		for(j=0;j<Ny+yy;j++){
 			for(k=0;k<Nz+zz;k++){
-				e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = 1;
+        if(component==3){
+          e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = 0;
+        }
+        else{
+				  e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = 1;
+        }
 				// Coordinate after rotation
 				x_after = i*dx-0.5*xx*dx;
 				y_after = j*dx-0.5*yy*dx;
@@ -3273,10 +3407,28 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,in
 				// Coordinate before rotation
 				x_before = xrot + (x_after-xrot)*cos(theta) + (y_after-yrot)*sin(theta);
 				y_before = yrot - (x_after-xrot)*sin(theta)+(y_after-yrot)*cos(theta);
+			
+				x1 = (x_before-x_min_th)/dx_th;
+				y1 = (y_before-y_min_th)/dx_th;
+				i1 = (int) x1;
+				j1 = (int) y1;
+				x1 = i1*dx_th;
+				y1 = j1*dx_th;
+				xi =-1+2*((x_before-x_min_th)-x1)/dx_th;
+				eta =-1+2*((y_before-y_min_th)-y1)/dx_th;
+				double Temp;			
+							
 
 				for(object=0;object<ncube;object++){//	Cube
-					if(((x_before)<=info_cube[7*object+3]+info_cube[7*object+0]/2)&&((x_before)>=info_cube[7*object+3]-info_cube[7*object+0]/2)&&((y_before)<=info_cube[7*object+4]+info_cube[7*object+1]/2)&&((y_before)>=info_cube[7*object+4]-info_cube[7*object+1]/2)&&((z_after)<=info_cube[7*object+5]+info_cube[7*object+2]/2)&&((z_after)>=info_cube[7*object+5]-info_cube[7*object+2]/2)){
-						e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cube[7*object+6]];
+					if(((x_before)<=info_cube[7*object+3]+info_cube[7*object+0]/2)&&((x_before)>=info_cube[7*object+3]-info_cube[7*object+0]/2)&&((y_before)<=info_cube[7*object+4]+info_cube[7*object+1]/2)&&((y_before)>=info_cube[7*object+4]-info_cube[7*object+1]/2)&&((z_after)<=info_cube[7*object+5]+info_cube[7*object+2]/2)&&((z_after)>=info_cube[7*object+5]-info_cube[7*object+2]/2)){	
+						Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
+						Temp = Temp/4;					
+						if(Temp<Temp_phase_change[(int) info_cube[7*object+6]]){
+							e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cube[7*object+6]];
+						}
+						else{
+							e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_e_r_hot[(int) info_cube[7*object+6]];
+						}
 					}
 				}
 
@@ -3289,24 +3441,52 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,in
 
 					if(info_cylinder[7*object]==0){
 						if(((y_before-yc)*(y_before-yc)+(z_after-zc)*(z_after-zc)<=r*r) && x_before<=xc+l/2 && x_before>= xc-l/2){
-              e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
+							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
+							Temp = Temp/4;
+              						if(Temp<Temp_phase_change[(int) info_cube[7*object+6]]){
+								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
+							}
+							else{
+								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_e_r_hot[(int) info_cylinder[7*object+5]];
+							}
 						}
 					}
 					else if(info_cylinder[7*object]==1){
 						if(((x_before-xc)*(x_before-xc)+(z_after-zc)*(z_after-zc)<=r*r) && y_before<=yc+l/2 && y_before>= yc-l/2){
-							e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
+							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
+							Temp = Temp/4;
+							if(Temp<Temp_phase_change[(int) info_cube[7*object+6]]){
+								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
+							}
+							else{
+								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_e_r_hot[(int) info_cylinder[7*object+5]];
+							}
 						}
 					}
 					else if(info_cylinder[7*object]==2){						
 						if(((x_before-xc)*(x_before-xc)+(y_before-yc)*(y_before-yc)<=r*r) && z_after<=zc+l/2 && z_after>= zc-l/2){
-							e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
+							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
+							Temp = Temp/4;
+							if(Temp<Temp_phase_change[(int) info_cube[7*object+6]]){
+								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
+							}
+							else{
+								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_e_r_hot[(int) info_cylinder[7*object+5]];
+							}
 						}
 					}
 				}
 
 				for(object=0;object<nsphere;object++){//	Sphere
 					if(((info_sphere[5*object+0]-x_before)*(info_sphere[5*object+0]-x_before)+(info_sphere[5*object+1]-y_before)*(info_sphere[5*object+1]-y_before)+(info_sphere[5*object+2]-z_after)*(info_sphere[5*object+2]-z_after))<=info_sphere[5*object+3]*info_sphere[5*object+3]){
-            e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_sphere[5*object+4]];
+						Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
+						Temp = Temp/4;						
+           					if(Temp<Temp_phase_change[(int) info_sphere[4*object+4]]){
+							e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_sphere[5*object+4]];
+						}
+						else{
+							e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_e_r_hot[(int) info_sphere[5*object+4]];
+						}
 					}
 				}				
 			}
@@ -3702,7 +3882,7 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
 	}	
 
        // The value at the temporal probe is registered
-	for(i=0;i<nb_probe;i++){
+	for(i=0;i<nb_probe;i++){		
 		int nx = (int) Pos_probe[i*3];
 		int ny = (int) Pos_probe[i*3+1];
 		int nz = (int) Pos_probe[i*3+2];
@@ -4282,31 +4462,31 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 }
 
 // This function can place different geometry of objects inside the domain (Need to be parametrized!!)
-void place_geometry_th(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &k_heatx,std::vector<double> &k_heaty,std::vector<double> &k_heatz,std::vector<double> &rho,std::vector<double> &cp, double x_min_th, double y_min_th, double z_min_th){	
+void place_geometry_th(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &k_heatx,std::vector<double> &k_heaty,std::vector<double> &k_heatz,std::vector<double> &rho,std::vector<double> &cp, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &vec_rho_hot,std::vector<double> &vec_cp_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature){	
 	if(P==2){ // Cube
-		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,vec_rho,dx,properties,val);
-		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,vec_rho,dx,properties,val);
-		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,vec_cp,dx,properties,val);
-		place_cube_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k,dx,properties,val);
-		place_cube_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k,dx,properties,val);
-		place_cube_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k,dx,properties,val);
+		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,vec_rho,dx,properties,val, vec_rho_hot,Temp_phase_change,Temperature);
+		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,vec_rho,dx,properties,val, vec_rho_hot,Temp_phase_change,Temperature);
+		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,vec_cp,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_cube_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_cube_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_cube_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
 
 	}
 	else if(P==1){ // Cylinder
-		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,vec_rho ,dx,properties,val);
-		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,vec_rho ,dx,properties,val);
-		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,vec_cp ,dx,properties,val);
-		place_cylinder_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k ,dx,properties,val);
-		place_cylinder_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k ,dx,properties,val);
-		place_cylinder_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k ,dx,properties,val);
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,vec_rho ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,vec_rho ,dx,properties,val, vec_rho_hot,Temp_phase_change,Temperature);
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,vec_cp ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_cylinder_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_cylinder_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k ,dx,properties,val,vec_cp_hot,Temp_phase_change,Temperature);
+		place_cylinder_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
 	}
 	else if(P==0){// Sphere
-		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry, vec_rho ,dx,properties,val);
-		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho, vec_rho ,dx,properties,val);
-		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp, vec_cp ,dx,properties,val);
-		place_sphere_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx, vec_k ,dx,properties,val);
-		place_sphere_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty, vec_k ,dx,properties,val);
-		place_sphere_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz, vec_k ,dx,properties,val);
+		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry, vec_rho ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho, vec_rho ,dx,properties,val, vec_rho_hot,Temp_phase_change,Temperature);
+		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp, vec_cp ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_sphere_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx, vec_k ,dx,properties,val,vec_cp_hot,Temp_phase_change,Temperature);
+		place_sphere_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty, vec_k ,dx,properties,val,vec_cp_hot,Temp_phase_change,Temperature);
+		place_sphere_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz, vec_k ,dx,properties,val,vec_cp_hot,Temp_phase_change,Temperature);
 	}
 }
 
@@ -4474,7 +4654,7 @@ void set_source_from_elec(std::vector<double> &Source,std::vector<double> &Sourc
 }
 
 // This function places a cubic object inside the thermal grid
-void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &M ,std::vector<double> &vec_val,double dx, std::vector<double> &properties, int val){
+void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &M ,std::vector<double> &vec_val,double dx, std::vector<double> &properties, int val, std::vector<double> &vec_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature){
 	int i = 0;
 	int j = 0;
 	int k = 0;
@@ -4482,7 +4662,12 @@ void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double 
 		for(j=0;j<Y+yy;j++){
 			for(k=0;k<Z+zz;k++){
 				if(((x_min_th+(i*dx)-0.5*dx*xx)<=properties[3]+properties[0]/2)&&((x_min_th+i*dx-0.5*dx*xx)>=properties[3]-properties[0]/2)&&((y_min_th+j*dx-0.5*dx*yy)<=properties[4]+properties[1]/2)&&((y_min_th+j*dx-0.5*dx*yy)>=properties[4]-properties[1]/2)&&((z_min_th+k*dx-0.5*dx*zz)<=properties[5]+properties[2]/2)&&((z_min_th+k*dx-0.5*dx*zz)>=properties[5]-properties[2]/2)){
-					M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
+					if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{				
+						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
+					}
+					else{
+						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot[val];
+					}
 				}
 			}
 		}
@@ -4490,7 +4675,7 @@ void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double 
 }
 
 // This function places a cylindrical object inside the thermal grid
-void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val,double dx,std::vector<double> &properties,double val){
+void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val,double dx,std::vector<double> &properties,double val, std::vector<double> &vec_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature){
 	int i = 0;
 	int j = 0;
 	int k = 0;	
@@ -4507,17 +4692,32 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 				double zp = z_min_th+k*dx-zz*0.5*dx;			
 				if(properties[0]==0){
 					if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
-						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]=vec_val[val];
+						if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{				
+							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
+						}
+						else{
+							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot[val];
+						}
 					}
 				}
 				else if(properties[0]==1){
 					if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
-						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]=vec_val[val];
+						if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{				
+							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
+						}
+						else{
+							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot[val];
+						}
 					}
 				}
 				else if(properties[0]==2){						
 					if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
-						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]=vec_val[val];
+						if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{				
+							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
+						}
+						else{
+							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot[val];
+						}
 					}
 				}
 			}
@@ -4526,7 +4726,7 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 }
 
 // This function places a spherical object inside the thermal grid
-void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val, double dx, std::vector<double> &properties, double val){
+void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th, double y_min_th, double z_min_th,std::vector<double> &M,std::vector<double> &vec_val, double dx, std::vector<double> &properties, double val, std::vector<double> &vec_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature){
 	int i = 0;
 	int j = 0;
 	int k = 0;
@@ -4534,7 +4734,12 @@ void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, doubl
 		for(j=0;j<Y+yy;j++){
 			for(i=0;i<X+xx;i++){
 				if(((properties[0]-(x_min_th+i*dx-xx*0.5*dx))*(properties[0]-(x_min_th+i*dx-xx*0.5*dx))+(properties[1]-(y_min_th+j*dx-yy*0.5*dx))*(properties[1]-(y_min_th+j*dx-yy*0.5*dx))+(properties[2]-(z_min_th+k*dx-zz*0.5*dx))*(properties[2]-(z_min_th+k*dx-zz*0.5*dx)))<=properties[3]*properties[3]){
-					M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]=vec_val[val];
+					if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{				
+						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
+					}
+					else{
+						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot[val];
+					}
 				}
 			}
 		}

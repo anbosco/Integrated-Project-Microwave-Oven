@@ -67,7 +67,7 @@ VTL_API void export_spoints_XML(std::string const &filename,
                                 int step,
                                 SPoints const &grid, 
                                 SPoints const &mygrid,
-                                Zip zip);
+                                Zip zip, int Nx, int Ny, int Nz, int thermal);
 
 VTL_API void export_spoints_XMLP(std::string const &filename,
                                  int step,

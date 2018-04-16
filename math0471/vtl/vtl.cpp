@@ -57,14 +57,27 @@ std::string zlibstatus(int status)
 //  pos: the vector to be sent
 //  usez: true if zlib should be used
 
-size_t write_vectorXML(std::ofstream &f, std::vector<double> const &pos, bool usez)
+size_t write_vectorXML(std::ofstream &f, std::vector<double> const &pos, bool usez, int Nx, int Ny, int Nz, int thermal)
 {
     size_t written = 0;
 
     // convert doubles to floats
     std::vector<float> buffer(pos.size());
-    for (int i = 0; i < pos.size(); ++i)
-        buffer[i] = (float)pos[i];
+    if(thermal == 0){
+    	for (int i = 0; i < pos.size(); ++i){
+        	buffer[i] = (float)pos[i];
+    	}
+    }
+    else{
+	for (int i = 0; i < Nx; ++i){
+		for(int j=0;j<Ny;++j){
+    			for(int k=0;k<Nz;++k){
+    				buffer[i+j*Nx+k*Nx*Ny] = (float) pos[j+k*Ny+i*Ny*Nz];
+    			}
+    		}    		
+    	}
+    }
+
 
     if (!usez)
     {
@@ -132,7 +145,7 @@ size_t write_vectorXML(std::ofstream &f, std::vector<double> const &pos, bool us
 VTL_API void vtl::export_spoints_XML(std::string const &filename,
                                 int step,
                                 SPoints const &grid, SPoints const &mygrid,
-                                Zip zip)
+                                Zip zip, int Nx, int Ny, int Nz, int thermal)
 {
 #if !defined(USE_ZLIB)
     if (zip==ZIPPED)
@@ -198,7 +211,7 @@ VTL_API void vtl::export_spoints_XML(std::string const &filename,
         f << " RangeMin=\"0\" ";
         f << " RangeMax=\"1\" ";
         f << " offset=\"" << offset << "\" />\n";
-        offset += write_vectorXML(f2, *it->second, (zip==ZIPPED));
+        offset += write_vectorXML(f2, *it->second, (zip==ZIPPED), Nx, Ny, Nz, thermal);
     }
 
     // vector fields
@@ -212,7 +225,7 @@ VTL_API void vtl::export_spoints_XML(std::string const &filename,
         f << " RangeMin=\"0\" ";
         f << " RangeMax=\"1\" ";
         f << " offset=\"" << offset << "\" />\n";
-        offset += write_vectorXML(f2, *it->second, (zip==ZIPPED));
+        offset += write_vectorXML(f2, *it->second, (zip==ZIPPED), Nx, Ny, Nz, thermal);
     }
     f << "      </CellData>\n";
 
