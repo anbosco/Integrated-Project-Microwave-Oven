@@ -18,3 +18,4 @@ ENDIF()
 
 ADD_SUBDIRECTORY( vtl )
 ADD_SUBDIRECTORY( exe/fdtd_mpi )
+ADD_SUBDIRECTORY(mumps)
