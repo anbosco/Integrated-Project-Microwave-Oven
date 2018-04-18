@@ -1,0 +1,25 @@
+0.3		! Lx
+0.3		! Ly
+0.3		! Lz
+0.01		! dx
+0.001		! dt
+0.5		! 
+0		! Nb source
+0		! Nb object
+0		! BC Y0 (1 if Dirichlet)
+0		! BC Y1
+0		! BC X0
+0		! BC X1
+1		! BC Z0
+0		! BC Z1
+0		! TEMP Dirichlet Y0
+0		! TEMP Dirichlet Y1
+0		! TEMP Dirichlet X0
+0		! TEMP Dirichlet X1
+100		! TEMP Dirichlet Z0
+20		! TEMP Dirichlet Z1
+20		! TEMP initial
+1		! Heat conductivity of environnement
+1		! Density of environnement
+1		! Specific heat capacity of environnement
+0.1		! Sampling rate
