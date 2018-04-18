@@ -1,0 +1,5 @@
+# gitignore for ignored folders, etc...
+
+
+build/
+build/*
