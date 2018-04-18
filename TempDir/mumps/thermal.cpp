@@ -22,7 +22,7 @@
 #include "dmumps_c.h"
 #define ICNTL(I) icntl[(I)-1]
 
-using namespace vtl
+using namespace vtl;
 
 
 
