@@ -1256,7 +1256,14 @@ int main(int argc, char **argv){
     // Not physical
     vec_k.push_back(1);
     vec_rho.push_back(1);
-    vec_cp.push_back(1000000);
+    vec_cp.push_back(1);
+    vec_rho_hot.push_back(100);
+    vec_cp_hot.push_back(100);
+
+    // Not physical
+    vec_k.push_back(2);
+    vec_rho.push_back(1);
+    vec_cp.push_back(2);
     vec_rho_hot.push_back(100);
     vec_cp_hot.push_back(100);
 
@@ -1327,7 +1334,7 @@ int main(int argc, char **argv){
 
 if(solve_electro==0){	// Desactivation of the electro magnetic solver
 	step_pos_max = 0;
-	step_max = -1;
+	step = -1;
 }
 
 while(step_pos<=step_pos_max){
