@@ -252,7 +252,7 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
 	}
    // Steady state Calculation
     if(thermo_domain==0){
-      Compute_RHS_steady(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz, rho, cp,geometry,delta_t,thermo_domain, BC,T_Dir);
+      Compute_RHS_steady(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz, rho, cp,geometry,delta_t,thermo_domain, BC,T_Dir,h_air);
       id.rhs = &Temp[0];
      	solve_MUMPS(id,step);
       step++;
@@ -273,7 +273,7 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
       int next_cut=0;
       while(step<step_max){
   	//Computation of the right hand side
-  	Compute_RHS(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz, rho, cp,geometry,delta_t,thermo_domain, BC); 
+  	Compute_RHS(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz, rho, cp,geometry,delta_t,thermo_domain, BC,h_air); 
       	
   	// Resolution of the system
   	    id.rhs = &Temp[0];
@@ -371,7 +371,7 @@ void main_th(std::vector<double> &Source_elec, std::vector<double> &Temperature,
 
 
 // This function computes the right hand side of the system to be solved
-void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int nnz ,std::vector<double> &rho, std::vector<double> &cp,std::vector<double> &geometry,double dt,int thermo_domain, std::vector<int> &BC){
+void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int nnz ,std::vector<double> &rho, std::vector<double> &cp,std::vector<double> &geometry,double dt,int thermo_domain, std::vector<int> &BC, double h){
 	int i = 0;
   int ii=0;
   int jj =0;
@@ -391,7 +391,7 @@ void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vect
      for(kk=1;kk<Z-1;kk++){
          i = ii*X*Y+kk*Y+jj;
         if(geometry[i]==0&&((geometry[i+Y*Z]!=0&&BC[4]==0)||(geometry[i-Y*Z]!=0&&BC[5]==0)||(geometry[i+1]!=0&&BC[0]==0)||(geometry[i-1]!=0&&BC[1]==0)||(geometry[i+Y]!=0&&BC[2]==0)||(geometry[i-Y]!=0&&BC[3]==0))&& (thermo_domain==1)){// Neuman
-          Temp2[i] = -T_inf;	// Associated to the convection condition on the surface of the food (activated only when it is specified that the heat equation has to be solved only inside the food).
+          Temp2[i] = -h*T_inf;	// Associated to the convection condition on the surface of the food (activated only when it is specified that the heat equation has to be solved only inside the food).
         }
         else if((geometry[i]!=0&&((geometry[i+Y*Z]!=0||BC[5]==0)&&(geometry[i-Y*Z]!=0||BC[4]==0)&&(geometry[i+1]!=0||BC[1]==0)&&(geometry[i-1]!=0||BC[0]==0)&&(geometry[i+Y]!=0||BC[3]==0)&&(geometry[i-Y]!=0||BC[2]==0))) || thermo_domain==0){
     		  Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);		
@@ -405,7 +405,7 @@ void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vect
 	}
 }
 
-void Compute_RHS_steady(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int nnz ,std::vector<double> &rho, std::vector<double> &cp,std::vector<double> &geometry,double dt,int thermo_domain, std::vector<int> &BC,std::vector<double> &T_Dir){	
+void Compute_RHS_steady(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int nnz ,std::vector<double> &rho, std::vector<double> &cp,std::vector<double> &geometry,double dt,int thermo_domain, std::vector<int> &BC,std::vector<double> &T_Dir, double h){	
   int i = 0;
   int ii=0;
   int jj =0;
@@ -421,7 +421,7 @@ void Compute_RHS_steady(std::vector<double> &pre_mat, std::vector<int> &irn , st
      for(kk=1;kk<Z-1;kk++){
          i = ii*X*Y+kk*Y+jj;
         if(geometry[i]==0&&((geometry[i+Y*Z]!=0&&BC[4]==0)||(geometry[i-Y*Z]!=0&&BC[5]==0)||(geometry[i+1]!=0&&BC[0]==0)||(geometry[i-1]!=0&&BC[1]==0)||(geometry[i+Y]!=0&&BC[2]==0)||(geometry[i-Y]!=0&&BC[3]==0))){// Neuman 
-          Temp2[i] = -T_inf;	// Associated to the convection condition on the surface of the food.
+          Temp2[i] = -h*T_inf;	// Associated to the convection condition on the surface of the food.
         }
         else if(geometry[i]!=0&&(geometry[i+Y*Z]==0&&BC[5]==1)){
           Temp2[i] = T_Dir[5];
@@ -471,109 +471,109 @@ void Compute_a_T0_steady(std::vector<int> &irn , std::vector<int> &jcn, int X, i
 				i_vec = i*Y*Z+k*Y+j;
 				/**** For the point in air, we put either a 1 on the diagonal or a heat flux if the point is next to the object *****/
 				if(geometry[i_vec]==0){
-          if(i==0||j==0||k==0||i==X-1||j==Y-1||k==Z-1){
-              Temp[i_vec] = T_inf;
-    					irn.push_back(i_vec+1);
+          				if(i==0||j==0||k==0||i==X-1||j==Y-1||k==Z-1){
+		     				Temp[i_vec] = T_inf;
+	    					irn.push_back(i_vec+1);
+	    					jcn.push_back(i_vec+1);
+	    					a.push_back(1);
+	    					b.push_back(1);
+          				}
+          				else{ 
+           				if(geometry[i_vec+1]!=0&&geometry[i_vec+2]!=0&&BC[0]==0){
+              				irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(1);
-    					b.push_back(1);
-          }
-          else{ 
-            if(geometry[i_vec+1]!=0&&geometry[i_vec+2]!=0&&BC[0]==0){
-              irn.push_back(i_vec+1);
-    					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*h*dx));
-    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*h*dx));
+    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
+    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
             
-              irn.push_back(i_vec+1);
+              				irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+1);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+2);
-    					a.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*h*dx));
-    					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*h*dx));
+    					a.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
+    					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
             }
             else if(geometry[i_vec-1]!=0&&geometry[i_vec-2]!=0&&BC[1]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*h*dx));
-    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*h*dx));
+    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
+    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-1);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-2);
-    					a.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*h*dx));
-    					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*h*dx));
+    					a.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
+    					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
             }
             else if(geometry[i_vec+Y]!=0&&geometry[i_vec+2*Y]!=0&&BC[2]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*h*dx));
-    					b.push_back(-k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*h*dx));
+    					a.push_back(-k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*dx));
+    					b.push_back(-k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+Y);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+2*Y);
-    					a.push_back(+k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*h*dx));
-    					b.push_back(+k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*h*dx));
+    					a.push_back(+k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*dx));
+    					b.push_back(+k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*dx));
             }
             else if(geometry[i_vec-Y]!=0&&geometry[i_vec-2*Y]!=0&&BC[3]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*h*dx));
-    					b.push_back(-k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*h*dx));
+    					a.push_back(-k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*dx));
+    					b.push_back(-k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-Y);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-2*Y);
-    					a.push_back(+k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*h*dx));
-    					b.push_back(+k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*h*dx));
+    					a.push_back(+k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*dx));
+    					b.push_back(+k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*dx));
             }
             else if(geometry[i_vec+Y*Z]!=0&&geometry[i_vec+2*Y*Z]!=0&&BC[4]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*h*dx));
-    					b.push_back(-k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*h*dx));
+    					a.push_back(-k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*dx));
+    					b.push_back(-k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+Y*Z);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+2*Y*Z);
-    					a.push_back(+k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*h*dx));
-    					b.push_back(+k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*h*dx));
+    					a.push_back(+k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*dx));
+    					b.push_back(+k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*dx));
             }
             else if(geometry[i_vec-Y*Z]!=0&&geometry[i_vec-2*Y*Z]!=0&&BC[5]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*h*dx));
-    					b.push_back(-k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*h*dx));
+    					a.push_back(-k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*dx));
+    					b.push_back(-k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-Y*Z);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-2*Y*Z);
-    					a.push_back(+k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*h*dx));
-    					b.push_back(+k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*h*dx));
+    					a.push_back(+k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*dx));
+    					b.push_back(+k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*dx));
             }
             else{
     					Temp[i_vec] = T_inf;
@@ -840,98 +840,98 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
             if(geometry[i_vec+1]!=0&&geometry[i_vec+2]!=0&&BC[0]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*h*dx));
-    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*h*dx));
+    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
+    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+1);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+2);
-    					a.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*h*dx));
-    					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*h*dx));
+    					a.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
+    					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
             }
             else if(geometry[i_vec-1]!=0&&geometry[i_vec-2]!=0&&BC[1]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*h*dx));
-    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*h*dx));
+    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
+    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-1);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-2);
-    					a.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*h*dx));
-    					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*h*dx));
+    					a.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
+    					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
             }
             else if(geometry[i_vec+Y]!=0&&geometry[i_vec+2*Y]!=0&&BC[2]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*h*dx));
-    					b.push_back(-k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*h*dx));
+    					a.push_back(-k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*dx));
+    					b.push_back(-k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+Y);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+2*Y);
-    					a.push_back(+k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*h*dx));
-    					b.push_back(+k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*h*dx));
+    					a.push_back(+k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*dx));
+    					b.push_back(+k_heat_z[i*Y*(Z+1)+(k+2)*Y+j]/(2*dx));
             }
             else if(geometry[i_vec-Y]!=0&&geometry[i_vec-2*Y]!=0&&BC[3]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*h*dx));
-    					b.push_back(-k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*h*dx));
+    					a.push_back(-k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*dx));
+    					b.push_back(-k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-Y);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-2*Y);
-    					a.push_back(+k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*h*dx));
-    					b.push_back(+k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*h*dx));
+    					a.push_back(+k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*dx));
+    					b.push_back(+k_heat_z[i*Y*(Z+1)+(k-1)*Y+j]/(2*dx));
             }
             else if(geometry[i_vec+Y*Z]!=0&&geometry[i_vec+2*Y*Z]!=0&&BC[4]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*h*dx));
-    					b.push_back(-k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*h*dx));
+    					a.push_back(-k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*dx));
+    					b.push_back(-k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+Y*Z);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1+2*Y*Z);
-    					a.push_back(+k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*h*dx));
-    					b.push_back(+k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*h*dx));
+    					a.push_back(+k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*dx));
+    					b.push_back(+k_heat_x[(i+2)*Y*(Z)+(k)*Y+j]/(2*dx));
             }
             else if(geometry[i_vec-Y*Z]!=0&&geometry[i_vec-2*Y*Z]!=0&&BC[5]==0){
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
-    					a.push_back(-k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*h*dx));
-    					b.push_back(-k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*h*dx));
+    					a.push_back(-k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*dx));
+    					b.push_back(-k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*dx));
             
               irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-Y*Z);
-    					a.push_back(-1);
-    					b.push_back(-1);
+    					a.push_back(-h);
+    					b.push_back(-h);
     				
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-2*Y*Z);
-    					a.push_back(+k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*h*dx));
-    					b.push_back(+k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*h*dx));
+    					a.push_back(+k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*dx));
+    					b.push_back(+k_heat_x[(i-1)*Y*(Z)+(k)*Y+j]/(2*dx));
             }
             else{
     					Temp[i_vec] = T_inf;
