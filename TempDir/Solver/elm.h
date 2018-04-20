@@ -31,7 +31,7 @@ void set_vec(std::vector<double> &vec, int nbp, double val);
 void export_coupe(int direction, int component, double pos1,double pos2,int Nx_tot,int Ny_tot,int Nz_tot,double***M,double dx,int step,int myrank, int i_min,int i_max,int j_min ,int j_max ,int k_min ,int k_max ,int Nx,int Ny,int Nz,int lastx,int lasty,int lastz);
 void export_power_thermo(std::vector<double> &Power_tot,int Nx,int Ny,int Nz);
 void rotate_Power_grid(std::vector<double> &Power_electro,std::vector<double> &Power_thermo,int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx, double theta);
-
+void export_temp_probe_electro(std::vector<double> &vec,int step,char *Filename);
 
 
 

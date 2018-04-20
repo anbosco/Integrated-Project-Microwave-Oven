@@ -1205,3 +1205,13 @@ void export_power_thermo(std::vector<double> &Power_tot,int Nx,int Ny,int Nz){
    }
    fclose(FileW);
  }
+
+void export_temp_probe_electro(std::vector<double> &vec,int step,char *Filename){
+	int i =0;
+	FILE *FileW;
+	FileW = fopen(Filename,"w");
+	for(i=0;i<step;i++){
+		fprintf(FileW," %lf \n ",vec[i]);
+	}
+	fclose(FileW);
+}

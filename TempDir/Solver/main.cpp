@@ -125,10 +125,10 @@ int main(int argc, char **argv){
 	int nxp;
 	int nyp;
 	int nzp;
-	double T_mean = 20/(f*dt);
+	double T_mean = 40/(f*dt);
 	int step_mean = (int) T_mean;
 	double Residual = 0;
-  double Residual_0 = 0;
+  	double Residual_0 = 0;
 	int steady_state_reached = 0;
 	int test_steady = 0;
 
@@ -226,6 +226,43 @@ int main(int argc, char **argv){
     	}
     }
     fclose(FileR);
+
+    // Property of temporal probes
+    double probe_electro;
+    std::vector<double> Pos_probe_electro;
+    FileR = fopen(argv[10],"r");
+    if(FileR == NULL){
+    	printf("Impossible to open the Electro Probe file. \n");
+    	return 1;
+    }
+    if (fgets(chain, 150, FileR) == NULL){
+	printf("Impossible to read the Electro Probe file. \n");
+	return 1;
+   }
+   else{
+	probe_electro = atof(chain);
+   }
+   if(probe_electro!=0){
+   	for(i=0;i<3;i++){
+    		if (fgets(chain, 150, FileR) == NULL){
+			printf("Impossible to read the Electro Probe file. \n");
+			return 1;
+  		}
+ 		else{
+			Pos_probe_electro.push_back(atof(chain));
+  		}
+    	}
+   }
+	Pos_probe_electro[0] = (Pos_probe_electro[0])/dx;
+	Pos_probe_electro[1] = (Pos_probe_electro[1])/dx;
+	Pos_probe_electro[2] = (Pos_probe_electro[2])/dx;
+	
+	std::vector<double> Ex_probe;
+	std::vector<double> Ey_probe;
+	std::vector<double> Ez_probe;
+	std::vector<double> Hx_probe;
+	std::vector<double> Hy_probe;
+	std::vector<double> Hz_probe;
 
 
 /********************************************************************************
@@ -1867,6 +1904,19 @@ while(step_pos<=step_pos_max){
 				//export_spoints_XMLP("Hz", step, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
             		}
         	}
+		// Storage of the value of the fields at the probes
+		if((probe_electro==1)&&(Pos_probe_electro[0]<i_max_proc[myrank])&&(Pos_probe_electro[0]>i_min_proc[myrank])&&(Pos_probe_electro[1]<j_max_proc[myrank])&&(Pos_probe_electro[1]>j_min_proc[myrank])&&(Pos_probe_electro[2]<k_max_proc[myrank])&&(Pos_probe_electro[2]>k_min_proc[myrank])){
+			i = Pos_probe_electro[0];
+			j = Pos_probe_electro[1];
+			k = Pos_probe_electro[2];
+			Ex_probe.push_back(Ex_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
+			Ey_probe.push_back(Ey_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
+			Ez_probe.push_back(Ez_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
+			Hx_probe.push_back(Hx_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
+			Hy_probe.push_back(Hy_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
+			Hz_probe.push_back(Hz_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
+		}
+
      /******************************** Extraction of a cut if needed ***********************************/
 	if(step == step_cut[next_cut]){// To extract a cut
 		next_cut++;
@@ -1895,6 +1945,7 @@ while(step_pos<=step_pos_max){
       export_coupe(3, 6, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
 		}
 	}
+
 /*****************************************************************************************/
 
 	// Computation of the power grid (TO BE PARAMETRIZED)
@@ -2074,7 +2125,8 @@ while(step_pos<=step_pos_max){
 			}
        			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
 			/****************************************************************************************************/
-
+		
+			if(step>80000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
@@ -2111,10 +2163,6 @@ if(solve_electro==1){	// We save the last step of the electro calculation if the
 	   else{
 	     MPI_Send(&Power_new[0],point_per_proc_x[myrank]*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]),MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
 	   }
-	   //export_power_thermo(Power_tot,Nx,Ny,Nz);   // Suppress after coupling
-
-		// Saving of the last step
-
 		//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
 		export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
 		export_spoints_XML("Ez", step+step_prec, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
@@ -2122,7 +2170,7 @@ if(solve_electro==1){	// We save the last step of the electro calculation if the
 		//export_spoints_XML("Hy", step+step_prec, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hz", step+step_prec, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
 		export_spoints_XML("Power", step+step_prec, grid_Power, mygrid_Power, ZIPPED, Nx, Ny, Nz, 0);
-		if (myrank == 0){	// save main pvti file by rank0
+	if (myrank == 0){	// save main pvti file by rank0
 			//export_spoints_XMLP("Ex", step+step_prec, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
 	      		export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 			export_spoints_XMLP("Ez", step+step_prec, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
@@ -2130,9 +2178,19 @@ if(solve_electro==1){	// We save the last step of the electro calculation if the
 			//export_spoints_XMLP("Hy", step+step_prec, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
 			//export_spoints_XMLP("Hz", step+step_prec, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
 			export_spoints_XMLP("Power", step+step_prec, grid_Power, mygrid_Power, sgrids_Power, ZIPPED);
-		}
-		step_prec += step;
-		step = 1;
+	}
+
+	// Temporal probe
+	if((probe_electro==1)&&(Pos_probe_electro[0]<i_max_proc[myrank])&&(Pos_probe_electro[0]>i_min_proc[myrank])&&(Pos_probe_electro[1]<j_max_proc[myrank])&&(Pos_probe_electro[1]>j_min_proc[myrank])&&(Pos_probe_electro[2]<k_max_proc[myrank])&&(Pos_probe_electro[2]>k_min_proc[myrank])){
+		export_temp_probe_electro(Ex_probe,step,"Ex_temporal_probe");
+		export_temp_probe_electro(Ey_probe,step,"Ey_temporal_probe");
+		export_temp_probe_electro(Ez_probe,step,"Ez_temporal_probe");
+		export_temp_probe_electro(Hx_probe,step,"Hx_temporal_probe");
+		export_temp_probe_electro(Hy_probe,step,"Hy_temporal_probe");
+		export_temp_probe_electro(Hz_probe,step,"Hz_temporal_probe");
+	}
+	step_prec += step;
+	step = 1;
 }
 
 /********************************************************************************

@@ -179,9 +179,9 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
     std::vector<int> lastz_h(n);  
 
     // Variable use for probing the temperature
-    if(nb_probe!=0){
-    	std::vector<double> probe(nb_probe*step_max);
-    }
+    //if(nb_probe!=0){
+    	//std::vector<double> probe(nb_probe*step_max);
+ //  }
     std::vector<double> probe(nb_probe*step_max);
 	#pragma omp parallel for default(shared) private(i_vec)
 	for(i_vec=0;i_vec<X*Y*Z;i_vec++){
@@ -443,7 +443,7 @@ void Compute_RHS_steady(std::vector<double> &pre_mat, std::vector<int> &irn , st
           Temp2[i] = T_Dir[2];
         }
         else if((geometry[i]!=0&&((geometry[i+Y*Z]!=0||BC[5]==0)&&(geometry[i-Y*Z]!=0||BC[4]==0)&&(geometry[i+1]!=0||BC[1]==0)&&(geometry[i-1]!=0||BC[0]==0)&&(geometry[i+Y]!=0||BC[3]==0)&&(geometry[i-Y]!=0||BC[2]==0)))){ 
-    		  Temp2[i]=0;	
+    		  Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);	
         }        
         else{        
            Temp2[i] = T_inf;
