@@ -114,20 +114,20 @@ void solve_MUMPS(DMUMPS_STRUC_C &id, int step){
  			HOST WORK	
  *********************************************************************/    
 void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,double delta_t,int step_max,double theta,int nb_source, std::vector<double> &prop_source,std::vector<int> &BC,std::vector<double> &T_Dir,double T_0,int SR,std::vector<double> &Cut, std::vector<double> &Pos_cut, std::vector<double> &step_cut, double nb_probe, std::vector<double> &Pos_probe,int n_sphere,std::vector<double> &prop_sphere,int n_cylinder,std::vector<double> &prop_cylinder,int n_cube,std::vector<double> &prop_cube, double T_init_food,double h_air,double x_min_th,double y_min_th, double z_min_th,double dx_electro,int X_elec,int Y_elec,int Z_elec,std::vector<double> &Source_elec,std::vector<double> &k_heat_x,std::vector<double> &k_heat_y,std::vector<double> &k_heat_z,std::vector<double> &rho,std::vector<double> &cp,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &constant,std::vector<double> &geometry,int step_pos,std::vector<double> &Temp,int thermo_domain){   
-	SPoints grid2;
+    
 
     // setup source grid
+    SPoints grid2;
     grid2.o = Vec3d(10.0, 10.0, 10.0); // origin
     Vec3d L2(0.3, 0.3, 0.3);        // box dimensions    
     grid2.np1 = Vec3i(0, 0, 0);    // first index
     grid2.np2 = Vec3i(X_elec-1, Y_elec-1, Z_elec-1); // last index
     grid2.dx = L2 / (grid2.np() - 1); // compute spacing
     grid2.scalars["Power"] = &Source_elec;
-
-
-    SPoints grid;
+    
 
     // setup thermic grid
+    SPoints grid;
     grid.o = Vec3d(x_min_th+10.0, y_min_th+10.0, z_min_th+10.0); // origin
     Vec3d L(Lx, Ly, Lz);        // box dimensions
     int X = (int) (Lx/delta_x)+1;
@@ -135,16 +135,24 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
     int Z = (int) (Lz/delta_x)+1;
     grid.np1 = Vec3i(0, 0, 0);    // first index
     grid.np2 = Vec3i(X-1, Y-1, Z-1); // last index
+    grid.dx = L / (grid.np() - 1); // compute spacing
+    int nbp = grid.nbp();
+   
+
+    // setup conductivity grid
+    SPoints gridk;
+    gridk.o = Vec3d(x_min_th+10.0-0.5*delta_x, y_min_th+10.0, z_min_th+10.0); // origin
+    Vec3d Lk(Lx+delta_x, Ly, Lz);       // box dimensions    
+    gridk.np1 = Vec3i(0, 0, 0);    // first index
+    gridk.np2 = Vec3i(X, Y-1, Z-1); // last index
+    gridk.dx = Lk / (gridk.np() - 1); // compute spacing
+    gridk.scalars["Conductivity"] = &k_heat_x;
 
     // Loop variables
     int i = 0;
     int i_vec=0;
     int count=0;
-    int col=0;
-
-    grid.dx = L / (grid.np() - 1); // compute spacing
-
-    int nbp = grid.nbp();
+    int col=0;    
 
     double theta_angle = 0;		// Used to make the rotation inside the thermic solver (to be suppressed after coupling is done)
 
@@ -311,8 +319,9 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
   
           // Save results to disk if needed	
       	if(step%SR==0){
-      		export_spoints_XML("Temperature_field", step+step_pos*step_max, grid, grid, Zip::ZIPPED, X, Y,  Z, 1);
-  		    export_spoints_XML("Test_power", step+step_pos*step_max, grid2, grid2, Zip::ZIPPED, X_elec, Y_elec,  Z_elec, 1);
+      		export_spoints_XML("Temperature_field", step+step_pos*step_max, grid, grid, Zip::ZIPPED, X, Y,  Z, 1);  		
+		export_spoints_XML("Heat conductivity field", step+step_pos*step_max, gridk, gridk, Zip::ZIPPED, X+1, Y,  Z, 1);     // To check the phase transition in conductivity
+		//export_spoints_XML("Test_power", step+step_pos*step_max, grid2, grid2, Zip::ZIPPED, X_elec, Y_elec,  Z_elec, 1);  // To check if the source is correctly transferred.
   
   		/************* To be suppress when coupling is done ****************/
   
@@ -496,12 +505,12 @@ void Compute_a_T0_steady(std::vector<int> &irn , std::vector<int> &jcn, int X, i
     					b.push_back(+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
             }
             else if(geometry[i_vec-1]!=0&&geometry[i_vec-2]!=0&&BC[1]==0){
-              irn.push_back(i_vec+1);
+              				irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
     					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
     					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
             
-              irn.push_back(i_vec+1);
+              				irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1-1);
     					a.push_back(-h);
     					b.push_back(-h);
@@ -829,8 +838,8 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 				i_vec = i*Y*Z+k*Y+j;
 				/**** For the point in air, we put either a 1 on the diagonal or a heat flux if the point is next to the object *****/
 				if(geometry[i_vec]==0){
-          if(i==0||j==0||k==0||i==X-1||j==Y-1||k==Z-1){
-              Temp[i_vec] = T_inf;
+          				if(i==0||j==0||k==0||i==1||j==1||k==1||i==X-1||j==Y-1||k==Z-1||i==X-2||j==Y-2||k==Z-2){
+              				Temp[i_vec] = T_inf;
     					irn.push_back(i_vec+1);
     					jcn.push_back(i_vec+1);
     					a.push_back(1);
@@ -1033,31 +1042,31 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 }
 
 // This function can place different geometry of objects inside the domain (Need to be parametrized!!)
-void place_geometry_th(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &k_heatx,std::vector<double> &k_heaty,std::vector<double> &k_heatz,std::vector<double> &rho,std::vector<double> &cp, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &vec_rho_hot,std::vector<double> &vec_cp_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature){
+void place_geometry_th(int X,int Y, int Z, std::vector<double> &properties, int P,std::vector<double> &geometry, double dx,double val,std::vector<double> &vec_k,std::vector<double> &vec_rho,std::vector<double> &vec_cp,std::vector<double> &k_heatx,std::vector<double> &k_heaty,std::vector<double> &k_heatz,std::vector<double> &rho,std::vector<double> &cp, double x_min_th, double y_min_th, double z_min_th, std::vector<double> &vec_rho_hot,std::vector<double> &vec_cp_hot,std::vector<double> &Temp_phase_change,std::vector<double> &Temperature,std::vector<double> &vec_k_hot){
 	if(P==2){ // Cube
 		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,vec_rho,dx,properties,val, vec_rho_hot,Temp_phase_change,Temperature);
 		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,vec_rho,dx,properties,val, vec_rho_hot,Temp_phase_change,Temperature);
 		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,vec_cp,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
-		place_cube_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
-		place_cube_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
-		place_cube_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_cube_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k,dx,properties,val, vec_k_hot,Temp_phase_change,Temperature);
+		place_cube_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k,dx,properties,val, vec_k_hot,Temp_phase_change,Temperature);
+		place_cube_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k,dx,properties,val, vec_k_hot,Temp_phase_change,Temperature);
 
 	}
 	else if(P==1){ // Cylinder
 		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,vec_rho ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
 		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,vec_rho ,dx,properties,val, vec_rho_hot,Temp_phase_change,Temperature);
 		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,vec_cp ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
-		place_cylinder_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
-		place_cylinder_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k ,dx,properties,val,vec_cp_hot,Temp_phase_change,Temperature);
-		place_cylinder_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
+		place_cylinder_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,vec_k ,dx,properties,val, vec_k_hot,Temp_phase_change,Temperature);
+		place_cylinder_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,vec_k ,dx,properties,val,vec_k_hot,Temp_phase_change,Temperature);
+		place_cylinder_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,vec_k ,dx,properties,val, vec_k_hot,Temp_phase_change,Temperature);
 	}
 	else if(P==0){// Sphere
 		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry, vec_rho ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
 		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho, vec_rho ,dx,properties,val, vec_rho_hot,Temp_phase_change,Temperature);
 		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp, vec_cp ,dx,properties,val, vec_cp_hot,Temp_phase_change,Temperature);
-		place_sphere_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx, vec_k ,dx,properties,val,vec_cp_hot,Temp_phase_change,Temperature);
-		place_sphere_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty, vec_k ,dx,properties,val,vec_cp_hot,Temp_phase_change,Temperature);
-		place_sphere_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz, vec_k ,dx,properties,val,vec_cp_hot,Temp_phase_change,Temperature);
+		place_sphere_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx, vec_k ,dx,properties,val,vec_k_hot,Temp_phase_change,Temperature);
+		place_sphere_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty, vec_k ,dx,properties,val,vec_k_hot,Temp_phase_change,Temperature);
+		place_sphere_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz, vec_k ,dx,properties,val,vec_k_hot,Temp_phase_change,Temperature);
 	}
 }
 
@@ -1229,11 +1238,13 @@ void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double 
 	int i = 0;
 	int j = 0;
 	int k = 0;
+	double test_temp;
 	for(i=0;i<X+xx;i++){
 		for(j=0;j<Y+yy;j++){
-			for(k=0;k<Z+zz;k++){
+			for(k=0;k<Z+zz;k++){				
 				if(((x_min_th+(i*dx)-0.5*dx*xx)<=properties[3]+properties[0]/2)&&((x_min_th+i*dx-0.5*dx*xx)>=properties[3]-properties[0]/2)&&((y_min_th+j*dx-0.5*dx*yy)<=properties[4]+properties[1]/2)&&((y_min_th+j*dx-0.5*dx*yy)>=properties[4]-properties[1]/2)&&((z_min_th+k*dx-0.5*dx*zz)<=properties[5]+properties[2]/2)&&((z_min_th+k*dx-0.5*dx*zz)>=properties[5]-properties[2]/2)){
-					if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{
+					test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+					if(test_temp<Temp_phase_change[val]){
 						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
 					}
 					else{
@@ -1250,6 +1261,7 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 	int i = 0;
 	int j = 0;
 	int k = 0;
+	double test_temp;
 	double xc = properties[1];
 	double yc = properties[2];
 	double zc = properties[3];
@@ -1263,7 +1275,8 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 				double zp = z_min_th+k*dx-zz*0.5*dx;
 				if(properties[0]==0){
 					if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
-						if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{
+						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+						if(test_temp<Temp_phase_change[val])	{
 							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
 						}
 						else{
@@ -1273,7 +1286,8 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 				}
 				else if(properties[0]==1){
 					if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
-						if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{
+						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+						if(test_temp<Temp_phase_change[val])	{
 							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
 						}
 						else{
@@ -1283,7 +1297,8 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 				}
 				else if(properties[0]==2){
 					if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
-						if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{
+						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+						if(test_temp<Temp_phase_change[val])	{
 							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
 						}
 						else{
@@ -1301,11 +1316,13 @@ void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, doubl
 	int i = 0;
 	int j = 0;
 	int k = 0;
+	double test_temp;
 	for(k=0;k<Z+zz;k++){
 		for(j=0;j<Y+yy;j++){
 			for(i=0;i<X+xx;i++){
 				if(((properties[0]-(x_min_th+i*dx-xx*0.5*dx))*(properties[0]-(x_min_th+i*dx-xx*0.5*dx))+(properties[1]-(y_min_th+j*dx-yy*0.5*dx))*(properties[1]-(y_min_th+j*dx-yy*0.5*dx))+(properties[2]-(z_min_th+k*dx-zz*0.5*dx))*(properties[2]-(z_min_th+k*dx-zz*0.5*dx)))<=properties[3]*properties[3]){
-					if(Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]<Temp_phase_change[val]||xx==1||yy==1||zz==1)	{
+					test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+					if(test_temp<Temp_phase_change[val])	{
 						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[val];
 					}
 					else{

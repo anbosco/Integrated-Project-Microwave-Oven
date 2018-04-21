@@ -1268,6 +1268,7 @@ int main(int argc, char **argv){
     std::vector<double> vec_cp;
     std::vector<double> vec_rho_hot;
     std::vector<double> vec_cp_hot;
+    std::vector<double> vec_k_hot;
 
     // Air
     vec_k.push_back(0.025);
@@ -1275,6 +1276,7 @@ int main(int argc, char **argv){
     vec_cp.push_back(1004);
     vec_rho_hot.push_back(1.2);
     vec_cp_hot.push_back(1004);
+    vec_k_hot.push_back(0.025);
 
     // Chicken
     vec_k.push_back(0.5);
@@ -1282,6 +1284,7 @@ int main(int argc, char **argv){
     vec_cp.push_back(3132);
     vec_rho_hot.push_back(100);
     vec_cp_hot.push_back(100);
+    vec_k_hot.push_back(2);
 
     // potato
     vec_k.push_back(0.56);
@@ -1289,6 +1292,7 @@ int main(int argc, char **argv){
     vec_cp.push_back(3530);
     vec_rho_hot.push_back(100);
     vec_cp_hot.push_back(100);
+    vec_k_hot.push_back(2);
 
     // Not physical
     vec_k.push_back(1);
@@ -1296,6 +1300,7 @@ int main(int argc, char **argv){
     vec_cp.push_back(1);
     vec_rho_hot.push_back(100);
     vec_cp_hot.push_back(100);
+    vec_k_hot.push_back(1);
 
     // Not physical
     vec_k.push_back(2);
@@ -1303,6 +1308,7 @@ int main(int argc, char **argv){
     vec_cp.push_back(2);
     vec_rho_hot.push_back(100);
     vec_cp_hot.push_back(100);
+    vec_k_hot.push_back(2);
 
     std::vector<double> constant(n_th);
     #pragma omp parallel for default(shared) private(i)
@@ -1333,7 +1339,7 @@ int main(int argc, char **argv){
 			prop_temp[j] = prop_sphere[prop_per_obj*i+j];
 		}
 		int Config = 0;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 	}
 	//Cylinder
 	for(i=0;i<n_cylinder;i++){
@@ -1343,7 +1349,7 @@ int main(int argc, char **argv){
 			prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
 		}
 		int Config = 1;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 	}
 	// Cube
 	for(i=0;i<n_cube;i++){
@@ -1353,7 +1359,7 @@ int main(int argc, char **argv){
 			prop_temp[j] = prop_cube[prop_per_obj*i+j];
 		}
 		int Config = 2;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 	}
         #pragma omp parallel for default(shared) private(i)
   for(i=0;i<X_th*Y_th*Z_th;i++){
@@ -2093,7 +2099,6 @@ while(step_pos<=step_pos_max){
 		}
    }
 
-
 		if(step%step_mean==0){
 
 			/**************************************
@@ -2241,7 +2246,7 @@ if(solve_thermo){
 			prop_temp[j] = prop_sphere[prop_per_obj*i+j];
 		}
 		int Config = 0;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 	}
 	//Cylinder
 	for(i=0;i<n_cylinder;i++){
@@ -2251,7 +2256,7 @@ if(solve_thermo){
 			prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
 		}
 		int Config = 1;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 	}
 	// Cube
 	for(i=0;i<n_cube;i++){
@@ -2261,7 +2266,7 @@ if(solve_thermo){
 			prop_temp[j] = prop_cube[prop_per_obj*i+j];
 		}
 		int Config = 2;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature);
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 	}
         #pragma omp parallel for default(shared) private(i)
   for(i=0;i<X_th*Y_th*Z_th;i++){
