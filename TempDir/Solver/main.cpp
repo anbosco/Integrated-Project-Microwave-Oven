@@ -472,7 +472,7 @@ int main(int argc, char **argv){
 	Temp_phase_change.push_back(0);	//air
 	Temp_phase_change.push_back(20);	//potato
 	Temp_phase_change.push_back(20);
-	Temp_phase_change.push_back(20);
+	Temp_phase_change.push_back(0);
 
 	/* Division of the domain along x, y and z depending on the number of process.
 	   Each process will process a portion of the domain.*/
@@ -1294,7 +1294,7 @@ int main(int argc, char **argv){
     vec_cp_hot.push_back(100);
     vec_k_hot.push_back(2);
 
-    // SomeFood from ref 4
+    // SomeFood from ref
     vec_k.push_back(1.4);
     vec_rho.push_back(725);
     vec_cp.push_back(1450);
