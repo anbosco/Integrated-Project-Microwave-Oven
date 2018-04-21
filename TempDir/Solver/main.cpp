@@ -1270,7 +1270,7 @@ int main(int argc, char **argv){
     std::vector<double> vec_cp_hot;
     std::vector<double> vec_k_hot;
 
-    // Air 1
+    // Air
     vec_k.push_back(0.025);
     vec_rho.push_back(1.2);
     vec_cp.push_back(1004);
@@ -1278,7 +1278,7 @@ int main(int argc, char **argv){
     vec_cp_hot.push_back(1004);
     vec_k_hot.push_back(0.025);
 
-    // Chicken 2
+    // Chicken
     vec_k.push_back(0.5);
     vec_rho.push_back(1080);
     vec_cp.push_back(3132);
@@ -1286,7 +1286,7 @@ int main(int argc, char **argv){
     vec_cp_hot.push_back(100);
     vec_k_hot.push_back(2);
 
-    // potato 3
+    // potato
     vec_k.push_back(0.56);
     vec_rho.push_back(1130);
     vec_cp.push_back(3530);
