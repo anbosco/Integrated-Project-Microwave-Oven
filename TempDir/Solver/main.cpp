@@ -256,7 +256,7 @@ int main(int argc, char **argv){
 	Pos_probe_electro[0] = (Pos_probe_electro[0])/dx;
 	Pos_probe_electro[1] = (Pos_probe_electro[1])/dx;
 	Pos_probe_electro[2] = (Pos_probe_electro[2])/dx;
-	
+
 	std::vector<double> Ex_probe;
 	std::vector<double> Ey_probe;
 	std::vector<double> Ez_probe;
@@ -1270,7 +1270,7 @@ int main(int argc, char **argv){
     std::vector<double> vec_cp_hot;
     std::vector<double> vec_k_hot;
 
-    // Air
+    // Air 1
     vec_k.push_back(0.025);
     vec_rho.push_back(1.2);
     vec_cp.push_back(1004);
@@ -1278,7 +1278,7 @@ int main(int argc, char **argv){
     vec_cp_hot.push_back(1004);
     vec_k_hot.push_back(0.025);
 
-    // Chicken
+    // Chicken 2
     vec_k.push_back(0.5);
     vec_rho.push_back(1080);
     vec_cp.push_back(3132);
@@ -1286,7 +1286,7 @@ int main(int argc, char **argv){
     vec_cp_hot.push_back(100);
     vec_k_hot.push_back(2);
 
-    // potato
+    // potato 3
     vec_k.push_back(0.56);
     vec_rho.push_back(1130);
     vec_cp.push_back(3530);
@@ -1294,13 +1294,13 @@ int main(int argc, char **argv){
     vec_cp_hot.push_back(100);
     vec_k_hot.push_back(2);
 
-    // Not physical
-    vec_k.push_back(1);
-    vec_rho.push_back(1);
-    vec_cp.push_back(1);
-    vec_rho_hot.push_back(100);
-    vec_cp_hot.push_back(100);
-    vec_k_hot.push_back(1);
+    // SomeFood from ref 4
+    vec_k.push_back(1.4);
+    vec_rho.push_back(725);
+    vec_cp.push_back(1450);
+    vec_rho_hot.push_back(770);
+    vec_cp_hot.push_back(2770);
+    vec_k_hot.push_back(0.4);
 
     // Not physical
     vec_k.push_back(2);
@@ -1944,7 +1944,7 @@ while(step_pos<=step_pos_max){
 		}
 
      /******************************** Extraction of a cut if needed ***********************************/
-	
+
 	if(step == (int) step_cut[next_cut]){// To extract a cut
 		next_cut++;
 		if(Cut[0]==1){// Cut along x
@@ -2151,7 +2151,7 @@ while(step_pos<=step_pos_max){
 			}
        			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
 			/****************************************************************************************************/
-		
+
 			// if(step>80000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
