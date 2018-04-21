@@ -1124,10 +1124,10 @@ void export_coupe(int direction, int component, double pos1,double pos2,int Nx_t
 	}
   double x_min = i_min*dx - 0.5*xx*dx;
   double y_min = j_min*dx - 0.5*yy*dx;
-  double z_min = k_min*dx - 0.5*yy*dx;
+  double z_min = k_min*dx - 0.5*zz*dx;
   double x_max = (i_max+xx*lastx)*dx - 0.5*xx*dx;
   double y_max = (j_max+yy*lasty)*dx - 0.5*yy*dx;
-  double z_max = (k_max+zz*lastz)*dx - 0.5*yy*dx;
+  double z_max = (k_max+zz*lastz)*dx - 0.5*zz*dx;
 
   double pos1_temp = pos1/dx ;
   double pos2_temp = pos2/dx ;
@@ -1139,6 +1139,7 @@ void export_coupe(int direction, int component, double pos1,double pos2,int Nx_t
   snprintf(stepnumber,sizeof stepnumber,"%d", step);
   snprintf(rank,sizeof rank,"%d", myrank);
 	FILE *FileW;
+ 
 	if(direction==1){// Cut along x
   	  if(pos1>=y_min && pos1<=y_max && pos2>=z_min && pos2<=z_max){
   		strcat(file_name,"_alongX_step");
@@ -1147,6 +1148,7 @@ void export_coupe(int direction, int component, double pos1,double pos2,int Nx_t
 		strcat(file_name,rank);
 		strcat(file_name,".txt");
 		FileW = fopen(file_name,"w");
+
       		pos1_int = pos1_int - y_min;
       		pos2_int = pos2_int - z_min;
 		  for(i=0;i<Nx+xx*lastx;i++){
@@ -1213,5 +1215,5 @@ void export_temp_probe_electro(std::vector<double> &vec,int step,char *Filename)
 	for(i=0;i<step;i++){
 		fprintf(FileW," %lf \n ",vec[i]);
 	}
-	fclose(FileW);
+	fclose(FileW);	
 }

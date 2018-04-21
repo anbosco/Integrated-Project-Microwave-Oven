@@ -1624,6 +1624,26 @@ while(step_pos<=step_pos_max){
 					}
 				}
 			}
+			if(P==2){
+				#pragma omp parallel for default(shared) private(i,j,k)
+				for(i=b_inf_x;i<=b_sup_x;i++){
+					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
+						for(k=b_inf_z;k<=b_sup_z;k++){
+							Ey_new[i][j][k]= E_amp*sin(omega*step*dt);
+          				  	}
+					}
+				}
+			}
+			if(P==3){
+				#pragma omp parallel for default(shared) private(i,j,k)
+				for(i=b_inf_x;i<=b_sup_x;i++){
+					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
+						for(k=b_inf_z;k<=b_sup_z;k++){
+							Ey_new[i][j][k]= E_amp;
+          				  	}
+					}
+				}
+			}
 		}
 
 		//Storage of the new value of the electric field in E_prev.
@@ -1918,7 +1938,8 @@ while(step_pos<=step_pos_max){
 		}
 
      /******************************** Extraction of a cut if needed ***********************************/
-	if(step == step_cut[next_cut]){// To extract a cut
+	
+	if(step == (int) step_cut[next_cut]){// To extract a cut
 		next_cut++;
 		if(Cut[0]==1){// Cut along x
 			export_coupe(1, 1, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Ex_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
@@ -2126,7 +2147,7 @@ while(step_pos<=step_pos_max){
        			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
 			/****************************************************************************************************/
 		
-			if(step>80000)
+			// if(step>80000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
