@@ -490,7 +490,7 @@ void Compute_a_T0_steady(std::vector<int> &irn , std::vector<int> &jcn, int X, i
           				else{ 
            				if(geometry[i_vec+1]!=0&&geometry[i_vec+2]!=0&&BC[0]==0){
               				irn.push_back(i_vec+1);
-    					jcn.push_back(i_vec+1);
+   					  jcn.push_back(i_vec+1);
     					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
     					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+2]/(2*dx));
             
@@ -956,6 +956,7 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 				/***** Imposition of the dirichlet boundary condition **********/
 				else if(geometry[i_vec-Y*Z]==0&&geometry[i_vec+Y*Z]!=0&&BC[4]==1){ // face 4
             // Dirichlet
+            Temp[i_vec] = T_Dir[4];
   					irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
   					a.push_back(1);
@@ -963,6 +964,7 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 				}
 				else if((geometry[i_vec+Y*Z]==0&&geometry[i_vec-Y*Z]!=0&&BC[5]==1)){ // face 5
          // Dirichlet
+           Temp[i_vec] = T_Dir[5];
            irn.push_back(i_vec+1);
   				 jcn.push_back(i_vec+1);
 				   a.push_back(1);
@@ -970,6 +972,7 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 				}
 				else if(geometry[i_vec-1]==0&&geometry[i_vec+1]!=0&&BC[0]==1){ // face 0
 		      // Dirichlet
+            Temp[i_vec] = T_Dir[0];
             irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
   					a.push_back(1);
@@ -977,6 +980,7 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
         }
 				else if((geometry[i_vec+1]==0 && geometry[i_vec-1]!=0&&BC[1]==1)){ // face 1
          // Dirichlet
+           Temp[i_vec] = T_Dir[1];
            irn.push_back(i_vec+1);
   				 jcn.push_back(i_vec+1);
   				 a.push_back(1);
@@ -984,6 +988,7 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 				}
 				else if(geometry[i_vec-Y]==0&&geometry[i_vec+Y]!=0&&BC[2]==1){ // face2
             // Dirichlet
+            Temp[i_vec] = T_Dir[2];
             irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
   					a.push_back(1);
@@ -991,6 +996,7 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 				}
 				else if((geometry[i_vec+Y]==0&&geometry[i_vec-Y]!=0&&BC[3]==1)){  // face 3
          // Dirichlet
+             Temp[i_vec] = T_Dir[3];
             irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
   					a.push_back(1);

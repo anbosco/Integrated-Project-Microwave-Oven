@@ -149,7 +149,7 @@ void Update_prev_in_send(int i_max1,int j_max1,int k_max1,int i_max2,int j_max2,
 						V1[i*(k_max1)+k] = M1[i][0][k] ;
 					}
 					else if(Case==3){
-						V1[i*(j_max1)+j]=M1[i][j][0];
+						V1[i*(j_max1)+j] = M1[i][j][0];
 					}
 					else if(Case==4){
 						V1[j*(k_max1)+k] = M1[point_max-1][j][k];
@@ -174,7 +174,7 @@ void Update_prev_in_send(int i_max1,int j_max1,int k_max1,int i_max2,int j_max2,
 						V2[i*(k_max2)+k] = M2[i][0][k] ;
 					}
 					else if(Case==3){
-						V2[i*(j_max2)+j]=M2[i][j][0];
+						V2[i*(j_max2)+j] = M2[i][j][0];
 					}
 					else if(Case==4){
 						V2[j*(k_max2)+k] = M2[point_max-1][j][k];
@@ -224,17 +224,17 @@ void Update_E_boundary(int i_max,int j_max,int k_max,double***E_new,double***E_p
   if(Case==1 || Case==2){
   	i_min=i_max;
   	j_max-=1;
-	k_max-=1;
+	  k_max-=1;
   }
   else if(Case==3 || Case==4){
         j_min=j_max;
-  	i_max-=1;
-	k_max-=1;
+  	    i_max-=1;
+	      k_max-=1;
   }
   else if(Case==5 || Case==6){
         k_min=k_max;
-  	i_max-=1;
-	j_max-=1;
+  	    i_max-=1;
+	      j_max-=1;
   }
   #pragma omp parallel for default(shared) private(i,j,k)
   for(i=i_min;i<=i_max;i++){
@@ -328,7 +328,7 @@ void Update_H_boundary(int i_max,int j_max,int k_max,int last,double***H_new,dou
 		j_max--;
 		k_max--;
 	}
-	if(Case==2){
+	else if(Case==2){
 		i_max = 0;
 		j_min = 1;
 		j_max--;

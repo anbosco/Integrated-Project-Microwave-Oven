@@ -125,7 +125,7 @@ int main(int argc, char **argv){
 	int nxp;
 	int nyp;
 	int nzp;
-	double T_mean = 40/(f*dt);
+	double T_mean = 0.5/(f*dt);
 	int step_mean = (int) T_mean;
 	double Residual = 0;
   	double Residual_0 = 0;
@@ -256,7 +256,7 @@ int main(int argc, char **argv){
 	Pos_probe_electro[0] = (Pos_probe_electro[0])/dx;
 	Pos_probe_electro[1] = (Pos_probe_electro[1])/dx;
 	Pos_probe_electro[2] = (Pos_probe_electro[2])/dx;
-
+	
 	std::vector<double> Ex_probe;
 	std::vector<double> Ey_probe;
 	std::vector<double> Ez_probe;
@@ -446,7 +446,7 @@ int main(int argc, char **argv){
 
 	vec_e_r.push_back(1);	//air
 	vec_e_r.push_back(51.5);	// potato
-	vec_e_r.push_back(52.5);
+	vec_e_r.push_back(4);
 	vec_e_r.push_back(53.5);
 
 	vec_e_r_hot.push_back(1);	//air
@@ -472,7 +472,11 @@ int main(int argc, char **argv){
 	Temp_phase_change.push_back(0);	//air
 	Temp_phase_change.push_back(20);	//potato
 	Temp_phase_change.push_back(20);
-	Temp_phase_change.push_back(0);
+	Temp_phase_change.push_back(20);
+
+	// Used to check the steady state
+	double E_max_new = 0;
+	double E_max_old = 1;
 
 	/* Division of the domain along x, y and z depending on the number of process.
 	   Each process will process a portion of the domain.*/
@@ -549,7 +553,7 @@ int main(int argc, char **argv){
 	std::vector<double> e_rz((point_per_proc_x[myrank])*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz));
 	std::vector<double> e_diel((point_per_proc_x[myrank])*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]));
 	set_vec(e_diel, (point_per_proc_x[myrank])*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]) , 0);
-  	set_vec(e_rx, (point_per_proc_x[myrank]+lastx)*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]), 1);
+  set_vec(e_rx, (point_per_proc_x[myrank]+lastx)*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]), 1);
  	set_vec(e_ry, (point_per_proc_x[myrank])*(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]), 1);
  	set_vec(e_rz, (point_per_proc_x[myrank])*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]+lastz), 1);
 
@@ -1424,7 +1428,7 @@ while(step_pos<=step_pos_max){
 
 				else{
 					if(ip%2==1){ // I send then I receive
-					 	Update_prev_in_send(1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hy_front_send,Hy_prev,Hz_front_send,Hz_prev, 1, point_per_proc_x[myrank]);
+					 	Update_prev_in_send(1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hy_front_send,Hy_prev,Hz_front_send,Hz_prev, 1, point_per_proc_x[myrank]+lastx);
 						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 
@@ -1440,7 +1444,7 @@ while(step_pos<=step_pos_max){
 							MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
 							Update_send_in_mat(point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz, point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hy_front,Hy_front_send,Hz_front,Hz_front_send);
 						}
-						Update_prev_in_send(1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hy_front_send,Hy_prev,Hz_front_send,Hz_prev, 1, point_per_proc_x[myrank]);
+						Update_prev_in_send(1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hy_front_send,Hy_prev,Hz_front_send,Hz_prev, 1, point_per_proc_x[myrank]+lastx);
 						MPI_Send(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-(divy*divz),myrank,MPI_COMM_WORLD);
 
@@ -1456,7 +1460,7 @@ while(step_pos<=step_pos_max){
 				}
 				else{
 					if(jp%2==1){//I send then I receive
-						Update_prev_in_send(point_per_proc_x[myrank],1,point_per_proc_z[myrank]+lastz,point_per_proc_x[myrank]+lastx,1,point_per_proc_z[myrank],Hx_right_send,Hx_prev,Hz_right_send,Hz_prev, 2, point_per_proc_y[myrank]);
+						Update_prev_in_send(point_per_proc_x[myrank],1,point_per_proc_z[myrank]+lastz,point_per_proc_x[myrank]+lastx,1,point_per_proc_z[myrank],Hx_right_send,Hx_prev,Hz_right_send,Hz_prev, 2, point_per_proc_y[myrank]+lasty);
 						MPI_Send(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 						if (lasty!=1){
@@ -1471,7 +1475,7 @@ while(step_pos<=step_pos_max){
 							MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 							Update_send_in_mat(point_per_proc_x[myrank],point_per_proc_z[myrank]+lastz, point_per_proc_x[myrank]+lastx,point_per_proc_z[myrank],Hx_right,Hx_right_send,Hz_right,Hz_right_send);
 						}
-						Update_prev_in_send(point_per_proc_x[myrank],1,point_per_proc_z[myrank]+lastz,point_per_proc_x[myrank]+lastx,1,point_per_proc_z[myrank],Hx_right_send,Hx_prev,Hz_right_send,Hz_prev, 2, point_per_proc_y[myrank]);
+						Update_prev_in_send(point_per_proc_x[myrank],1,point_per_proc_z[myrank]+lastz,point_per_proc_x[myrank]+lastx,1,point_per_proc_z[myrank],Hx_right_send,Hx_prev,Hz_right_send,Hz_prev, 2, point_per_proc_y[myrank]+lasty);
 						MPI_Send(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 						MPI_Send(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank-1,myrank,MPI_COMM_WORLD);
 					}
@@ -1479,14 +1483,14 @@ while(step_pos<=step_pos_max){
 			}
 			if (divz!=1){// Communication in the z direction
 
-				if (kp==0){//I receive only
+				if (kp==0){//I receive only 
 					MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 					Update_send_in_mat(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty, point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],Hx_up,Hx_up_send,Hy_up,Hy_up_send);
 				}
 				else{
 					if(kp%2==1){//I send then I receive
-						Update_prev_in_send(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,1,point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],1,Hx_up_send,Hx_prev,Hy_up_send,Hy_prev, 3, point_per_proc_z[myrank]);
+						Update_prev_in_send(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,1,point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],1,Hx_up_send,Hx_prev,Hy_up_send,Hy_prev, 3, point_per_proc_z[myrank]+lastz);
 						MPI_Send(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 						MPI_Send(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 						if(lastz!=1){
@@ -1501,7 +1505,7 @@ while(step_pos<=step_pos_max){
 							MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 							Update_send_in_mat(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty, point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],Hx_up,Hx_up_send,Hy_up,Hy_up_send);
 						}
-						Update_prev_in_send(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,1,point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],1,Hx_up_send,Hx_prev,Hy_up_send,Hy_prev, 3, point_per_proc_z[myrank]);
+						Update_prev_in_send(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,1,point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],1,Hx_up_send,Hx_prev,Hy_up_send,Hy_prev, 3, point_per_proc_z[myrank]+lastz);
 						MPI_Send(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 						MPI_Send(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank-divy,myrank,MPI_COMM_WORLD);
 					}
@@ -1625,7 +1629,7 @@ while(step_pos<=step_pos_max){
 					for(j=b_inf_y;j<=b_sup_y;j++){
 						for(k=b_inf_z;k<=b_sup_z+lastz;k++){
 							double yrel = (j+j_min_proc[myrank]-j_min_a)*dx;
-							Ez_new[i][j][k]= E_amp*sin((3.141692*yrel)/l_ay)*sin(omega*step*dt);
+							Ey_new[i][j][k]= E_amp*sin((3.141692*yrel)/l_ay)*sin(omega*step*dt);
           				  	}
 					}
 				}
@@ -1646,11 +1650,30 @@ while(step_pos<=step_pos_max){
 					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
 						for(k=b_inf_z;k<=b_sup_z;k++){
 							Ey_new[i][j][k]= E_amp;
-          				  	}
+           	}
 					}
 				}
 			}
 		}
+	/*	nx = point_per_proc_x[myrank];
+		ny = point_per_proc_y[myrank];
+		nz = point_per_proc_z[myrank];
+		i = nx/2;
+		j = ny/2;
+		k = nz/2;
+		if(E_max_new<sqrt((Ex_new[i][j][k]*Ex_new[i][j][k])+(Ey_new[i][j][k]*Ey_new[i][j][k])+(Ez_new[i][j][k]*Ez_new[i][j][k]))){
+				E_max_new=sqrt((Ex_new[i][j][k]*Ex_new[i][j][k])+(Ey_new[i][j][k]*Ey_new[i][j][k])+(Ez_new[i][j][k]*Ez_new[i][j][k]));
+		}
+		// Check for steady state
+		if(step%step_mean==0){
+			Residual = sqrt((E_max_new-E_max_old)*(E_max_new-E_max_old));
+			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual);
+			printf("Step:  %d Rank : %lf Residual : %lf\n",step, E_max_new, E_max_old);
+			Residual = Residual/E_max_old;
+			E_max_old = E_max_new;
+			E_max_new = 0;			
+		}	*/
+
 
 		//Storage of the new value of the electric field in E_prev.
 
@@ -1915,7 +1938,7 @@ while(step_pos<=step_pos_max){
 
 		if(step%SR==0){//save results of the mpi process to disk
 			//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
-		  	//export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
+		  	export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
 			//export_spoints_XML("Ez", step, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
 			//export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
 			//export_spoints_XML("Hy", step, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
@@ -1923,7 +1946,7 @@ while(step_pos<=step_pos_max){
 
             		if (myrank == 0){	// save main pvti file by rank0
 				//export_spoints_XMLP("Ex", step, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-                		//export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+                		export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 				//export_spoints_XMLP("Ez", step, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
 				//export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 				//export_spoints_XMLP("Hy", step, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
@@ -1944,7 +1967,7 @@ while(step_pos<=step_pos_max){
 		}
 
      /******************************** Extraction of a cut if needed ***********************************/
-
+	
 	if(step == (int) step_cut[next_cut]){// To extract a cut
 		next_cut++;
 		if(Cut[0]==1){// Cut along x
@@ -2106,18 +2129,29 @@ while(step_pos<=step_pos_max){
 			**************************************/
 
 			/****************** Check if steady state is reached on the current process **********************/
-			Residual = 0;
+			//Residual = 0;
 			for(i=0;i<nx;i++){
 				for(j=0;j<ny;j++){
 					for(k=0;k<(nz);k++) {
-						Power_new[i+j*nx+k*(ny)*nx] = (3.141692*f*Power_new[i+j*nx+k*(ny)*nx])/(step_mean);
-						Residual = Residual + (Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]);
-						Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
+						Power_new[i+j*nx+k*(ny)*nx] = (3.141692*f*Power_new[i+j*nx+k*(ny)*nx])/(step_mean);						
+						//Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
+						//Residual = Residual + (Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]);
+						if(i==nx/2&&j==ny/2&&k==nz/2){
+							//Residual = ((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
+							//Residual = sqrt((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
+							//Residual = Residual/Power_old[i+j*nx+k*(ny)*nx];
+						}
 						Power_old[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx];
 					}
 				}
 			}
-     			 if((step/step_mean)==1||(step/step_mean)%5==0){
+			if(Residual<0.0025){
+				steady_state_reached = 1;
+			}
+			else{
+				steady_state_reached = 0;
+			}
+     			/* if((step/step_mean)==1||(step/step_mean)%5==0){
 				if(Residual==0){
 					Residual = 1;
 					steady_state_reached=1;
@@ -2130,7 +2164,7 @@ while(step_pos<=step_pos_max){
 			}
 			else{
 				steady_state_reached = 0;
-			}
+			}*/
 			/**************************************************************************************************/
 
 			/* Communication between the process in order to determine if the algorithm must continue or not. */
@@ -2149,13 +2183,21 @@ while(step_pos<=step_pos_max){
 				MPI_Send(&steady_state_reached,1,MPI_INT, 0, myrank, MPI_COMM_WORLD );
 				MPI_Recv(&steady_state_reached,1,MPI_INT,0,0, MPI_COMM_WORLD, &mystatus );
 			}
-       			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
+       			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
+			
 			/****************************************************************************************************/
-
+		
 			// if(step>80000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
+				for(i=0;i<nx;i++){
+					for(j=0;j<ny;j++){
+						for(k=0;k<(nz);k++) {					
+							Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
+						}
+					}
+				}		
 				break;
  			}
 			else{
@@ -2191,7 +2233,7 @@ if(solve_electro==1){	// We save the last step of the electro calculation if the
 	   }
 		//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
 		export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
-		export_spoints_XML("Ez", step+step_prec, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
+		//export_spoints_XML("Ez", step+step_prec, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hx", step+step_prec, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hy", step+step_prec, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hz", step+step_prec, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
@@ -2199,7 +2241,7 @@ if(solve_electro==1){	// We save the last step of the electro calculation if the
 	if (myrank == 0){	// save main pvti file by rank0
 			//export_spoints_XMLP("Ex", step+step_prec, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
 	      		export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
-			export_spoints_XMLP("Ez", step+step_prec, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
+			//export_spoints_XMLP("Ez", step+step_prec, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
 			//export_spoints_XMLP("Hx", step+step_prec, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 			//export_spoints_XMLP("Hy", step+step_prec, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
 			//export_spoints_XMLP("Hz", step+step_prec, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
