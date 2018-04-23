@@ -1,9 +1,9 @@
-0.14		! Lx
-0.08		! Ly
-0.14		! Lz
-0.16   		! Posx 
-0.2		! Posy
-0.16		! Posz
+0.01		! Lx
+0.01		! Ly
+0.01		! Lz
+0.1   		! Posx 
+0.1		! Posy
+0.1		! Posz
 50000		! Value of the heat source(W/m³)
 0.02		! Lx
 0.02		! Ly
