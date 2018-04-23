@@ -957,6 +957,7 @@ int main(int argc, char **argv){
 				sgrids_Hz[l].np2 = Vec3i(i_max_proc[l]+1, j_max_proc[l]+1, k_max_proc[l]);
 			}
 			sgrids_Hz[l].dx = Vec3d(dx, dx, dx);
+			sgrids_Hz[l].id = l;
 		}
 	}
 
@@ -1307,7 +1308,7 @@ int main(int argc, char **argv){
     vec_k_hot.push_back(0.4);
 
     // Not physical
-    vec_k.push_back(2);
+    vec_k.push_back(1);
     vec_rho.push_back(1);
     vec_cp.push_back(2);
     vec_rho_hot.push_back(100);

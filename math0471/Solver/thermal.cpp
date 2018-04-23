@@ -445,7 +445,6 @@ void Compute_RHS_steady(std::vector<double> &pre_mat, std::vector<int> &irn , st
           Temp2[i] = T_Dir[0];
         }
         else if(geometry[i]!=0&&(geometry[i+Y]==0&&BC[3]==1)){
-          printf("\n\nDDDDDD\n\n");
           Temp2[i] = T_Dir[3];
         }
         else if(geometry[i]!=0&&(geometry[i-Y]==0&&BC[2]==1)){
@@ -644,31 +643,31 @@ void Compute_a_T0_steady(std::vector<int> &irn , std::vector<int> &jcn, int X, i
 					else{
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec+1);
-					a.push_back(-(constant[i_vec]*(k_heat_x[i*Y*Z+k*Y+j]+k_heat_x[(i+1)*Y*Z+k*Y+j]+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j]+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+1]+k_heat_z[i*Y*(Z+1)+k*Y+j]+k_heat_z[i*Y*(Z+1)+(k+1)*Y+j])));	// I- A(theta)			
+					a.push_back((constant[i_vec]*(k_heat_x[i*Y*Z+k*Y+j]+k_heat_x[(i+1)*Y*Z+k*Y+j]+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j]+k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+1]+k_heat_z[i*Y*(Z+1)+k*Y+j]+k_heat_z[i*Y*(Z+1)+(k+1)*Y+j])));	// I- A(theta)			
 
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec);
-					a.push_back(constant[i_vec]*k_heat_y[i*(Y+1)*Z+k*(Y+1)+j]);		// I- A(theta)
+					a.push_back(-constant[i_vec]*k_heat_y[i*(Y+1)*Z+k*(Y+1)+j]);		// I- A(theta)
 			
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec+2);
-					a.push_back(constant[i_vec]*k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+1]);		// I- A(theta)
+					a.push_back(-constant[i_vec]*k_heat_y[i*(Y+1)*Z+k*(Y+1)+j+1]);		// I- A(theta)
 					
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec+Y+1);
-					a.push_back(constant[i_vec]*k_heat_z[i*Y*(Z+1)+(k+1)*Y+j]);		// I- A(theta)
+					a.push_back(-constant[i_vec]*k_heat_z[i*Y*(Z+1)+(k+1)*Y+j]);		// I- A(theta)
 			
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec-Y+1);
-					a.push_back(constant[i_vec]*k_heat_z[i*Y*(Z+1)+k*Y+j]);		// I- A(theta)		
+					a.push_back(-constant[i_vec]*k_heat_z[i*Y*(Z+1)+k*Y+j]);		// I- A(theta)		
 			
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec+Y*Z+1);
-					a.push_back(constant[i_vec]*k_heat_x[(i+1)*Y*Z+k*Y+j]);		// I- A(theta)
+					a.push_back(-constant[i_vec]*k_heat_x[(i+1)*Y*Z+k*Y+j]);		// I- A(theta)
 				
 					irn.push_back(i_vec+1);
 					jcn.push_back(i_vec-Y*Z+1);
-					a.push_back(constant[i_vec]*k_heat_x[i*Y*Z+k*Y+j]);		// I- A(theta)
+					a.push_back(-constant[i_vec]*k_heat_x[i*Y*Z+k*Y+j]);		// I- A(theta)
 				}
 			    /********************************************************************/
 			}
@@ -683,6 +682,7 @@ void insert_Source_th(std::vector<double> &Source,int nb_source, std::vector<dou
   	int k = 0;
 	int l = 0;
 	int prop_per_source = 7;
+	double eta=0;
 
 	for(l=0;l<nb_source;l++){
 		double n_x_double = ((prop_source[prop_per_source*l])/dx)+1;
@@ -741,7 +741,9 @@ void insert_Source_th(std::vector<double> &Source,int nb_source, std::vector<dou
 		for(i=b_inf_x;i<=b_sup_x;i++){
 			for(j=b_inf_y;j<=b_sup_y;j++){
 				for(k=b_inf_z;k<=b_sup_z;k++){
-					Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6];
+					eta = j*dx-(b_inf_y*dx);
+					Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6]*sin(eta*(3.141592/((b_sup_y-b_inf_y)*dx)));
+					//Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6];
 				}
 			}
 		}
