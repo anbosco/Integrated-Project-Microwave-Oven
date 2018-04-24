@@ -285,14 +285,14 @@ void Update_H_inside(int i_max,int j_max,int k_max,int last1, int last2,double**
 	#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
 		for(i=i_min;i<i_max;i++){
 			for(j=j_min;j<j_max;j++){
-				for(k=i_min;k<k_max;k++){
+				for(k=k_min;k<k_max;k++){
 					if( last1==1&&((Case==1 && k == k_max-last1)||(Case==2 && i == i_max-last1)||(Case==3&&j == j_max-last1))){
 						temp1=0;
 					}
 					else{
 						temp1 = E1_prev[i][j][k];
 					}
-					if(last2==1&&((Case==1&&j == j_max-last2)||(Case==2&&k == k_max-last2)||(Case==3&&i == i_max-last2))){
+					if(last2==1&&((Case==1 &&j  == j_max-last2)||(Case==2 && k == k_max-last2)||(Case==3 && i == i_max-last2))){
 						temp2 = 0;
 					}
 					else{
@@ -350,7 +350,7 @@ void Update_H_boundary(int i_max,int j_max,int k_max,int last,double***H_new,dou
 		k_max = 0;
 		j_min = 1;
 		i_max--;
-		j_max--;
+		j_max--;		
 	}
 	else if(Case==6){
 		k_max = 0;
