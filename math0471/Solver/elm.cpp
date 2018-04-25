@@ -350,7 +350,7 @@ void Update_H_boundary(int i_max,int j_max,int k_max,int last,double***H_new,dou
 		k_max = 0;
 		j_min = 1;
 		i_max--;
-		j_max--;		
+		j_max--;
 	}
 	else if(Case==6){
 		k_max = 0;
@@ -1139,7 +1139,7 @@ void export_coupe(int direction, int component, double pos1,double pos2,int Nx_t
   snprintf(stepnumber,sizeof stepnumber,"%d", step);
   snprintf(rank,sizeof rank,"%d", myrank);
 	FILE *FileW;
- 
+
 	if(direction==1){// Cut along x
   	  if(pos1>=y_min && pos1<=y_max && pos2>=z_min && pos2<=z_max){
   		strcat(file_name,"_alongX_step");
@@ -1208,12 +1208,12 @@ void export_power_thermo(std::vector<double> &Power_tot,int Nx,int Ny,int Nz){
    fclose(FileW);
  }
 
-void export_temp_probe_electro(std::vector<double> &vec,int step,char *Filename){
+void export_temp_probe_electro(std::vector<double> &vec,int step,const char *Filename){
 	int i =0;
 	FILE *FileW;
 	FileW = fopen(Filename,"w");
 	for(i=0;i<step;i++){
 		fprintf(FileW," %lf \n ",vec[i]);
 	}
-	fclose(FileW);	
+	fclose(FileW);
 }

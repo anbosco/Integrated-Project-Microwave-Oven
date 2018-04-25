@@ -54,13 +54,35 @@ int main(int argc, char **argv){
 
 
 
+	/* Handling of input files : The directory that contains
+	every input files. */
+	// 1) Only the directory.
+
+
+	if(argc != 2){
+		std::cerr << "Error locating the input files" << std::endl;
+		return 1;
+	}
+
+	std::string TestDir = argv[1] + std::string("/");
+	std::string Elm = TestDir + std::string("Interface.dat");
+	std::string Heat =  TestDir + std::string("param_heat.dat");
+	std::string Cube = TestDir + std::string("Prop_cube.dat");
+	std::string Cyl = TestDir + std::string("Prop_cylinder.dat");
+	std::string Sphere = TestDir + std::string("Prop_sphere.dat");
+	std::string SpatialCutElm = TestDir + std::string("Spatial_cut.dat");
+	std::string SpatialCutTemp = TestDir + std::string("Spatial_cut_temp.dat");
+	std::string TemporalProbeTemp = TestDir + std::string("Temporal_probe.dat");
+	std::string TemporalProbeElm =  TestDir + std::string("temp_probe_electro.dat");
+	std::string HeatSource = TestDir + std::string("prop_source_heat.dat");
+
 	// Variables used to open files and to write in files.
   	int next_cut = 0;
 	FILE *FileR;
 	FILE *FileW;
-	FileR = fopen(argv[1],"r");
+	FileR = fopen(Elm.c_str(),"r");
 	if(FileR == NULL){
-		printf("Impossible to open the data file. \n");
+		std::cerr << "Impossible to open the data file." << std::endl;
 		return 1;
 	}
 	char DEST_Ez[50] = "Ez";
@@ -82,7 +104,7 @@ int main(int argc, char **argv){
 	char chain[150];
 	for (i=0 ; i<21; i++){
 		if (fgets(chain, 150, FileR) == NULL){
-			printf("Impossible to read the data file. \n");
+			std::cerr << "Impossible to read the data file." << std::endl;
 			return 1;
 		}
 		else{
@@ -134,14 +156,14 @@ int main(int argc, char **argv){
 
   	// Prop spheres
 	std::vector<double> prop_sphere;
-	FileR = fopen(argv[2],"r");
+	FileR = fopen(Sphere.c_str(),"r");
 	if(FileR == NULL){
-		printf("Impossible to open the sphere file (Object property). \n");
+		std::cerr << "Impossible to open the sphere file (Object property)." << std::endl;
 		return 1;
 	}
 	for (i=0 ; i<5*n_sphere; i++){
 		if (fgets(chain, 150, FileR) == NULL){
-			printf("Impossible to read the sphere file. \n");
+			std::cerr << "Impossible to read the sphere file." << std::endl;
 			return 1;
 		}
 		else{
@@ -152,14 +174,14 @@ int main(int argc, char **argv){
 
   	// Prop cylinders
 	std::vector<double> prop_cylinder;
-	FileR = fopen(argv[3],"r");
+	FileR = fopen(Cyl.c_str(),"r");
 	if(FileR == NULL){
-		printf("Impossible to open the sphere file (Object property). \n");
+		std::cerr << "Impossible to open the cylinder file (Object property)." << std::endl;
 		return 1;
 	}
 	for (i=0 ; i<7*n_cylinder; i++){
 		if (fgets(chain, 150, FileR) == NULL){
-			printf("Impossible to read the sphere file. \n");
+			std::cerr << "Impossible to read the cylinder file." << std::endl;
 			return 1;
 		}
 		else{
@@ -170,14 +192,14 @@ int main(int argc, char **argv){
 
   	// Prop cubes
 	std::vector<double> prop_cube;
-	FileR = fopen(argv[4],"r");
+	FileR = fopen(Cube.c_str(),"r");
 	if(FileR == NULL){
-		printf("Impossible to open the sphere file (Object property). \n");
+		std::cerr << "Impossible to open the cube file (Object property)." << std::endl;
 		return 1;
 	}
 	for (i=0 ; i<7*n_cube; i++){
 		if (fgets(chain, 150, FileR) == NULL){
-			printf("Impossible to read the sphere file. \n");
+			std::cerr << "Impossible to read the cube file." << std::endl;
 			return 1;
 		}
 		else{
@@ -192,14 +214,14 @@ int main(int argc, char **argv){
     int N_cut;
     std::vector<double> step_cut;
     double data_cut[10];
-    FileR = fopen(argv[5],"r");
+    FileR = fopen(SpatialCutElm.c_str(),"r");
     if(FileR == NULL){
-    	printf("Impossible to open the Cuts file. \n");
+    	std::cerr << "Impossible to open the Cuts file." << std::endl;
     	return 1;
     }
     for (i=0 ; i<10; i++){
  	   if (fgets(chain, 150, FileR) == NULL){
-		printf("Impossible to read the Cuts file. \n");
+		std::cerr << "Impossible to read the Cuts file." << std::endl;
 		return 1;
   	  }
    	 else{
@@ -219,7 +241,7 @@ int main(int argc, char **argv){
     if(N_cut !=0){
     	for(i=0;i<N_cut;i++){
  		if (fgets(chain, 150, FileR) == NULL){
-			printf("Impossible to read the Cuts file. \n");
+			std::cerr << "Impossible to read the Cuts file." << std::endl;
 			return 1;
   	  	}
 		step_cut.push_back(atof(chain)/dt);
@@ -230,13 +252,13 @@ int main(int argc, char **argv){
     // Property of temporal probes
     double probe_electro;
     std::vector<double> Pos_probe_electro;
-    FileR = fopen(argv[10],"r");
+    FileR = fopen(TemporalProbeElm.c_str(),"r");
     if(FileR == NULL){
-    	printf("Impossible to open the Electro Probe file. \n");
+    	std::cerr << "Impossible to open the Electro Probe file." << std::endl;
     	return 1;
     }
     if (fgets(chain, 150, FileR) == NULL){
-	printf("Impossible to read the Electro Probe file. \n");
+	std::cerr << "Impossible to read the Electro Probe file." << std::endl;
 	return 1;
    }
    else{
@@ -256,7 +278,7 @@ int main(int argc, char **argv){
 	Pos_probe_electro[0] = (Pos_probe_electro[0])/dx;
 	Pos_probe_electro[1] = (Pos_probe_electro[1])/dx;
 	Pos_probe_electro[2] = (Pos_probe_electro[2])/dx;
-	
+
 	std::vector<double> Ex_probe;
 	std::vector<double> Ey_probe;
 	std::vector<double> Ez_probe;
@@ -275,16 +297,16 @@ int main(int argc, char **argv){
     double T_0;
 
 
-    FileR = fopen(argv[6],"r");
+    FileR = fopen(Heat.c_str(),"r");
     if(FileR == NULL){
-    	printf("Impossible to open the Heat data file. \n");
+    	std::cerr << "Impossible to open the Heat data file." << std::endl;
     	return 1;
     }
 
     double data_th[40];
     for (i=0 ; i<40; i++){
  	   if (fgets(chain, 150, FileR) == NULL){
-		printf("Impossible to read the Heat data file2. \n");
+		std::cerr << "Impossible to read the Heat data file." << std::endl;
 		return 1;
   	  }
    	 else{
@@ -340,14 +362,14 @@ int main(int argc, char **argv){
 
 
     // Properties of the power sources(heat)
-    FileR = fopen(argv[7],"r");
+    FileR = fopen(HeatSource.c_str(),"r");
     if(FileR == NULL){
-    	printf("Impossible to open the Source file. \n");
+    	std::cerr << "Impossible to open the Source file." << std::endl;
     	return 1;
     }
     for (i=0 ; i<prop_per_source_th*nb_source_th; i++){
  	   if (fgets(chain, 150, FileR) == NULL){
-		printf("Impossible to read the source file. \n");
+			 std::cerr << "Impossible to read the Source file." << std::endl;
 		return 1;
   	  }
    	 else{
@@ -362,15 +384,15 @@ int main(int argc, char **argv){
     int N_cut_th;
     std::vector<double> step_cut_th;
     double data_cut_th[10];
-    FileR = fopen(argv[8],"r");
+    FileR = fopen(SpatialCutTemp.c_str(),"r");
     if(FileR == NULL){
-    	printf("Impossible to open the Cuts file. \n");
+    	std::cerr << "Impossible to open the Cuts file." << std::endl;
     	return 1;
     }
     for (i=0 ; i<10; i++){
  	   if (fgets(chain, 150, FileR) == NULL){
-		printf("Impossible to read the Cuts file. \n");
-		return 1;
+			 std::cerr << "Impossible to open the Cuts file." << std::endl;
+			 return 1;
   	  }
    	 else{
 		data_cut_th[i] = atof(chain);
@@ -401,14 +423,14 @@ int main(int argc, char **argv){
     // Property of temporal probes
     double nb_probe_th;
     std::vector<double> Pos_probe_th;
-    FileR = fopen(argv[9],"r");
+    FileR = fopen(TemporalProbeTemp.c_str(),"r");
     if(FileR == NULL){
-    	printf("Impossible to open the Probe file. \n");
+    	std::cerr << "Impossible to open the Probe file." << std::endl;
     	return 1;
     }
     if (fgets(chain, 150, FileR) == NULL){
-	printf("Impossible to read the Probe file. \n");
-	return 1;
+			std::cerr << "Impossible to read the Probe file." << std::endl;
+			return 1;
    }
    else{
 	nb_probe_th = atof(chain);
@@ -416,7 +438,7 @@ int main(int argc, char **argv){
    if(nb_probe_th!=0){
    	for(i=0;i<3*nb_probe_th;i++){
     		if (fgets(chain, 150, FileR) == NULL){
-			printf("Impossible to read the Cuts file. \n");
+			std::cerr << "Impossible to read the Probe file." << std::endl;
 			return 1;
   		}
  		else{
@@ -430,6 +452,8 @@ int main(int argc, char **argv){
 		Pos_probe_th[i*3+1] = (Pos_probe_th[i*3+1]-y_min_th)/dx_th;
 		Pos_probe_th[i*3+2] = (Pos_probe_th[i*3+2]-z_min_th)/dx_th;
 	}
+
+fclose(FileR);
 
 
 
@@ -1484,7 +1508,7 @@ while(step_pos<=step_pos_max){
 			}
 			if (divz!=1){// Communication in the z direction
 
-				if (kp==0){//I receive only 
+				if (kp==0){//I receive only
 					MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 					Update_send_in_mat(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty, point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],Hx_up,Hx_up_send,Hy_up,Hy_up_send);
@@ -1520,11 +1544,11 @@ while(step_pos<=step_pos_max){
 		}
 		else if(lasty==1){
 			Update_E_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,Hy_up,dt,dx,e_0,e_rx,myrank,5,point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]);
-    			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_rx,1);     			
+    			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_rx,1);
 		}
 		else if (lastz == 1){
 			Update_E_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank],Ex_new,Ex_prev,Hz_prev,Hy_prev,Hz_right,dt,dx,e_0,e_rx,myrank,3,point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]);
-      			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank],Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_rx,1);     		  	
+      			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank],Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_rx,1);
 		}
 		else{
 			Update_E_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,Hy_up,dt,dx,e_0,e_rx,myrank,5,point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]);
@@ -1535,22 +1559,22 @@ while(step_pos<=step_pos_max){
 				j = point_per_proc_y[myrank]-1;
 				Ex_new[i][j][k] = Ex_prev[i][j][k] +(dt/(e_0*e_rx[i*(point_per_proc_y[myrank]*point_per_proc_z[myrank])+k*(point_per_proc_y[myrank])+j]*dx))*((Hz_right[i][k]-Hz_prev[i][j][k])-(Hy_up[i][j]-Hy_prev[i][j][k]));
 			}
-      			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_rx,1);			  
-			
+      			Update_E_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]-1,Ex_new,Ex_prev,Hz_prev,Hy_prev,dt,dx,e_0,e_rx,1);
+
 		}
 
 		//	Y component
 		if(lastx==1 && lastz==1){
      			 Update_E_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Ey_new,Ey_prev,Hx_prev,Hz_prev,dt,dx,e_0,e_ry,2);
 		}
-		else if(lastx==1){     			
+		else if(lastx==1){
      			 Update_E_boundary(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,Hx_up,dt,dx,e_0,e_ry,myrank,6,point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]);
 			 Update_E_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,dt,dx,e_0,e_ry,2);
 		}
 		else if(lastz==1){
 			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Ey_new,Ey_prev,Hx_prev,Hz_prev,Hz_front,dt,dx,e_0,e_ry,myrank,1,point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]);
      			 Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Ey_new,Ey_prev,Hx_prev,Hz_prev,dt,dx,e_0,e_ry,2);
-     			 
+
 		}
 		else{
 			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,Hx_up,dt,dx,e_0,e_ry,myrank,6,point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]);
@@ -1562,7 +1586,7 @@ while(step_pos<=step_pos_max){
 				Ey_new[i][j][k] = Ey_prev[i][j][k] + (dt/(e_0*e_ry[i*((point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank])+k*(point_per_proc_y[myrank]+lasty)+j]*dx))*((Hx_up[i][j]-Hx_prev[i][j][k])-(Hz_front[j][k]-Hz_prev[i][j][k]));
 			}
      			Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]-1,Ey_new,Ey_prev,Hx_prev,Hz_prev,dt,dx,e_0,e_ry,2);
-     			
+
 		}
 		//	Z component
 		if(lastx==1 && lasty==1){
@@ -1570,11 +1594,11 @@ while(step_pos<=step_pos_max){
 		}
 		else if(lastx==1){
 			Update_E_boundary(point_per_proc_x[myrank],point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,Hx_right,dt,dx,e_0,e_rz,myrank,4,point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz);
-      			Update_E_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_rz,3);      			
+      			Update_E_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_rz,3);
 		}
 		else if(lasty==1){
 			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,Hy_front,dt,dx,e_0,e_rz,myrank,2,point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz);
-      			Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_rz,3);    			  
+      			Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_rz,3);
 		}
 		else{
 			Update_E_boundary(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,Hx_right,dt,dx,e_0,e_rz,myrank,4,point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz);
@@ -1585,7 +1609,7 @@ while(step_pos<=step_pos_max){
 				j = point_per_proc_y[myrank]-1;
 				Ez_new[i][j][k] = Ez_prev[i][j][k] + (dt/(e_0*e_rz[i*(point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz))+k*(point_per_proc_y[myrank])+j]*dx))*((Hy_front[j][k]-Hy_prev[i][j][k])-(Hx_right[i][k]-Hx_prev[i][j][k]));
 			}
-    			Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_rz,3);    			
+    			Update_E_inside(point_per_proc_x[myrank]-1,point_per_proc_y[myrank]-1,point_per_proc_z[myrank]+lastz,Ez_new,Ez_prev,Hy_prev,Hx_prev,dt,dx,e_0,e_rz,3);
 		}
 
 		// Boundary condition
@@ -1675,7 +1699,7 @@ while(step_pos<=step_pos_max){
 			printf("Step:  %d Rank : %lf Residual : %lf\n",step, E_max_new, E_max_old);
 			Residual = Residual/E_max_old;
 			E_max_old = E_max_new;
-			E_max_new = 0;			
+			E_max_new = 0;
 		}	*/
 
 
@@ -1780,10 +1804,10 @@ while(step_pos<=step_pos_max){
 		}
 
 		//Update of the magnetic field
-		//	X Component					
-		Update_H_boundary(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,0,lasty,Hx_new,Hx_prev,Ey_prev,Ez_prev,Ey_bottom,dt,dx,mu_0,mu_r,myrank,5);	
-		Update_H_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]+lastz, lastz, lasty,Hx_new,Hx_prev,Ey_prev,Ez_prev,dt,dx,mu_0,mu_r,1);		
-		Update_H_boundary(point_per_proc_x[myrank],0,point_per_proc_z[myrank]+lastz,lastz,Hx_new,Hx_prev,Ey_prev,Ez_prev,Ez_left,dt,dx,mu_0,mu_r,myrank,3);		
+		//	X Component
+		Update_H_boundary(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,0,lasty,Hx_new,Hx_prev,Ey_prev,Ez_prev,Ey_bottom,dt,dx,mu_0,mu_r,myrank,5);
+		Update_H_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]+lastz, lastz, lasty,Hx_new,Hx_prev,Ey_prev,Ez_prev,dt,dx,mu_0,mu_r,1);
+		Update_H_boundary(point_per_proc_x[myrank],0,point_per_proc_z[myrank]+lastz,lastz,Hx_new,Hx_prev,Ey_prev,Ez_prev,Ez_left,dt,dx,mu_0,mu_r,myrank,3);
 		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
 		for(i=0;i<point_per_proc_x[myrank];i++){
 			j = 0;
@@ -1791,11 +1815,11 @@ while(step_pos<=step_pos_max){
 			temp1 = Ey_prev[i][j][k];
 			temp2 = Ez_prev[i][j][k];
 			Hx_new[i][j][k] = Hx_prev[i][j][k] + (dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-Ey_bottom[i][j])-(temp2-Ez_left[i][k]));
-		}	
+		}
 
-		//	Y Component			
+		//	Y Component
 		Update_H_boundary(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],0,lastx,Hy_new,Hy_prev,Ez_prev,Ex_prev,Ex_bottom,dt,dx,mu_0,mu_r,myrank,6);
-		Update_H_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz, lastx, lastz,Hy_new,Hy_prev,Ez_prev,Ex_prev,dt,dx,mu_0,mu_r,2);	
+		Update_H_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz, lastx, lastz,Hy_new,Hy_prev,Ez_prev,Ex_prev,dt,dx,mu_0,mu_r,2);
 		Update_H_boundary(0,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,lastz,Hy_new,Hy_prev,Ez_prev,Ex_prev,Ez_back,dt,dx,mu_0,mu_r,myrank,1);
 		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
 		for(j=0;j<point_per_proc_y[myrank];j++){
@@ -1804,10 +1828,10 @@ while(step_pos<=step_pos_max){
 			temp1 = Ez_prev[i][j][k];
 			temp2 = Ex_prev[i][j][k];
 			Hy_new[i][j][k] = Hy_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1-Ez_back[j][k])-(temp2-Ex_bottom[i][j]));
-		}		
+		}
 
-		//	Z Component	
-		Update_H_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank], lasty, lastx,Hz_new,Hz_prev,Ex_prev,Ey_prev,dt,dx,mu_0,mu_r,3);	
+		//	Z Component
+		Update_H_inside(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank], lasty, lastx,Hz_new,Hz_prev,Ex_prev,Ey_prev,dt,dx,mu_0,mu_r,3);
 		Update_H_boundary(point_per_proc_x[myrank]+lastx,0,point_per_proc_z[myrank],lastx,Hz_new,Hz_prev,Ex_prev,Ey_prev,Ex_left,dt,dx,mu_0,mu_r,myrank,4);
 		Update_H_boundary(0,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],lasty,Hz_new,Hz_prev,Ex_prev,Ey_prev,Ey_back,dt,dx,mu_0,mu_r,myrank,2);
 		#pragma omp parallel for default(shared) private(i,j,k,temp1,temp2)
@@ -1818,7 +1842,7 @@ while(step_pos<=step_pos_max){
 			temp2 = Ey_prev[i][j][k];
 			Hz_new[i][j][k] = Hz_prev[i][j][k]+(dt/(mu_0*mu_r[i][j][k]*dx))*((temp1 - Ex_left[i][k])-(temp2 - Ey_back[j][k]));
 		}
-		
+
 
 		// Storage of the updated value of the magnetic field in H_prev
 
@@ -1972,7 +1996,7 @@ while(step_pos<=step_pos_max){
 		}
 
      /******************************** Extraction of a cut if needed ***********************************/
-	
+
 	if(step == (int) step_cut[next_cut]){// To extract a cut
 		next_cut++;
 		if(Cut[0]==1){// Cut along x
@@ -2138,7 +2162,7 @@ while(step_pos<=step_pos_max){
 			for(i=0;i<nx;i++){
 				for(j=0;j<ny;j++){
 					for(k=0;k<(nz);k++) {
-						Power_new[i+j*nx+k*(ny)*nx] = (3.141692*f*Power_new[i+j*nx+k*(ny)*nx])/(step_mean);						
+						Power_new[i+j*nx+k*(ny)*nx] = (3.141692*f*Power_new[i+j*nx+k*(ny)*nx])/(step_mean);
 						//Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
 						//Residual = Residual + (Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]);
 						if(i==nx/2&&j==ny/2&&k==nz/2){
@@ -2189,20 +2213,20 @@ while(step_pos<=step_pos_max){
 				MPI_Recv(&steady_state_reached,1,MPI_INT,0,0, MPI_COMM_WORLD, &mystatus );
 			}
        			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
-			
+
 			/****************************************************************************************************/
-		
+
 			// if(step>80000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
 				for(i=0;i<nx;i++){
 					for(j=0;j<ny;j++){
-						for(k=0;k<(nz);k++) {					
+						for(k=0;k<(nz);k++) {
 							Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
 						}
 					}
-				}		
+				}
 				break;
  			}
 			else{
