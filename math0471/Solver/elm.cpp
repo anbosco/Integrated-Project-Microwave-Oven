@@ -441,81 +441,6 @@ void New_in_old(int i_max,int j_max,int k_max,double***New,double***Old){
 	}
 }
 
-//This function place one or more objects inside the domain (To be supressed)
-void insert_obj(double***e_r,int nb_obj,double*prop_obj,double dx,double point_per_proc_x,double point_per_proc_y,double point_per_proc_z,int lastx,int lasty,int lastz,int i_min_proc,int j_min_proc,int k_min_proc,int i_max_proc,int j_max_proc,int k_max_proc){
-	int i = 0;
-  int j = 0;
-  int k = 0;
-	int l = 0;
-  int prop_per_obj = 7;
-
-	for(l=0;l<nb_obj;l++){
-		double n_x_double = (prop_obj[prop_per_obj*l]/dx)+1;
-		int n_x = (int) n_x_double;
-		double pos_x = (prop_obj[prop_per_obj*l+3]/dx);
-		int i_min = (int)pos_x;
-		i_min = i_min - (n_x/2);
-		int i_max = i_min + n_x-1;
-
-		double n_y_double = (prop_obj[prop_per_obj*l+1]/dx)+1;
-		int n_y = (int) n_y_double;
-		double pos_y = (prop_obj[prop_per_obj*l+4]/dx);
-		int j_min = (int)pos_y;
-		j_min = j_min - (n_y/2);
-		int j_max = j_min + n_y-1;
-
-		double n_z_double = (prop_obj[prop_per_obj*l+2]/dx)+1;
-		int n_z = (int) n_z_double;
-		double pos_z = (prop_obj[prop_per_obj*l+5]/dx);
-		int k_min = (int)pos_z;
-		k_min = k_min - (n_z/2);
-		int k_max = k_min + n_z-1;
-
-		int b_inf_x =0;
-		int b_inf_y =0;
-		int b_inf_z =0;
-		int b_sup_x = 0;
-		int b_sup_y = 0;
-		int b_sup_z = 0;
-
-		if(i_min_proc<= i_max && j_min_proc<= j_max && k_min_proc<= k_max && i_max_proc>= i_min && j_max_proc>= j_min && k_max_proc>= k_min){
-				b_inf_x = i_min - i_min_proc;
-				b_inf_y = j_min - j_min_proc;
-				b_inf_z = k_min - k_min_proc;
-				b_sup_x = i_max - i_min_proc;
-				b_sup_y = j_max - j_min_proc;
-				b_sup_z = k_max - k_min_proc;
-				if(b_inf_x<0){
-					b_inf_x = 0;
-				}
-				if(b_inf_y<0){
-					b_inf_y = 0;
-				}
-				if(b_inf_z<0){
-					b_inf_z = 0;
-				}
-				if(point_per_proc_x-1+lastx<b_sup_x){
-					b_sup_x = point_per_proc_x-1+lastx;
-				}
-				if(point_per_proc_y-1+lasty<b_sup_y){
-					b_sup_y = point_per_proc_y-1+lasty;
-				}
-				if(point_per_proc_z-1+lastz<b_sup_z){
-					b_sup_z = point_per_proc_z-1+lastz;
-				}
-				#pragma omp parallel for default(shared) private(i,j,k)
-				for(i=b_inf_x;i<=b_sup_x;i++){
-					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
-						for(k=b_inf_z;k<=b_sup_z;k++){
-							e_r[i][j][k]= prop_obj[l+6];
-						}
-					}
-				}
-			}
-
-	}
-}
-
 // This function imposes some zero values in a matrix
 void Hom_BC(int i_min, int j_min, int k_min, int i_max, int j_max, int k_max,double*** M){
   int i= 0 ;
@@ -578,10 +503,10 @@ void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r
 	double r;
 	double l;
 
-	#pragma omp parallel for default(shared) private(i,j,k,x_after,y_after,z_after,x_before,y_before,xc,yc,zc,r,l)
-	for(i=0;i<Nx;i++){
-		for(j=0;j<Ny;j++){
-			for(k=0;k<Nz;k++){
+	#pragma omp parallel for default(shared) private(i,j,k,x_after,y_after,z_after,x_before,y_before,xc,yc,zc,r,l)	
+	for(j=0;j<Ny;j++){
+		for(k=0;k<Nz;k++){
+			for(i=0;i<Nx;i++){
 				geometry_init[i*Ny*Nz+k*Ny+j] = 0;
 				// Coordinate after rotation
 				x_after = i*dx;
@@ -643,10 +568,10 @@ void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,s
 	int k=0;
 
 	if(P==2){	// Cube
-		#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<X;i++){
-			for(j=0;j<Y;j++){
-				for(k=0;k<Z;k++){
+		#pragma omp parallel for default(shared) private(i,j,k)		
+		for(j=0;j<Y;j++){
+			for(k=0;k<Z;k++){
+				for(i=0;i<X;i++){
 					if(((i*dx)<=properties[3]+properties[0]/2)&&((i*dx)>=properties[3]-properties[0]/2)&&((j*dx)<=properties[4]+properties[1]/2)&&((j*dx)>=properties[4]-properties[1]/2)&&((k*dx)<=properties[5]+properties[2]/2)&&((k*dx)>=properties[5]-properties[2]/2)){
 						geometry[i*Y*Z+k*Y+j]=val;
 					}
@@ -668,8 +593,8 @@ void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,s
 		double yp;
 		double zp;
 		#pragma omp parallel for default(shared) private(i,j,k,xp,yp,zp)
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y;j++){
+		for(j=0;j<Y;j++){	
+			for(k=0;k<Z;k++){			
 				for(i=0;i<X;i++){
 					xp = i*dx;
 					yp = j*dx;
@@ -699,8 +624,8 @@ void place_geometry(int X,int Y, int Z, std::vector<double> &properties, int P,s
 	}
 	else if(P==0){	//Sphere
 		#pragma omp parallel for default(shared) private(i,j,k)
-		for(k=0;k<Z;k++){
-			for(j=0;j<Y;j++){
+		for(j=0;j<Y;j++){			
+			for(k=0;k<Z;k++){			
 				for(i=0;i<X;i++){
 					if(((properties[0]-i*dx)*(properties[0]-i*dx)+(properties[1]-j*dx)*(properties[1]-j*dx)+(properties[2]-k*dx)*(properties[2]-k*dx))<=properties[3]*properties[3]){
 						geometry[i*Y*Z+k*Y+j]=val;
@@ -735,8 +660,8 @@ void rotate_Power_grid(std::vector<double> &Power_electro,std::vector<double> &P
 	double xi;
 	double eta;
 	#pragma omp parallel for default(shared) private(i,j,k,x_before,y_before,z_before,x_after,y_after,z_after,x1,y1,i1,j1,xi,eta)
-	for(k=0;k<Nz;k++){
-		for(j=0;j<Ny;j++){
+	for(j=0;j<Ny;j++){
+		for(k=0;k<Nz;k++){
 			for(i=0;i<Nx;i++){
 				// Coordinate before rotation
 				x_before = i*dx;
@@ -785,10 +710,10 @@ void place_cube(int X,int Y, int Z, std::vector<double> &properties,std::vector<
 	else if(component==2){
 		zz = 1;
 	}
-		//#pragma omp parallel for default(shared) private(i,j,k)
-		for(i=0;i<X+xx;i++){
-			for(j=0;j<Y+yy;j++){
-				for(k=0;k<Z+zz;k++){
+		//#pragma omp parallel for default(shared) private(j,k,i)
+		for(j=0;j<Y+yy;j++){
+			for(k=0;k<Z+zz;k++){
+				for(i=0;i<X+xx;i++){				
 					if(((i*dx-0.5*xx*dx)<=properties[3]+properties[0]/2)&&((i*dx-0.5*xx*dx)>=properties[3]-properties[0]/2)&&((j*dx-0.5*yy*dx)<=properties[4]+properties[1]/2)&&((j*dx-0.5*yy*dx)>=properties[4]-properties[1]/2)&&((k*dx-0.5*zz*dx)<=properties[5]+properties[2]/2)&&((k*dx-0.5*zz*dx)>=properties[5]-properties[2]/2)){
 						if(T_food_init_th<Temp_phase_change[(int) val]){
 							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = vec_er[(int) val];
@@ -828,8 +753,8 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,std::vec
 	double yp;
 	double zp;
 	//#pragma omp parallel for default(shared) private(i,j,k,xp,yp,zp)
-	for(k=0;k<Z+zz;k++){
-		for(j=0;j<Y+yy;j++){
+	for(j=0;j<Y+yy;j++){	
+		for(k=0;k<Z+zz;k++){		
 			for(i=0;i<X+xx;i++){
 				xp = i*dx-0.5*xx*dx;
 				yp = j*dx-0.5*yy*dx;
@@ -886,8 +811,9 @@ void place_sphere(int X,int Y, int Z, std::vector<double> &properties,std::vecto
 	else if(component==2){
 		zz = 1;
 	}
-		for(k=0;k<Z+zz;k++){
-			for(j=0;j<Y+yy;j++){
+		//#pragma omp parallel for default(shared) private(i,j,k)
+		for(j=0;j<Y+yy;j++){
+			for(k=0;k<Z+zz;k++){			
 				for(i=0;i<X+xx;i++){
          				double xp = (i*dx)-0.5*xx*dx;
          				double yp = (j*dx)-0.5*yy*dx;
@@ -930,9 +856,9 @@ void set_rel_perm_one_proc(std::vector<double> &e_r,std::vector<double> &e_r_tot
     zzb = 1;
 	}
 	#pragma omp parallel for default(shared) private(i,j,k)
-	for(i=0;i<point_per_proc_x+xx;i++){
-		for(j=0;j<point_per_proc_y+yy;j++){
-			for(k=0;k<point_per_proc_z+zz;k++){
+	for(j=0;j<point_per_proc_y+yy;j++){	
+		for(k=0;k<point_per_proc_z+zz;k++){
+			for(i=0;i<point_per_proc_x+xx;i++){			
 				e_r[(i)*(point_per_proc_y+yy)*(point_per_proc_z+zz)+(k)*(point_per_proc_y+yy)+(j)] = e_r_tot[(i+i_min_proc)*(Ny+yyb)*(Nz+zzb)+(k+k_min_proc)*(Ny+yyb)+(j+j_min_proc)];
 			}
 		}
@@ -978,9 +904,9 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,in
 	double eta;
 
 	//#pragma omp parallel for default(shared) private(i,j,k,x_after,y_after,z_after,x_before,y_before,xc,yc,zc,r,l)
-	for(i=0;i<Nx+xx;i++){
-		for(j=0;j<Ny+yy;j++){
-			for(k=0;k<Nz+zz;k++){
+	for(j=0;j<Ny+yy;j++){
+		for(k=0;k<Nz+zz;k++){
+			for(i=0;i<Nx+xx;i++){
         if(component==3){
           e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = 0;
         }

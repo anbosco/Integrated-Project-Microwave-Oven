@@ -1,11 +1,3 @@
-// example of hybrid MPI/OpenMP program
-//     run with 2 processes and 6 threads per process (ubuntu)
-//         export OMP_NUM_THREADS=6
-//         [ubuntu - openmpi]
-//         mpirun -np 2 -cpus-per-rank 6 --bind-to core:overload-allowed  bin/fdtd_mpi
-//         [windows - microsoft mpi]
-//         mpiexec -np 2 bin\fdtd_mpi
-
 #include "vtl.h"
 #include "vtlSPoints.h"
 #include "laplace.h"
@@ -1439,14 +1431,11 @@ while(step_pos<=step_pos_max){
 		   /* Certain processes needs an information on Hx, Hy and Hz at places
 		   attributed to another process to update the electric field.*/
 			if(divx!=1){ // Communication in the x direction
-
 				if(ip==0){ // I receive only
 					MPI_Recv(Hy_front_send,point_per_proc_y[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hz_front_send,(point_per_proc_y[myrank]+lasty)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+(divy*divz),myrank+(divy*divz),MPI_COMM_WORLD, &mystatus);
 					Update_send_in_mat(point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz, point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hy_front,Hy_front_send,Hz_front,Hz_front_send);
 				}
-
-
 				else{
 					if(ip%2==1){ // I send then I receive
 					 	Update_prev_in_send(1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hy_front_send,Hy_prev,Hz_front_send,Hz_prev, 1, point_per_proc_x[myrank]+lastx);
@@ -1472,8 +1461,8 @@ while(step_pos<=step_pos_max){
 					}
 				}
 			}
-			if (divy != 1){// Communication in the y direction
 
+			if (divy != 1){// Communication in the y direction
 				if (jp == 0){ //I receive only
 					MPI_Recv(Hx_right_send,point_per_proc_x[myrank]*(point_per_proc_z[myrank]+lastz),MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hz_right_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank+1,MPI_COMM_WORLD, &mystatus);
@@ -1502,8 +1491,8 @@ while(step_pos<=step_pos_max){
 					}
 				}
 			}
-			if (divz!=1){// Communication in the z direction
 
+			if (divz!=1){// Communication in the z direction
 				if (kp==0){//I receive only
 					MPI_Recv(Hx_up_send,point_per_proc_x[myrank]*(point_per_proc_y[myrank]+lasty),MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
 					MPI_Recv(Hy_up_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank+divy,MPI_COMM_WORLD, &mystatus);
@@ -1609,7 +1598,6 @@ while(step_pos<=step_pos_max){
 		}
 
 		// Boundary condition
-
    		Boundary_condition_imosition(ip,jp,kp,lastx,lasty,lastz,point_per_proc_x,point_per_proc_y,point_per_proc_z,Ex_new,Ey_new,Ez_new,myrank);
 
 		// Imposition of the value of the electric field for the node corresponding to the antenna.
@@ -1674,22 +1662,22 @@ while(step_pos<=step_pos_max){
 					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
 						for(k=b_inf_z;k<=b_sup_z;k++){
 							Ey_new[i][j][k]= E_amp;
-           	}
+           					}
 					}
 				}
 			}
 		}
-		nx = point_per_proc_x[myrank];
+		/*nx = point_per_proc_x[myrank];
 		ny = point_per_proc_y[myrank];
 		nz = point_per_proc_z[myrank];
 		i = nx/2;
 		j = ny/2;
 		k = nz/2;
 		if(E_max_new<sqrt((Ex_new[i][j][k]*Ex_new[i][j][k])+(Ey_new[i][j][k]*Ey_new[i][j][k])+(Ez_new[i][j][k]*Ez_new[i][j][k]))){
-				E_max_new=sqrt((Ex_new[i][j][k]*Ex_new[i][j][k])+(Ey_new[i][j][k]*Ey_new[i][j][k])+(Ez_new[i][j][k]*Ez_new[i][j][k]));
+			E_max_new=sqrt((Ex_new[i][j][k]*Ex_new[i][j][k])+(Ey_new[i][j][k]*Ey_new[i][j][k])+(Ez_new[i][j][k]*Ez_new[i][j][k]));
 		}
 		// Check for steady state
-		/*if(step%step_mean==0){
+		if(step%step_mean==0){
 			Residual = sqrt((E_max_new-E_max_old)*(E_max_new-E_max_old));			
 			//printf("Step:  %d Rank : %lf Residual : %lf\n",step, E_max_new, E_max_old);
 			Residual = Residual/E_max_old;
@@ -1707,7 +1695,6 @@ while(step_pos<=step_pos_max){
 
 		/* Certain processes needs an information on the updated electric field at places attributed to another process to update the magnetic field.*/
 		if (divx!=1){// Communication in the x direction
-
 			if(ip==0){//I only send
 				Update_prev_in_send(1,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],1,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Ey_back_send,Ey_prev,Ez_back_send,Ez_prev, 4, point_per_proc_x[myrank]);
 				MPI_Send(Ey_back_send,(point_per_proc_y[myrank]+lasty)*(point_per_proc_z[myrank]),MPI_DOUBLE,myrank+(divy*divz),myrank,MPI_COMM_WORLD);
@@ -1738,7 +1725,6 @@ while(step_pos<=step_pos_max){
 		}
 
 		if(divy!=1){// Communication in the y direction
-
 			if(jp==0){//I only send
 				Update_prev_in_send(point_per_proc_x[myrank]+lastx,1,point_per_proc_z[myrank],point_per_proc_x[myrank],1,point_per_proc_z[myrank]+lastz,Ex_left_send,Ex_prev,Ez_left_send,Ez_prev, 5, point_per_proc_y[myrank]);
 				MPI_Send(Ex_left_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_z[myrank],MPI_DOUBLE,myrank+1,myrank,MPI_COMM_WORLD);
@@ -1768,8 +1754,8 @@ while(step_pos<=step_pos_max){
 				}
 			}
 		}
-		if(divz!=1){// Communication in the z direction
 
+		if(divz!=1){// Communication in the z direction
 			if(kp==0){//I only send
 				Update_prev_in_send(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],1,point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,1,Ex_bottom_send,Ex_prev,Ey_bottom_send,Ey_prev, 6, point_per_proc_z[myrank]);
 				MPI_Send(Ex_bottom_send,(point_per_proc_x[myrank]+lastx)*point_per_proc_y[myrank],MPI_DOUBLE,myrank+divy,myrank,MPI_COMM_WORLD);
@@ -1841,13 +1827,11 @@ while(step_pos<=step_pos_max){
 
 
 		// Storage of the updated value of the magnetic field in H_prev
-
 		New_in_old(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]+lastz,Hx_new,Hx_prev);
 		New_in_old(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank]+lastz,Hy_new,Hy_prev);
 		New_in_old(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank],Hz_new,Hz_prev);
 
-		// Storage of the matrices in vectors
-
+		/*************** Storage of the matrices in vectors for exportation ***************/
 		// E_X
 		int npz1 = mygrid_Ex.np1[2];
 		int npz2 = mygrid_Ex.np2[2];
@@ -1957,9 +1941,9 @@ while(step_pos<=step_pos_max){
                 		}
             		}
         	}
-		/***********************************************
-				Storage of the Results
-		***********************************************/
+		/***********************************************************************************/
+
+		/*************************** Storage of the Results ************** *****************/
 
 		if(step%SR==0){//save results of the mpi process to disk
 			//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
@@ -1991,7 +1975,7 @@ while(step_pos<=step_pos_max){
 			Hz_probe.push_back(Hz_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
 		}
 
-     /******************************** Extraction of a cut if needed ***********************************/
+     		//Extraction of a cut if needed 
 
 	if(step == (int) step_cut[next_cut]){// To extract a cut
 		next_cut++;
@@ -2020,8 +2004,8 @@ while(step_pos<=step_pos_max){
       export_coupe(3, 6, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
 		}
 	}
-
 /*****************************************************************************************/
+
 
 	// Computation of the power grid (TO BE PARAMETRIZED)
 		nx = point_per_proc_x[myrank];
@@ -2148,7 +2132,6 @@ while(step_pos<=step_pos_max){
    }
 
 		if(step%step_mean==0){
-
 			/**************************************
 				Steady state verification
 			**************************************/
@@ -2233,30 +2216,30 @@ while(step_pos<=step_pos_max){
 
  	step++;
 	}
-if(solve_electro==1){	// We save the last step of the electro calculation if there was any
-	if(myrank==0){
-	     for(i=i_min_proc[myrank];i<=i_max_proc[myrank];i++){
-	       for(j=j_min_proc[myrank];j<=j_max_proc[myrank];j++){
-		 for(k=k_min_proc[myrank];k<=k_max_proc[myrank];k++){
-		   Power_tot[i*Ny*Nz+k*Ny+j] = Power_new[i+j*point_per_proc_x[myrank]+k*point_per_proc_x[myrank]*point_per_proc_y[myrank]];
-		 }
-	       }
-	     }
-	     for(l=1;l<nbproc;l++){
-	       Power_send.resize(point_per_proc_x[l]*(point_per_proc_y[l])*(point_per_proc_z[l]));
-	       MPI_Recv(&Power_send[0],point_per_proc_x[l]*(point_per_proc_y[l])*(point_per_proc_z[l]),MPI_DOUBLE,l,l,MPI_COMM_WORLD, &mystatus);
-	       for(i=0;i<point_per_proc_x[l];i++){
-		 for(j=0;j<point_per_proc_y[l];j++){
-		   for(k=0;k<point_per_proc_z[l];k++){
-		       Power_tot[(i+i_min_proc[l])*Ny*Nz+(k+k_min_proc[l])*Ny+j+j_min_proc[l]] =  Power_send[i+j*point_per_proc_x[l]+k*point_per_proc_x[l]*point_per_proc_y[l]];
-		   }
-		 }
-	       }
-	     }
-	   }
-	   else{
-	     MPI_Send(&Power_new[0],point_per_proc_x[myrank]*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]),MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
-	   }
+	if(solve_electro==1){	// We save the last step of the electro calculation if there was any
+		if(myrank==0){
+	     		for(i=i_min_proc[myrank];i<=i_max_proc[myrank];i++){
+	       			for(j=j_min_proc[myrank];j<=j_max_proc[myrank];j++){
+		 			for(k=k_min_proc[myrank];k<=k_max_proc[myrank];k++){
+		   				Power_tot[i*Ny*Nz+k*Ny+j] = Power_new[i+j*point_per_proc_x[myrank]+k*point_per_proc_x[myrank]*point_per_proc_y[myrank]];
+		 			}
+	       			}
+	     		}
+	     		for(l=1;l<nbproc;l++){
+	      			Power_send.resize(point_per_proc_x[l]*(point_per_proc_y[l])*(point_per_proc_z[l]));
+	       			MPI_Recv(&Power_send[0],point_per_proc_x[l]*(point_per_proc_y[l])*(point_per_proc_z[l]),MPI_DOUBLE,l,l,MPI_COMM_WORLD, &mystatus);
+	       			for(i=0;i<point_per_proc_x[l];i++){
+		 			for(j=0;j<point_per_proc_y[l];j++){
+		   				for(k=0;k<point_per_proc_z[l];k++){
+		       					Power_tot[(i+i_min_proc[l])*Ny*Nz+(k+k_min_proc[l])*Ny+j+j_min_proc[l]] =  Power_send[i+j*point_per_proc_x[l]+k*point_per_proc_x[l]*point_per_proc_y[l]];
+		   				}
+		 			}
+	       			}
+	     		}
+	   	}
+	   	else{
+	     		MPI_Send(&Power_new[0],point_per_proc_x[myrank]*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]),MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
+	   	}
 		//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
 		export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Ez", step+step_prec, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
@@ -2264,7 +2247,7 @@ if(solve_electro==1){	// We save the last step of the electro calculation if the
 		//export_spoints_XML("Hy", step+step_prec, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hz", step+step_prec, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
 		export_spoints_XML("Power", step+step_prec, grid_Power, mygrid_Power, ZIPPED, Nx, Ny, Nz, 0);
-	if (myrank == 0){	// save main pvti file by rank0
+		if (myrank == 0){	// save main pvti file by rank0
 			//export_spoints_XMLP("Ex", step+step_prec, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
 	      		export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 			//export_spoints_XMLP("Ez", step+step_prec, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
@@ -2272,76 +2255,75 @@ if(solve_electro==1){	// We save the last step of the electro calculation if the
 			//export_spoints_XMLP("Hy", step+step_prec, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
 			//export_spoints_XMLP("Hz", step+step_prec, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
 			export_spoints_XMLP("Power", step+step_prec, grid_Power, mygrid_Power, sgrids_Power, ZIPPED);
-	}
-	//std::cout << mygrid_Hz;
+		}
 
-	// Temporal probe
-	if((probe_electro==1)&&(Pos_probe_electro[0]<i_max_proc[myrank])&&(Pos_probe_electro[0]>i_min_proc[myrank])&&(Pos_probe_electro[1]<j_max_proc[myrank])&&(Pos_probe_electro[1]>j_min_proc[myrank])&&(Pos_probe_electro[2]<k_max_proc[myrank])&&(Pos_probe_electro[2]>k_min_proc[myrank])){
-		export_temp_probe_electro(Ex_probe,step,"Ex_temporal_probe");
-		export_temp_probe_electro(Ey_probe,step,"Ey_temporal_probe");
-		export_temp_probe_electro(Ez_probe,step,"Ez_temporal_probe");
-		export_temp_probe_electro(Hx_probe,step,"Hx_temporal_probe");
-		export_temp_probe_electro(Hy_probe,step,"Hy_temporal_probe");
-		export_temp_probe_electro(Hz_probe,step,"Hz_temporal_probe");
+		// Temporal probe
+		if((probe_electro==1)&&(Pos_probe_electro[0]<i_max_proc[myrank])&&(Pos_probe_electro[0]>i_min_proc[myrank])&&(Pos_probe_electro[1]<j_max_proc[myrank])&&(Pos_probe_electro[1]>j_min_proc[myrank])&&(Pos_probe_electro[2]<k_max_proc[myrank])&&(Pos_probe_electro[2]>k_min_proc[myrank])){
+			export_temp_probe_electro(Ex_probe,step,"Ex_temporal_probe");
+			export_temp_probe_electro(Ey_probe,step,"Ey_temporal_probe");
+			export_temp_probe_electro(Ez_probe,step,"Ez_temporal_probe");
+			export_temp_probe_electro(Hx_probe,step,"Hx_temporal_probe");
+			export_temp_probe_electro(Hy_probe,step,"Hy_temporal_probe");
+			export_temp_probe_electro(Hz_probe,step,"Hz_temporal_probe");
+		}
+		step_prec += step;
+		step = 1;
 	}
-	step_prec += step;
-	step = 1;
-}
 
 /********************************************************************************
 			Thermic calculation
 *******************************************************************************/
-if(solve_thermo){
-	if(myrank==0){
-	printf("\n SOLVING OF THE HEAT EQUATION...\n");
-	}
-	rotate_Power_grid(Power_tot,Power_tot_rotated_back,Nx,Ny,Nz,Lx,Ly,Lz,dx,theta);
-	main_th(Power_tot_rotated_back, Temperature,BC, T_Dir,  T_0,dx_th,h_air,Lx_th,Ly_th,Lz_th,dt_th,step_max_th,nb_source_th,SR_th,theta_th,n_sphere,n_cylinder,n_cube,prop_sphere,prop_cylinder,prop_cube,T_food_init_th,x_min_th,y_min_th,z_min_th,dx,Lx,Ly_electro,Lz_electro,prop_per_source_th, prop_source_th, Cut_th,Pos_cut_th,N_cut_th,step_cut_th,nb_probe_th,Pos_probe_th, id,k_heat_x,k_heat_y,k_heat_z,rho,cp,vec_k,vec_rho,vec_cp,constant,geometry_th,step_pos,thermo_domain);
-	if(myrank==0){
-		for(l=1;l<nbproc;l++){
-	    		MPI_Send(&Temperature[0],X_th*Y_th*Z_th,MPI_DOUBLE,l,myrank,MPI_COMM_WORLD);
+	if(solve_thermo){
+		if(myrank==0){
+			printf("\n SOLVING OF THE HEAT EQUATION...\n");
 		}
-	}
-	else{
-		MPI_Recv(&Temperature[0],X_th*Y_th*Z_th,MPI_DOUBLE,0,0,MPI_COMM_WORLD, &mystatus);
-	}
+		rotate_Power_grid(Power_tot,Power_tot_rotated_back,Nx,Ny,Nz,Lx,Ly,Lz,dx,theta);
+		main_th(Power_tot_rotated_back, Temperature,BC, T_Dir,  T_0,dx_th,h_air,Lx_th,Ly_th,Lz_th,dt_th,step_max_th,nb_source_th,SR_th,theta_th,n_sphere,n_cylinder,n_cube,prop_sphere,prop_cylinder,prop_cube,T_food_init_th,x_min_th,y_min_th,z_min_th,dx,Lx,Ly_electro,Lz_electro,prop_per_source_th, prop_source_th, Cut_th,Pos_cut_th,N_cut_th,step_cut_th,nb_probe_th,Pos_probe_th, id,k_heat_x,k_heat_y,k_heat_z,rho,cp,vec_k,vec_rho,vec_cp,constant,geometry_th,step_pos,thermo_domain);
+		if(myrank==0){
+			for(l=1;l<nbproc;l++){
+	    			MPI_Send(&Temperature[0],X_th*Y_th*Z_th,MPI_DOUBLE,l,myrank,MPI_COMM_WORLD);
+			}
+		}
+		else{
+			MPI_Recv(&Temperature[0],X_th*Y_th*Z_th,MPI_DOUBLE,0,0,MPI_COMM_WORLD, &mystatus);
+		}
 
-	// Update of the parameter(Thermo)
-	// Sphere
-	for(i=0;i<n_sphere;i++){
-		int j=0;
-		int prop_per_obj = 5;
-		for(j=0;j<prop_per_obj;j++){
-			prop_temp[j] = prop_sphere[prop_per_obj*i+j];
+		// Update of the parameter(Thermo)
+		// Sphere
+		for(i=0;i<n_sphere;i++){
+			int j=0;
+			int prop_per_obj = 5;
+			for(j=0;j<prop_per_obj;j++){
+				prop_temp[j] = prop_sphere[prop_per_obj*i+j];
+			}
+			int Config = 0;
+			place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 		}
-		int Config = 0;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
-	}
-	//Cylinder
-	for(i=0;i<n_cylinder;i++){
-		int j=0;
-		int prop_per_obj = 7;
-		for(j=0;j<prop_per_obj;j++){
-			prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
+		//Cylinder
+		for(i=0;i<n_cylinder;i++){
+			int j=0;
+			int prop_per_obj = 7;
+			for(j=0;j<prop_per_obj;j++){
+				prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
+			}
+			int Config = 1;
+			place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 		}
-		int Config = 1;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
-	}
-	// Cube
-	for(i=0;i<n_cube;i++){
-		int j=0;
-		int prop_per_obj = 7;
-		for(j=0;j<prop_per_obj;j++){
-			prop_temp[j] = prop_cube[prop_per_obj*i+j];
+		// Cube
+		for(i=0;i<n_cube;i++){
+			int j=0;
+			int prop_per_obj = 7;
+			for(j=0;j<prop_per_obj;j++){
+				prop_temp[j] = prop_cube[prop_per_obj*i+j];
+			}
+			int Config = 2;
+			place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
 		}
-		int Config = 2;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],vec_k,vec_rho,vec_cp,k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th, vec_rho_hot,vec_cp_hot,Temp_phase_change,Temperature,vec_k_hot);
+        	#pragma omp parallel for default(shared) private(i)
+  		for(i=0;i<X_th*Y_th*Z_th;i++){
+  			constant[i] = (dt_th)/(rho[i]*cp[i]*dx_th*dx_th);
+  		}
 	}
-        #pragma omp parallel for default(shared) private(i)
-  for(i=0;i<X_th*Y_th*Z_th;i++){
-  	constant[i] = (dt_th)/(rho[i]*cp[i]*dx_th*dx_th);
-  }
-}
 /*******************************************************************************
 			   Rotation
 *******************************************************************************/
@@ -2527,7 +2509,7 @@ step_pos++;
 	free(point_per_proc_y);
 	free(point_per_proc_z);
 
-  // finalise MUMPS/MPI
-  end_MUMPS(id);
+  	// finalise MUMPS/MPI
+  	end_MUMPS(id);
 	MPI_Finalize();
 }
