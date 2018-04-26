@@ -139,12 +139,13 @@ int main(int argc, char **argv){
 	int nxp;
 	int nyp;
 	int nzp;
-	double T_mean = 12/(f*dt);
+	double T_mean = 60/(f*dt);
 	int step_mean = (int) T_mean;
 	double Residual = 0;
   	double Residual_0 = 0;
 	int steady_state_reached = 0;
 	int test_steady = 0;
+	double total_power_diss = 0;
 
   	// Prop spheres
 	std::vector<double> prop_sphere;
@@ -2202,7 +2203,7 @@ while(step_pos<=step_pos_max){
 			if(steady_state_reached==1){
 				for(i=0;i<nx;i++){
 					for(j=0;j<ny;j++){
-						for(k=0;k<(nz);k++) {
+						for(k=0;k<(nz);k++) {							
 							//Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
 						}
 					}
@@ -2217,11 +2218,13 @@ while(step_pos<=step_pos_max){
  	step++;
 	}
 	if(solve_electro==1){	// We save the last step of the electro calculation if there was any
+		total_power_diss = 0;
 		if(myrank==0){
 	     		for(i=i_min_proc[myrank];i<=i_max_proc[myrank];i++){
 	       			for(j=j_min_proc[myrank];j<=j_max_proc[myrank];j++){
 		 			for(k=k_min_proc[myrank];k<=k_max_proc[myrank];k++){
 		   				Power_tot[i*Ny*Nz+k*Ny+j] = Power_new[i+j*point_per_proc_x[myrank]+k*point_per_proc_x[myrank]*point_per_proc_y[myrank]];
+						total_power_diss = total_power_diss + Power_new[i+j*point_per_proc_x[myrank]+k*point_per_proc_x[myrank]*point_per_proc_y[myrank]]*dx*dx*dx;
 		 			}
 	       			}
 	     		}
@@ -2232,6 +2235,7 @@ while(step_pos<=step_pos_max){
 		 			for(j=0;j<point_per_proc_y[l];j++){
 		   				for(k=0;k<point_per_proc_z[l];k++){
 		       					Power_tot[(i+i_min_proc[l])*Ny*Nz+(k+k_min_proc[l])*Ny+j+j_min_proc[l]] =  Power_send[i+j*point_per_proc_x[l]+k*point_per_proc_x[l]*point_per_proc_y[l]];
+							total_power_diss = total_power_diss + Power_send[i+j*point_per_proc_x[l]+k*point_per_proc_x[l]*point_per_proc_y[l]]*dx*dx*dx;
 		   				}
 		 			}
 	       			}
@@ -2268,6 +2272,9 @@ while(step_pos<=step_pos_max){
 		}
 		step_prec += step;
 		step = 1;
+		if(myrank == 0){
+			printf("\n\n TOTAL DISSIPATED POWER INSIDE THE FOOD : %lf [W] \n\n",total_power_diss);
+		}
 	}
 
 /********************************************************************************
