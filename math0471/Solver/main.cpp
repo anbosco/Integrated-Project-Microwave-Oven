@@ -65,16 +65,16 @@ int main(int argc, char **argv){
 	}
 
 	std::string TestDir = argv[1] + std::string("/");
-	std::string Elm = TestDir + std::string("Interface.dat");
-	std::string Heat =  TestDir + std::string("param_heat.dat");
-	std::string Cube = TestDir + std::string("Prop_cube.dat");
-	std::string Cyl = TestDir + std::string("Prop_cylinder.dat");
-	std::string Sphere = TestDir + std::string("Prop_sphere.dat");
-	std::string SpatialCutElm = TestDir + std::string("Spatial_cut.dat");
-	std::string SpatialCutTemp = TestDir + std::string("Spatial_cut_temp.dat");
-	std::string TemporalProbeTemp = TestDir + std::string("Temporal_probe.dat");
-	std::string TemporalProbeElm =  TestDir + std::string("temp_probe_electro.dat");
-	std::string HeatSource = TestDir + std::string("prop_source_heat.dat");
+	std::string Elm = TestDir + std::string("Interface.dat");				// General parameters for the electro simulation
+	std::string Heat =  TestDir + std::string("param_heat.dat");				// General parameters for the thermal simulation
+	std::string Cube = TestDir + std::string("Prop_cube.dat");				// Properties of cubic objects
+	std::string Cyl = TestDir + std::string("Prop_cylinder.dat");				// Properties of cylindrical objects
+	std::string Sphere = TestDir + std::string("Prop_sphere.dat");				// Properties of spherical objects
+	std::string SpatialCutElm = TestDir + std::string("Spatial_cut.dat");			// Properties of Spatial cuts for electro simulation
+	std::string SpatialCutTemp = TestDir + std::string("Spatial_cut_temp.dat");		// Properties of Spatial cuts for thermal simulation
+	std::string TemporalProbeTemp = TestDir + std::string("Temporal_probe.dat");		// Properties of temporal probe for thermal simulation
+	std::string TemporalProbeElm =  TestDir + std::string("temp_probe_electro.dat");	// Properties of temporal probe for electro simulation
+	std::string HeatSource = TestDir + std::string("prop_source_heat.dat");			// Properties of heat sources placed manually
 
 	// Variables used to open files and to write in files.
   	int next_cut = 0;
@@ -147,7 +147,7 @@ int main(int argc, char **argv){
 	int nxp;
 	int nyp;
 	int nzp;
-	double T_mean = 0.5/(f*dt);
+	double T_mean = 12/(f*dt);
 	int step_mean = (int) T_mean;
 	double Residual = 0;
   	double Residual_0 = 0;
@@ -1400,10 +1400,6 @@ fclose(FileR);
 			Begining of the algorithm.
 ********************************************************************************/
 
-
-//step_pos_max = 0;    // To be suppressed afterwards
-
-
 if(solve_electro==0){	// Desactivation of the electro magnetic solver
 	step_pos_max = 0;
 	step = -1;
@@ -1683,7 +1679,7 @@ while(step_pos<=step_pos_max){
 				}
 			}
 		}
-	/*	nx = point_per_proc_x[myrank];
+		nx = point_per_proc_x[myrank];
 		ny = point_per_proc_y[myrank];
 		nz = point_per_proc_z[myrank];
 		i = nx/2;
@@ -1693,14 +1689,14 @@ while(step_pos<=step_pos_max){
 				E_max_new=sqrt((Ex_new[i][j][k]*Ex_new[i][j][k])+(Ey_new[i][j][k]*Ey_new[i][j][k])+(Ez_new[i][j][k]*Ez_new[i][j][k]));
 		}
 		// Check for steady state
-		if(step%step_mean==0){
-			Residual = sqrt((E_max_new-E_max_old)*(E_max_new-E_max_old));
-			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual);
-			printf("Step:  %d Rank : %lf Residual : %lf\n",step, E_max_new, E_max_old);
+		/*if(step%step_mean==0){
+			Residual = sqrt((E_max_new-E_max_old)*(E_max_new-E_max_old));			
+			//printf("Step:  %d Rank : %lf Residual : %lf\n",step, E_max_new, E_max_old);
 			Residual = Residual/E_max_old;
+			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual);
 			E_max_old = E_max_new;
 			E_max_new = 0;
-		}	*/
+		}*/	
 
 
 		//Storage of the new value of the electric field in E_prev.
@@ -1967,7 +1963,7 @@ while(step_pos<=step_pos_max){
 
 		if(step%SR==0){//save results of the mpi process to disk
 			//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
-		  	export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny+lasty, Nz, 0);
+		  	//export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny+lasty, Nz, 0);
 			//export_spoints_XML("Ez", step, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
 			//export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
 			//export_spoints_XML("Hy", step, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
@@ -1975,7 +1971,7 @@ while(step_pos<=step_pos_max){
 
             		if (myrank == 0){	// save main pvti file by rank0
 				//export_spoints_XMLP("Ex", step, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-                		export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+                		//export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 				//export_spoints_XMLP("Ez", step, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
 				//export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 				//export_spoints_XMLP("Hy", step, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
@@ -2163,24 +2159,24 @@ while(step_pos<=step_pos_max){
 				for(j=0;j<ny;j++){
 					for(k=0;k<(nz);k++) {
 						Power_new[i+j*nx+k*(ny)*nx] = (3.141692*f*Power_new[i+j*nx+k*(ny)*nx])/(step_mean);
-						//Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
-						//Residual = Residual + (Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]);
-						if(i==nx/2&&j==ny/2&&k==nz/2){
-							//Residual = ((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
-							//Residual = sqrt((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
-							//Residual = Residual/Power_old[i+j*nx+k*(ny)*nx];
-						}
+						Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
+						Residual = Residual + (Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]);
+						/*if(i==nx/2&&j==ny/2&&k==nz/2){
+							Residual = ((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
+							Residual = sqrt((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
+							Residual = Residual/Power_old[i+j*nx+k*(ny)*nx];
+						}*/
 						Power_old[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx];
 					}
 				}
 			}
-			if(Residual<0.0025){
+			/*if(Residual<0.0025){
 				steady_state_reached = 1;
 			}
 			else{
 				steady_state_reached = 0;
-			}
-     			/* if((step/step_mean)==1||(step/step_mean)%5==0){
+			}*/
+     			 if((step/step_mean)==1||(step/step_mean)%5==0){
 				if(Residual==0){
 					Residual = 1;
 					steady_state_reached=1;
@@ -2193,7 +2189,7 @@ while(step_pos<=step_pos_max){
 			}
 			else{
 				steady_state_reached = 0;
-			}*/
+			}
 			/**************************************************************************************************/
 
 			/* Communication between the process in order to determine if the algorithm must continue or not. */
@@ -2213,17 +2209,18 @@ while(step_pos<=step_pos_max){
 				MPI_Recv(&steady_state_reached,1,MPI_INT,0,0, MPI_COMM_WORLD, &mystatus );
 			}
        			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
+			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual);
 
 			/****************************************************************************************************/
 
-			// if(step>80000)
+			 //if(step>80000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
 				for(i=0;i<nx;i++){
 					for(j=0;j<ny;j++){
 						for(k=0;k<(nz);k++) {
-							Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
+							//Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
 						}
 					}
 				}

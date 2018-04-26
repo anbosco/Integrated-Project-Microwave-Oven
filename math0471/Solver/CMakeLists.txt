@@ -40,7 +40,7 @@ endif()
 
 # MUMPS -- 
 
-SET(MUMPSDIR /home/users/m/h/mhoubart/Integrated_project/MUMPS_5.1.2)
+SET(MUMPSDIR /home/users/m/h/mhoubart/BON_github/MUMPS_5.1.2/)
 #SET(MUMPSDIR /home/boman/src/mumps-5.1.2)
 #SET(MUMPSDIR C:/mingw-w64/src/mumps-5.1.2)
 
