@@ -139,7 +139,7 @@ int main(int argc, char **argv){
 	int nxp;
 	int nyp;
 	int nzp;
-	double T_mean = 60/(f*dt);
+	double T_mean = 12/(f*dt);
 	int step_mean = (int) T_mean;
 	double Residual = 0;
   	double Residual_0 = 0;
@@ -461,35 +461,47 @@ fclose(FileR);
 	std::vector<double> vec_e_diel_hot;
 	std::vector<double> Temp_phase_change;
 
-	vec_e_r.push_back(1);	//air
-	vec_e_r.push_back(51.5);	// potato
-	vec_e_r.push_back(4);
-	vec_e_r.push_back(53.5);
+	vec_e_r.push_back(1);			// air
+	vec_e_r.push_back(51.5);		// potato
+	vec_e_r.push_back(4);			// Food from ref
+	vec_e_r.push_back(53.5);		// Water
+	vec_e_r.push_back(53.5);		// Chicken
+	vec_e_r.push_back(53.5);		// Not physical	
 
-	vec_e_r_hot.push_back(1);	//air
-	vec_e_r_hot.push_back(1000);	// potato
-	vec_e_r_hot.push_back(1000);
-	vec_e_r_hot.push_back(1000);
+	vec_e_r_hot.push_back(1);		// air
+	vec_e_r_hot.push_back(1000);		// potato
+	vec_e_r_hot.push_back(1000);		// Food from ref
+	vec_e_r_hot.push_back(75.8);		// Water
+	vec_e_r_hot.push_back(1000);		// Chicken
+	vec_e_r_hot.push_back(1000);		// Not physical
 
-	vec_mu_r.push_back(1);
-	vec_mu_r.push_back(1);
-	vec_mu_r.push_back(1);
-	vec_mu_r.push_back(1);
+	vec_mu_r.push_back(1);			// air
+	vec_mu_r.push_back(1);			// potato
+	vec_mu_r.push_back(1);			// Food from ref
+	vec_mu_r.push_back(1);			// Water
+	vec_mu_r.push_back(1);			// Chicken
+	vec_mu_r.push_back(1);			// Not physical
 
-	vec_e_diel.push_back(0);	//air
-	vec_e_diel.push_back(16.3);	//potato
-	vec_e_diel.push_back(17.3);
-	vec_e_diel.push_back(18.3);
+	vec_e_diel.push_back(0);		// air
+	vec_e_diel.push_back(16.3);		// potato
+	vec_e_diel.push_back(17.3);		// Food from ref
+	vec_e_diel.push_back(1);		// Water
+	vec_e_diel.push_back(18.3);		// Chicken
+	vec_e_diel.push_back(18.3);		// Not physical
 
-	vec_e_diel_hot.push_back(0);	//air
-	vec_e_diel_hot.push_back(100);	//potato
-	vec_e_diel_hot.push_back(100);
-	vec_e_diel_hot.push_back(100);
+	vec_e_diel_hot.push_back(0);		// air
+	vec_e_diel_hot.push_back(100);		// potato
+	vec_e_diel_hot.push_back(100);		// Food from ref
+	vec_e_diel_hot.push_back(11);		// Water
+	vec_e_diel_hot.push_back(100);		// Chicken
+	vec_e_diel_hot.push_back(100);		// Not physical
 
-	Temp_phase_change.push_back(0);	//air
-	Temp_phase_change.push_back(20);	//potato
-	Temp_phase_change.push_back(20);
-	Temp_phase_change.push_back(20);
+	Temp_phase_change.push_back(0);		// air
+	Temp_phase_change.push_back(20);	// potato
+	Temp_phase_change.push_back(20);	// Food from ref
+	Temp_phase_change.push_back(0);		// Water
+	Temp_phase_change.push_back(20);	// Chicken
+	Temp_phase_change.push_back(20);	// Not physical
 
 	// Used to check the steady state
 	double E_max_new = 0;
@@ -1300,14 +1312,6 @@ fclose(FileR);
     vec_cp_hot.push_back(1004);
     vec_k_hot.push_back(0.025);
 
-    // Chicken
-    vec_k.push_back(0.5);
-    vec_rho.push_back(1080);
-    vec_cp.push_back(3132);
-    vec_rho_hot.push_back(100);
-    vec_cp_hot.push_back(100);
-    vec_k_hot.push_back(2);
-
     // potato
     vec_k.push_back(0.56);
     vec_rho.push_back(1130);
@@ -1324,10 +1328,26 @@ fclose(FileR);
     vec_cp_hot.push_back(2770);
     vec_k_hot.push_back(0.4);
 
+    // Water
+    vec_k.push_back(2.1);
+    vec_rho.push_back(917);
+    vec_cp.push_back(2060);
+    vec_rho_hot.push_back(1000);
+    vec_cp_hot.push_back(4200);
+    vec_k_hot.push_back(0.6);
+
+    // Chicken
+    vec_k.push_back(0.5);
+    vec_rho.push_back(1080);
+    vec_cp.push_back(3132);
+    vec_rho_hot.push_back(100);
+    vec_cp_hot.push_back(100);
+    vec_k_hot.push_back(2);
+
     // Not physical
     vec_k.push_back(1);
     vec_rho.push_back(1);
-    vec_cp.push_back(2);
+    vec_cp.push_back(1);
     vec_rho_hot.push_back(100);
     vec_cp_hot.push_back(100);
     vec_k_hot.push_back(2);
@@ -1352,7 +1372,7 @@ fclose(FileR);
     }
 
 
-    // Placement of the geometry(Thermo)
+    	// Placement of the geometry(Thermo)
 	// Sphere
 	for(i=0;i<n_sphere;i++){
 		int j=0;
@@ -2012,12 +2032,13 @@ while(step_pos<=step_pos_max){
 		nx = point_per_proc_x[myrank];
 		ny = point_per_proc_y[myrank];
 		nz = point_per_proc_z[myrank];
-
-	for(i=1;i<(nx-lastx);i++){
+		
+		#pragma omp parallel for default(shared) private(i,j,k)
+		for(i=1;i<(nx-lastx);i++){
 			for(j=1;j<(ny-lasty);j++){
 				for(k=1;k<(nz-lastz);k++) {
-           //x
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+           				//x
+           				Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
 					//y
 					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
 					//z
@@ -2026,111 +2047,114 @@ while(step_pos<=step_pos_max){
 			}
 		}
 
-   if(firstx!=1){
-       for(i=0;i<=0;i++){
-		  	for(j=1;j<(ny-lasty);j++){
-				for(k=1;k<(nz-lastz);k++) {
-           //x
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
-					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
-					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
-        			}
+  		 if(firstx!=1){
+			#pragma omp parallel for default(shared) private(i,j,k)
+		        for(i=0;i<=0;i++){
+				  for(j=1;j<(ny-lasty);j++){
+					for(k=1;k<(nz-lastz);k++) {
+			   			//x
+			   			Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+						//y
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+						//z
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
+					}
+				}
 			}
-		}
-   }
-   if(firsty!=1){
-   for(i=1;i<(nx-lastx);i++){
-			for(j=0;j<=0;j++){
-				for(k=1;k<(nz-lastz);k++) {
-           //x
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
-					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
-					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
-        			}
+ 	 	}
+   		if(firsty!=1){
+			#pragma omp parallel for default(shared) private(i,j,k)
+   			for(i=1;i<(nx-lastx);i++){
+				for(j=0;j<=0;j++){
+					for(k=1;k<(nz-lastz);k++) {
+           					//x
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+						//y
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+						//z
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
+        				}
+				}
 			}
-		}
-   }
-   if(firstz!=1){
-   for(i=1;i<(nx-lastx);i++){
-			for(j=1;j<(ny-lasty);j++){
-				for(k=0;k<=0;k++) {
-           //x
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
-					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
-					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
-        			}
+   		}
+  		 if(firstz!=1){
+			#pragma omp parallel for default(shared) private(i,j,k)
+   			for(i=1;i<(nx-lastx);i++){
+				for(j=1;j<(ny-lasty);j++){
+					for(k=0;k<=0;k++) {
+           					//x
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+						//y
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+						//z
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
+        				}
+				}
 			}
-		}
-   }
+  		}
 
-   if(firstx!=1 && firsty!=1){
-     for(i=0;i<=0;i++){
-		  	for(j=0;j<=0;j++){
-				for(k=1;k<(nz-lastz);k++) {
-           //x
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
-
-
-          //y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
-
-
-        	//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
-        			}
+   		if(firstx!=1 && firsty!=1){
+			#pragma omp parallel for default(shared) private(i,j,k)
+     			for(i=0;i<=0;i++){
+		  		for(j=0;j<=0;j++){
+					for(k=1;k<(nz-lastz);k++) {
+           					//x
+          					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+          					//y
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+        					//z
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
+        				}
+				}
 			}
-		}
-   }
+   		}
 
-   if(firstx!=1 && firstz!=1){
-     for(i=0;i<=0;i++){
-		  	for(j=1;j<(ny-lasty);j++){
-				for(k=0;k<=0;k++) {
-           //x
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
-					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
-					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
-        			}
+   		if(firstx!=1 && firstz!=1){
+			#pragma omp parallel for default(shared) private(i,j,k)
+     			for(i=0;i<=0;i++){
+		  		for(j=1;j<(ny-lasty);j++){
+					for(k=0;k<=0;k++) {
+           					//x
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+						//y
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+						//z
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
+        				}
+				}
 			}
-		}
-   }
+   		}
 
-   if(firsty!=1 && firstz!=1){
-     for(i=1;i<(nx-lastx);i++){
-			for(j=0;j<=0;j++){
-				for(k=0;k<=0;k++) {
-           //x
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
-					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
-					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
-        			}
+   		if(firsty!=1 && firstz!=1){
+			#pragma omp parallel for default(shared) private(i,j,k)
+     			for(i=1;i<(nx-lastx);i++){
+				for(j=0;j<=0;j++){
+					for(k=0;k<=0;k++) {
+           					//x
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+						//y
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+						//z
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
+        				}
+				}
 			}
-		}
-   }
-   if(firstx!=1 && firsty!=1 && firstz!=1){
-     for(i=1;i<(nx-lastx);i++){
-			for(j=0;j<=0;j++){
-				for(k=0;k<=0;k++) {
-           //x
-           Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/9;
-					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/9;
-					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/9;
-        			}
+   		}
+   		if(firstx!=1 && firsty!=1 && firstz!=1){
+			#pragma omp parallel for default(shared) private(i,j,k)
+     			for(i=1;i<(nx-lastx);i++){
+				for(j=0;j<=0;j++){
+					for(k=0;k<=0;k++) {
+           					//x
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/9;
+						//y
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/9;
+						//z
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/9;
+        				}
+				}
 			}
-		}
-   }
+   		}
 
 		if(step%step_mean==0){
 			/**************************************
@@ -2138,7 +2162,7 @@ while(step_pos<=step_pos_max){
 			**************************************/
 
 			/****************** Check if steady state is reached on the current process **********************/
-			//Residual = 0;
+			Residual = 0;
 			for(i=0;i<nx;i++){
 				for(j=0;j<ny;j++){
 					for(k=0;k<(nz);k++) {
@@ -2160,7 +2184,7 @@ while(step_pos<=step_pos_max){
 			else{
 				steady_state_reached = 0;
 			}*/
-     			 if((step/step_mean)==1||(step/step_mean)%5==0){
+     			 if((step/step_mean)==1){
 				if(Residual==0){
 					Residual = 1;
 					steady_state_reached=1;
@@ -2192,26 +2216,20 @@ while(step_pos<=step_pos_max){
 				MPI_Send(&steady_state_reached,1,MPI_INT, 0, myrank, MPI_COMM_WORLD );
 				MPI_Recv(&steady_state_reached,1,MPI_INT,0,0, MPI_COMM_WORLD, &mystatus );
 			}
-       			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
+       			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
 			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual);
 
 			/****************************************************************************************************/
 
-			 //if(step>80000)
+			if(step>1800000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
-				for(i=0;i<nx;i++){
-					for(j=0;j<ny;j++){
-						for(k=0;k<(nz);k++) {							
-							//Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
-						}
-					}
-				}
 				break;
  			}
 			else{
 				set_vec(Power_new, nx*ny*nz, 0);
+				Residual_0 = Residual;
 			}
 		}
 
