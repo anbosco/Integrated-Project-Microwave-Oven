@@ -139,7 +139,7 @@ int main(int argc, char **argv){
 	int nxp;
 	int nyp;
 	int nzp;
-	double T_mean = 12/(f*dt);
+	double T_mean = 120/(f*dt);
 	int step_mean = (int) T_mean;
 	double Residual = 0;
   	double Residual_0 = 0;
@@ -1350,7 +1350,7 @@ fclose(FileR);
     vec_cp.push_back(1);
     vec_rho_hot.push_back(100);
     vec_cp_hot.push_back(100);
-    vec_k_hot.push_back(2);
+    vec_k_hot.push_back(1);
 
     std::vector<double> constant(n_th);
     #pragma omp parallel for default(shared) private(i)
@@ -2163,12 +2163,14 @@ while(step_pos<=step_pos_max){
 
 			/****************** Check if steady state is reached on the current process **********************/
 			Residual = 0;
+			Residual_0 = 0;
 			for(i=0;i<nx;i++){
 				for(j=0;j<ny;j++){
 					for(k=0;k<(nz);k++) {
 						Power_new[i+j*nx+k*(ny)*nx] = (3.141692*f*Power_new[i+j*nx+k*(ny)*nx])/(step_mean);
 						Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
 						Residual = Residual + (Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]);
+						Residual_0 = Residual_0 + (Power_old[i+j*nx+k*(ny)*nx])*(Power_old[i+j*nx+k*(ny)*nx]);
 						/*if(i==nx/2&&j==ny/2&&k==nz/2){
 							Residual = ((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
 							Residual = sqrt((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
@@ -2192,7 +2194,7 @@ while(step_pos<=step_pos_max){
         			Residual_0 = Residual;
       			}
 
-      			if(Residual<Residual_0){
+      			if((Residual<0.05*Residual_0 && (step/step_mean)>2)||Residual==0){
 				steady_state_reached = 1;
 			}
 			else{
