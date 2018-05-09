@@ -389,6 +389,7 @@ void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vect
   int kk = 0;
   double T_inf = 20;
   double omega = (2*3.141592)/20;
+  double theta = 0.5;
 	#pragma omp parallel for default(shared) private(i)
 	for(i=0;i<X*Y*Z;i++){
 		Temp2[i]=0;
