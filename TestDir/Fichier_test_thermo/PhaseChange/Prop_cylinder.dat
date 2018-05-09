@@ -1,0 +1,8 @@
+1		! Axis of cylinder(0->x;1->y;2->z)
+0.22		! Centre x
+0.22		! Centre y
+0.22		! Centre z
+0.05		! Rayon
+2		! Valeur
+0.05		! Length
+
