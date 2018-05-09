@@ -503,7 +503,7 @@ void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r
 	double r;
 	double l;
 
-	#pragma omp parallel for default(shared) private(i,j,k,x_after,y_after,z_after,x_before,y_before,xc,yc,zc,r,l)	
+	//#pragma omp parallel for default(shared) private(i,j,k,x_after,y_after,z_after,x_before,y_before,xc,yc,zc,r,l)	
 	for(j=0;j<Ny;j++){
 		for(k=0;k<Nz;k++){
 			for(i=0;i<Nx;i++){
@@ -956,7 +956,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,in
 						if(((y_before-yc)*(y_before-yc)+(z_after-zc)*(z_after-zc)<=r*r) && x_before<=xc+l/2 && x_before>= xc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 							Temp = Temp/4;
-              						if(Temp<Temp_phase_change[(int) info_cube[7*object+6]]){
+              						if(Temp<Temp_phase_change[(int) info_cylinder[7*object+6]]){
 								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
 							}
 							else{
@@ -968,7 +968,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,in
 						if(((x_before-xc)*(x_before-xc)+(z_after-zc)*(z_after-zc)<=r*r) && y_before<=yc+l/2 && y_before>= yc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 							Temp = Temp/4;
-							if(Temp<Temp_phase_change[(int) info_cube[7*object+6]]){
+							if(Temp<Temp_phase_change[(int) info_cylinder[7*object+6]]){
 								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
 							}
 							else{
@@ -980,7 +980,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,std::vector<double> &vec_er,in
 						if(((x_before-xc)*(x_before-xc)+(y_before-yc)*(y_before-yc)<=r*r) && z_after<=zc+l/2 && z_after>= zc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 							Temp = Temp/4;
-							if(Temp<Temp_phase_change[(int) info_cube[7*object+6]]){
+							if(Temp<Temp_phase_change[(int) info_cylinder[7*object+6]]){
 								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = vec_er[(int) info_cylinder[7*object+5]];
 							}
 							else{

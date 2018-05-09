@@ -285,7 +285,7 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
       int next_cut=0;
       while(step<step_max){
   	//Computation of the right hand side
-  	Compute_RHS(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz, rho, cp,geometry,delta_t,thermo_domain, BC,h_air); 
+  	Compute_RHS(b,irn,jcn,Temp,Source,Temp2,X,Y,Z, nnz, rho, cp,geometry,delta_t,thermo_domain, BC,h_air,step); 
       	
   	// Resolution of the system
   	id.rhs = &Temp[0];
@@ -382,12 +382,13 @@ void main_th(std::vector<double> &Source_elec, std::vector<double> &Temperature,
 
 
 // This function computes the right hand side of the system to be solved
-void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int nnz ,std::vector<double> &rho, std::vector<double> &cp,std::vector<double> &geometry,double dt,int thermo_domain, std::vector<int> &BC, double h){
+void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vector<int> &jcn , std::vector<double> &Temp, std::vector<double> &Source, std::vector<double> &Temp2, int X, int Y, int Z, int nnz ,std::vector<double> &rho, std::vector<double> &cp,std::vector<double> &geometry,double dt,int thermo_domain, std::vector<int> &BC, double h,int step){
 	int i = 0;
   int ii=0;
   int jj =0;
   int kk = 0;
   double T_inf = 20;
+  double omega = (2*3.141592)/20;
 	#pragma omp parallel for default(shared) private(i)
 	for(i=0;i<X*Y*Z;i++){
 		Temp2[i]=0;
@@ -405,7 +406,8 @@ void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vect
           Temp2[i] = -h*T_inf;	// Associated to the convection condition on the surface of the food (activated only when it is specified that the heat equation has to be solved only inside the food).
         }
         else if((geometry[i]!=0&&((geometry[i+Y*Z]!=0||BC[5]==0)&&(geometry[i-Y*Z]!=0||BC[4]==0)&&(geometry[i+1]!=0||BC[1]==0)&&(geometry[i-1]!=0||BC[0]==0)&&(geometry[i+Y]!=0||BC[3]==0)&&(geometry[i-Y]!=0||BC[2]==0))) || thermo_domain==0){
-    		  Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);		
+    		  //Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);
+		  Temp2[i]+=(dt*Source[i]*cos(omega*step*dt))/(rho[i]*cp[i]);		// Test for source varying in time
         }
       }
     }
@@ -432,13 +434,13 @@ void Compute_RHS_steady(std::vector<double> &pre_mat, std::vector<int> &irn , st
 			for(ii=1;ii<X-1;ii++){    
 				i = ii*X*Y+kk*Y+jj;
 				if(geometry[i]==0&&((geometry[i+Y*Z]!=0&&BC[4]==0)||(geometry[i-Y*Z]!=0&&BC[5]==0)||(geometry[i+1]!=0&&BC[0]==0)||(geometry[i-1]!=0&&BC[1]==0)||(geometry[i+Y]!=0&&BC[2]==0)||(geometry[i-Y]!=0&&BC[3]==0))){// Neuman 
-					if(geometry[i-1]!=0){		// Test for Neumann non homogene on only one face(Face11)										
+					/*if(geometry[i-1]!=0){		// Test for Neumann non homogene on only one face(Face11)										
 						Temp2[i] = -1*T_inf;
 					}        
 					else{
 						Temp2[i] = -h*T_inf;
-					}
-					//Temp2[i] = -h*T_inf;	// Associated to the convection condition on the surface of the food.
+					}*/
+					Temp2[i] = -h*T_inf;	// Associated to the convection condition on the surface of the food.
 				}
 				else if(geometry[i]!=0&&(geometry[i+Y*Z]==0&&BC[5]==1)){
 				  Temp2[i] = T_Dir[5];
@@ -508,10 +510,10 @@ void Compute_a_T0_steady(std::vector<int> &irn , std::vector<int> &jcn, int X, i
 	    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
 	    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
 		    
-		      				irn.push_back(i_vec+1);
-	    					jcn.push_back(i_vec+1-1);
-	    					/*a.push_back(-h);
-	    					b.push_back(-h);*/
+		      				/*irn.push_back(i_vec+1);
+	    					jcn.push_back(i_vec+1-1);*/
+	    					a.push_back(-h);
+	    					b.push_back(-h);
 
 						a.push_back(-1);		// Test for Neuman non homogene on only 1 face(Face 1)
 	    					b.push_back(-1);
@@ -812,8 +814,8 @@ void insert_Source_th(std::vector<double> &Source,int nb_source, std::vector<dou
 			for(k=b_inf_z;k<=b_sup_z;k++){
 				for(i=b_inf_x;i<=b_sup_x;i++){
 					eta = j*dx-(b_inf_y*dx);
-					Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6]*sin(eta*(3.141592/((b_sup_y-b_inf_y)*dx)));		// sinusoidal source
-					//Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6];		//constant source
+					//Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6]*sin(eta*(3.141592/((b_sup_y-b_inf_y)*dx)));		// sinusoidal source
+					Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6];		//constant source
 				}
 			}
 		}
