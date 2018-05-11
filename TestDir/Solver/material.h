@@ -13,19 +13,13 @@
 typedef struct Material{
 	std::string name;
 	int id;
-	double rho;
-	double rhoHot;
-	double k;
-	double kHot;
-  double cp;
-  double cpHot;
-  double TempPhaseChange;
-	double er;
-	double erHot;
-	double ur;
-	double urHot;
-	double eDiel;
-	double eDielHot;
+	std::vector<double> rho;
+	std::vector<double> k;
+  std::vector<double> cp;
+  std::vector<double> TempPhaseChange;
+	std::vector<double> er;
+	std::vector<double> ur;
+	std::vector<double> eDiel;
 }Material;
 
 Material ChoseMaterial(int ID);

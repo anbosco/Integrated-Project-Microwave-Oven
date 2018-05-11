@@ -34,19 +34,19 @@ void place_geometry(int X,int Y, int Z, std::vector<double> &properties,
 	std::vector<double> &e_r_totz ,std::vector<double> &e_diel_tot,
 	double T_food_init_th, Material geom);
 void place_cube(int X,int Y, int Z, std::vector<double> &properties,
-  	std::vector<double> &geometry, double dx, double val,
-  	int component,std::vector<double> &e_r_tot ,
-  	double er, double T_food_init_th,
-  	double erHot, double Temp_phase_change);
+		std::vector<double> &geometry, double dx, double val,
+		int component,std::vector<double> &e_r_tot ,
+		std::vector<double> &er, double T_food_init_th, std::vector<double> &Temp_phase_change);
+
 void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,
-    	std::vector<double> &geometry, double dx,double val,
-    	int component,std::vector<double> &e_r_tot , double er,
-    	double T_food_init_th,double erHot,
-    	double Temp_phase_change);
+			std::vector<double> &geometry, double dx,double val,
+			int component,std::vector<double> &e_r_tot , std::vector<double> &er,
+			double T_food_init_th, std::vector<double> &Temp_phase_change);
+			
 void place_sphere(int X,int Y, int Z, std::vector<double> &properties,
-      	std::vector<double> &geometry, double dx,double val, int component,
-      	std::vector<double> &e_r_tot , double er,
-      	double T_food_init_th, double erHot, double Temp_phase_change);
+				std::vector<double> &geometry, double dx,double val, int component,
+				std::vector<double> &e_r_tot , std::vector<double> &er,
+				double T_food_init_th, std::vector<double> &Temp_phase_change);
 void set_rel_perm_one_proc(std::vector<double> &e_r,std::vector<double> &e_r_tot,int i_min_proc,int j_min_proc,int k_min_proc,int point_per_proc_x,int point_per_proc_y,int point_per_proc_z,int lastx,int lasty,int lastz,int Nx, int Ny, int Nz, int comp);
 void rotate_rel_perm(std::vector<double> &e_r_tot,
 	int Nx, int Ny, int Nz, double Lx, double Ly, double Lz, double dx,

@@ -142,6 +142,7 @@ int main(int argc, char **argv){
 	int nzp;
 	double T_mean = 120/(f*dt);
 	int step_mean = (int) T_mean;
+	step_mean = 5;
 	double Residual = 0;
   	double Residual_0 = 0;
 	int steady_state_reached = 0;
@@ -1385,20 +1386,20 @@ for(i=0; i<n_cube; i++){
     std::vector<double> constant(n_th);
     #pragma omp parallel for default(shared) private(i)
     for(i=0;i<X_th*Y_th*Z_th;i++){
-   	rho[i] = initialMat.rho;
-	cp[i] = initialMat.cp;                            /*************** UTILISER SET VEC PLUTOT ***********************/
+   	rho[i] = initialMat.rho[0];
+	cp[i] = initialMat.cp[0];                            /*************** UTILISER SET VEC PLUTOT ***********************/
     }
     #pragma omp parallel for default(shared) private(i)
     for(i=0;i<n_th+Y_th*Z_th;i++){
-	k_heat_x[i] = initialMat.k;
+	k_heat_x[i] = initialMat.k[0];
     }
    #pragma omp parallel for default(shared) private(i)
    for(i=0;i<n_th+X_th*Z_th;i++){
-	k_heat_y[i] = initialMat.k;
+	k_heat_y[i] = initialMat.k[0];
     }
     #pragma omp parallel for default(shared) private(i)
     for(i=0;i<n_th+X_th*Y_th;i++){
-	k_heat_z[i] = initialMat.k;
+	k_heat_z[i] = initialMat.k[0];
     }
 
 
@@ -2257,7 +2258,7 @@ while(step_pos<=step_pos_max){
 
 			/****************************************************************************************************/
 
-			if(step>1800000)
+			//if(step>1800000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
@@ -2299,20 +2300,20 @@ while(step_pos<=step_pos_max){
 	     		MPI_Send(&Power_new[0],point_per_proc_x[myrank]*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]),MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
 	   	}
 		//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
-		export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
+		//export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Ez", step+step_prec, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hx", step+step_prec, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hy", step+step_prec, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hz", step+step_prec, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
-		export_spoints_XML("Power", step+step_prec, grid_Power, mygrid_Power, ZIPPED, Nx, Ny, Nz, 0);
+		//export_spoints_XML("Power", step+step_prec, grid_Power, mygrid_Power, ZIPPED, Nx, Ny, Nz, 0);
 		if (myrank == 0){	// save main pvti file by rank0
 			//export_spoints_XMLP("Ex", step+step_prec, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-	      		export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+	      		//export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 			//export_spoints_XMLP("Ez", step+step_prec, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
 			//export_spoints_XMLP("Hx", step+step_prec, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 			//export_spoints_XMLP("Hy", step+step_prec, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
 			//export_spoints_XMLP("Hz", step+step_prec, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
-			export_spoints_XMLP("Power", step+step_prec, grid_Power, mygrid_Power, sgrids_Power, ZIPPED);
+			//export_spoints_XMLP("Power", step+step_prec, grid_Power, mygrid_Power, sgrids_Power, ZIPPED);
 		}
 
 		// Temporal probe

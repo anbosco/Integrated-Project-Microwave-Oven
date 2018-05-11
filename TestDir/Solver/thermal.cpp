@@ -1210,29 +1210,29 @@ void place_geometry_th(int X,int Y, int Z, std::vector<double> &properties, int 
   std::vector<double> &cp, double x_min_th, double y_min_th, double z_min_th,
   std::vector<double> &Temperature, Material geom){
 	if(P==2){ // Cube
-    place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,geom.rho ,dx,properties,val, geom.cpHot,geom.TempPhaseChange,Temperature);
-		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,geom.rho ,dx,properties,val, geom.rhoHot,geom.TempPhaseChange,Temperature);
-		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,geom.cp ,dx,properties,val, geom.cpHot,geom.TempPhaseChange,Temperature);
-		place_cube_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,geom.k ,dx,properties,val, geom.kHot,geom.TempPhaseChange,Temperature);
-		place_cube_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,geom.k,dx,properties,val,geom.kHot,geom.TempPhaseChange,Temperature);
-		place_cube_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,geom.k ,dx,properties,val, geom.kHot,geom.TempPhaseChange,Temperature);
+    place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,geom.rho ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,geom.rho ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cube_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,geom.cp ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cube_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,geom.k ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cube_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,geom.k,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cube_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,geom.k ,dx,properties,val,geom.TempPhaseChange,Temperature);
 
 	}
 	else if(P==1){ // Cylinder
-		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,geom.rho ,dx,properties,val, geom.cpHot,geom.TempPhaseChange,Temperature);
-		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,geom.rho ,dx,properties,val, geom.rhoHot,geom.TempPhaseChange,Temperature);
-		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,geom.cp ,dx,properties,val, geom.cpHot,geom.TempPhaseChange,Temperature);
-		place_cylinder_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,geom.k ,dx,properties,val, geom.kHot,geom.TempPhaseChange,Temperature);
-		place_cylinder_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,geom.k,dx,properties,val,geom.kHot,geom.TempPhaseChange,Temperature);
-		place_cylinder_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,geom.k ,dx,properties,val, geom.kHot,geom.TempPhaseChange,Temperature);
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,geom.rho ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,geom.rho ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cylinder_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,geom.cp ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cylinder_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,geom.k ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cylinder_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,geom.k,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_cylinder_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,geom.k ,dx,properties,val,geom.TempPhaseChange,Temperature);
 	}
 	else if(P==0){// Sphere
-    place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,geom.rho ,dx,properties,val, geom.cpHot,geom.TempPhaseChange,Temperature);
-		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,geom.rho ,dx,properties,val, geom.rhoHot,geom.TempPhaseChange,Temperature);
-		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,geom.cp ,dx,properties,val, geom.cpHot,geom.TempPhaseChange,Temperature);
-		place_sphere_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,geom.k ,dx,properties,val, geom.kHot,geom.TempPhaseChange,Temperature);
-		place_sphere_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,geom.k,dx,properties,val,geom.kHot,geom.TempPhaseChange,Temperature);
-		place_sphere_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,geom.k ,dx,properties,val, geom.kHot,geom.TempPhaseChange,Temperature);
+    place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, geometry ,geom.rho ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, rho ,geom.rho ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_sphere_th(X,Y,Z,0,0,0,x_min_th,y_min_th,z_min_th, cp ,geom.cp ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_sphere_th(X,Y,Z,1,0,0,x_min_th,y_min_th,z_min_th, k_heatx ,geom.k ,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_sphere_th(X,Y,Z,0,1,0,x_min_th,y_min_th,z_min_th, k_heaty ,geom.k,dx,properties,val,geom.TempPhaseChange,Temperature);
+		place_sphere_th(X,Y,Z,0,0,1,x_min_th,y_min_th,z_min_th, k_heatz ,geom.k ,dx,properties,val,geom.TempPhaseChange,Temperature);
 	}
 }
 
@@ -1402,24 +1402,59 @@ void set_source_from_elec(std::vector<double> &Source,std::vector<double> &Sourc
 
 // This function places a cubic object inside the thermal grid
 void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th,
-  double y_min_th, double z_min_th, std::vector<double> &M ,double vec_val,
-  double dx, std::vector<double> &properties, int val, double vec_hot,
-  double Temp_phase_change, std::vector<double> &Temperature){
+  double y_min_th, double z_min_th, std::vector<double> &M ,std::vector<double> &vec_val,
+  double dx, std::vector<double> &properties, int val,
+  std::vector<double> &Temp_phase_change, std::vector<double> &Temperature){
 	int i = 0;
 	int j = 0;
 	int k = 0;
+  int Ind = 0;
+  int PropertyLoop = 0;
 	double test_temp;
 	for(j=0;j<Y+yy;j++){
 		for(k=0;k<Z+zz;k++){
 			for(i=0;i<X+xx;i++){
 				if(((x_min_th+(i*dx)-0.5*dx*xx)<=properties[3]+properties[0]/2)&&((x_min_th+i*dx-0.5*dx*xx)>=properties[3]-properties[0]/2)&&((y_min_th+j*dx-0.5*dx*yy)<=properties[4]+properties[1]/2)&&((y_min_th+j*dx-0.5*dx*yy)>=properties[4]-properties[1]/2)&&((z_min_th+k*dx-0.5*dx*zz)<=properties[5]+properties[2]/2)&&((z_min_th+k*dx-0.5*dx*zz)>=properties[5]-properties[2]/2)){
 					test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
-					if(test_temp<Temp_phase_change){
-						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-					}
-					else{
-						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-					}
+
+
+          /*      if(test_temp<Temp_phase_change)	{
+    							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
+    						}
+    						else{
+    							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
+    						} */
+
+
+
+                						Ind = 0;
+
+                						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+                								if(PropertyLoop==0){
+                										if(test_temp< Temp_phase_change[PropertyLoop]){
+                											Ind = PropertyLoop;
+                										}
+                									}
+                									else if (PropertyLoop == Temp_phase_change.size() - 1){
+                										if(test_temp > Temp_phase_change[PropertyLoop]){
+                											Ind = PropertyLoop+1;
+                										}
+                									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                										Ind = PropertyLoop ;
+                									}
+                								}
+                								else {
+                									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                										Ind = PropertyLoop;
+                									}
+                								}
+                							}
+
+
+                M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
+
+
+
 				}
 			}
 		}
@@ -1428,12 +1463,14 @@ void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double 
 
 // This function places a cylindrical object inside the thermal grid
 void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, double x_min_th,
-  double y_min_th, double z_min_th,std::vector<double> &M, double vec_val,
-  double dx,std::vector<double> &properties,double val, double vec_hot,
-  double Temp_phase_change,std::vector<double> &Temperature){
+  double y_min_th, double z_min_th,std::vector<double> &M, std::vector<double> &vec_val,
+  double dx,std::vector<double> &properties,double val,
+  std::vector<double> &Temp_phase_change,std::vector<double> &Temperature){
 	int i = 0;
 	int j = 0;
 	int k = 0;
+  int Ind = 0;
+  int PropertyLoop = 0;
 	double test_temp;
 	double xc = properties[1];
 	double yc = properties[2];
@@ -1449,34 +1486,138 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 				if(properties[0]==0){
 					if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
 						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
-						if(test_temp<Temp_phase_change)	{
-							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-						}
-						else{
-							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-						}
+
+
+
+
+            /*      if(test_temp<Temp_phase_change)	{
+      							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
+      						}
+      						else{
+      							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
+      						} */
+
+
+
+                  						Ind = 0;
+
+                  						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+                  								if(PropertyLoop==0){
+                  										if(test_temp< Temp_phase_change[PropertyLoop]){
+                  											Ind = PropertyLoop;
+                  										}
+                  									}
+                  									else if (PropertyLoop == Temp_phase_change.size() - 1){
+                  										if(test_temp > Temp_phase_change[PropertyLoop]){
+                  											Ind = PropertyLoop+1;
+                  										}
+                  									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  										Ind = PropertyLoop ;
+                  									}
+                  								}
+                  								else {
+                  									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  										Ind = PropertyLoop;
+                  									}
+                  								}
+                  							}
+
+
+                  M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
+
+
 					}
 				}
 				else if(properties[0]==1){
 					if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
 						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
-						if(test_temp<Temp_phase_change)	{
-							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-						}
-						else{
-							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-						}
+
+
+
+
+            /*      if(test_temp<Temp_phase_change)	{
+      							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
+      						}
+      						else{
+      							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
+      						} */
+
+
+
+                  						Ind = 0;
+
+                  						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+                  								if(PropertyLoop==0){
+                  										if(test_temp< Temp_phase_change[PropertyLoop]){
+                  											Ind = PropertyLoop;
+                  										}
+                  									}
+                  									else if (PropertyLoop == Temp_phase_change.size() - 1){
+                  										if(test_temp > Temp_phase_change[PropertyLoop]){
+                  											Ind = PropertyLoop+1;
+                  										}
+                  									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  										Ind = PropertyLoop ;
+                  									}
+                  								}
+                  								else {
+                  									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  										Ind = PropertyLoop;
+                  									}
+                  								}
+                  							}
+
+
+                  M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
+
+
+
+
 					}
 				}
 				else if(properties[0]==2){
 					if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
 						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
-						if(test_temp<Temp_phase_change)	{
+
+
+
+
+      /*      if(test_temp<Temp_phase_change)	{
 							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
 						}
 						else{
 							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-						}
+						} */
+
+
+
+            						Ind = 0;
+
+            						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+            								if(PropertyLoop==0){
+            										if(test_temp< Temp_phase_change[PropertyLoop]){
+            											Ind = PropertyLoop;
+            										}
+            									}
+            									else if (PropertyLoop == Temp_phase_change.size() - 1){
+            										if(test_temp > Temp_phase_change[PropertyLoop]){
+            											Ind = PropertyLoop+1;
+            										}
+            									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+            										Ind = PropertyLoop ;
+            									}
+            								}
+            								else {
+            									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+            										Ind = PropertyLoop;
+            									}
+            								}
+            							}
+
+
+            M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
+
+
 					}
 				}
 			}
@@ -1486,24 +1627,60 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 
 // This function places a spherical object inside the thermal grid
 void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, double x_min_th,
-  double y_min_th, double z_min_th,std::vector<double> &M, double vec_val,
-  double dx, std::vector<double> &properties, double val, double vec_hot,
-  double Temp_phase_change,std::vector<double> &Temperature){
+  double y_min_th, double z_min_th,std::vector<double> &M, std::vector<double> &vec_val,
+  double dx, std::vector<double> &properties, double val,
+  std::vector<double> &Temp_phase_change,std::vector<double> &Temperature){
 	int i = 0;
 	int j = 0;
 	int k = 0;
+  int Ind = 0;
+  int PropertyLoop = 0;
 	double test_temp;
 	for(j=0;j<Y+yy;j++){
 		for(k=0;k<Z+zz;k++){
 			for(i=0;i<X+xx;i++){
 				if(((properties[0]-(x_min_th+i*dx-xx*0.5*dx))*(properties[0]-(x_min_th+i*dx-xx*0.5*dx))+(properties[1]-(y_min_th+j*dx-yy*0.5*dx))*(properties[1]-(y_min_th+j*dx-yy*0.5*dx))+(properties[2]-(z_min_th+k*dx-zz*0.5*dx))*(properties[2]-(z_min_th+k*dx-zz*0.5*dx)))<=properties[3]*properties[3]){
 					test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
-					if(test_temp<Temp_phase_change)	{
-						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-					}
-					else{
-						M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-					}
+
+
+
+          /*      if(test_temp<Temp_phase_change)	{
+    							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
+    						}
+    						else{
+    							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
+    						} */
+
+
+
+                						Ind = 0;
+
+                						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+                								if(PropertyLoop==0){
+                										if(test_temp< Temp_phase_change[PropertyLoop]){
+                											Ind = PropertyLoop;
+                										}
+                									}
+                									else if (PropertyLoop == Temp_phase_change.size() - 1){
+                										if(test_temp > Temp_phase_change[PropertyLoop]){
+                											Ind = PropertyLoop+1;
+                										}
+                									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                										Ind = PropertyLoop ;
+                									}
+                								}
+                								else {
+                									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                										Ind = PropertyLoop;
+                									}
+                								}
+                							}
+
+
+                M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
+
+
+
 				}
 			}
 		}
