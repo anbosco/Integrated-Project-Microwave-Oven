@@ -407,8 +407,8 @@ void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vect
           Temp2[i] = -h*T_inf;	// Associated to the convection condition on the surface of the food (activated only when it is specified that the heat equation has to be solved only inside the food).
         }
         else if((geometry[i]!=0&&((geometry[i+Y*Z]!=0||BC[5]==0)&&(geometry[i-Y*Z]!=0||BC[4]==0)&&(geometry[i+1]!=0||BC[1]==0)&&(geometry[i-1]!=0||BC[0]==0)&&(geometry[i+Y]!=0||BC[3]==0)&&(geometry[i-Y]!=0||BC[2]==0))) || thermo_domain==0){
-    		  //Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);
-		  Temp2[i]+=(dt*Source[i]*cos(omega*step*dt))/(rho[i]*cp[i]);		// Test for source varying in time
+    		  Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);
+		  //Temp2[i]+=(dt*Source[i]*cos(omega*step*dt))/(rho[i]*cp[i]);		// Test for source varying in time
         }
       }
     }

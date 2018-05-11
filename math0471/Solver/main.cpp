@@ -139,7 +139,7 @@ int main(int argc, char **argv){
 	int nxp;
 	int nyp;
 	int nzp;
-	double T_mean = 12/(f*dt);
+	double T_mean = 120/(f*dt); 
 	int step_mean = (int) T_mean;
 	double Residual = 0;
   	double Residual_0 = 0;
@@ -1340,9 +1340,9 @@ fclose(FileR);
     vec_k.push_back(0.7);
     vec_rho.push_back(1080);
     vec_cp.push_back(3132);
-    vec_rho_hot.push_back(100);
-    vec_cp_hot.push_back(100);
-    vec_k_hot.push_back(2);
+    vec_rho_hot.push_back(1080);
+    vec_cp_hot.push_back(3132);
+    vec_k_hot.push_back(0.7);
 
     // Not physical
     vec_k.push_back(1);
@@ -2322,7 +2322,7 @@ while(step_pos<=step_pos_max){
 
 			/****************************************************************************************************/
 
-			//if(step>1800000)
+			if(step>1800000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
