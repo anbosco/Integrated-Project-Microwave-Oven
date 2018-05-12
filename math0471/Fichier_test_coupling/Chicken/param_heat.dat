@@ -1,6 +1,6 @@
-0.2		! Lx
-0.2		! Ly
-0.2		! Lz
+0.21		! Lx
+0.21		! Ly
+0.21		! Lz
 0.005		! dx
 0.1		! dt
 5		! Final Time
@@ -30,7 +30,7 @@
 10		! Food initial temperature
 10		! h_air
 0.01		! x_min
-0.06		! y_min
+0.05		! y_min
 0		! z_min
 0.005		! dx Electro
 0.3		! Lx electro

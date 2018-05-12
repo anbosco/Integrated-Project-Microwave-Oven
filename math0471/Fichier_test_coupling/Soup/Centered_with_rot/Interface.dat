@@ -16,6 +16,6 @@
 0			! Nb_sphere
 1 			! Nb_cylinder
 0			! Nb_cube		
-1000			! Input electric field amplitude
+2280			! Input electric field amplitude
 0.628318		! Delta theta
 1			! Solve electro?  
