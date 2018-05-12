@@ -9,7 +9,7 @@ TARGET_LINK_LIBRARIES(CoupledSolver vtl)
 # --------------------------------------------------------------
 # Finds MPI (including MSMPI)
 # --------------------------------------------------------------
-if(WIN32)
+if(WIN32)  
     FIND_PATH(MPI_INCLUDE_PATH NAMES  mpi.h HINTS "$ENV{MSMPI_INC}")
     if("${CMAKE_SIZEOF_VOID_P}" EQUAL 8)
         set(MS_MPI_ARCH_DIR x64)
@@ -38,9 +38,10 @@ if(OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-# MUMPS --
+# MUMPS -- 
 
-SET(MUMPSDIR /home/ulg/info0939/abosco/MUMPS_5.1.2)
+SET(MUMPSDIR /home/users/r/t/rtoma/MUMPS_5.1.2)
+#SET(MUMPSDIR /home/users/m/h/mhoubart/BON_github/MUMPS_5.1.2/)
 #SET(MUMPSDIR /home/boman/src/mumps-5.1.2)
 #SET(MUMPSDIR C:/mingw-w64/src/mumps-5.1.2)
 
