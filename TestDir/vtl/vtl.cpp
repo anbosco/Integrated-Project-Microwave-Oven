@@ -74,7 +74,7 @@ size_t write_vectorXML(std::ofstream &f, std::vector<double> const &pos, bool us
     			for(int k=0;k<Nz;++k){
     				buffer[i+j*Nx+k*Nx*Ny] = (float) pos[j+k*Ny+i*Ny*Nz];
     			}
-    		}    		
+    		}
     	}
     }
 
@@ -259,7 +259,7 @@ VTL_API void vtl::export_spoints_XMLP(std::string const &filename,
                                  int step,
                                  SPoints const &grid,
                                  SPoints const &mygrid,
-                                 std::vector<SPoints> const &sgrids, 
+                                 std::vector<SPoints> const &sgrids,
                                  Zip zip)
 {
 #if !defined(USE_ZLIB)

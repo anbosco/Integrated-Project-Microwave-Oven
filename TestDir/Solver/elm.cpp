@@ -737,11 +737,11 @@ void place_cube(int X,int Y, int Z, std::vector<double> &properties,
 	int i = 0;
 	int j = 0;
 	int k = 0;
-	int Ind = 0;
 	double xx = 0;
 	double yy = 0;
 	double zz = 0;
 	int PropertyLoop = 0;
+	int Ind = 0;
 	if(component==0){
 		xx = 1;
 	}

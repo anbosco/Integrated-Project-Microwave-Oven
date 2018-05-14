@@ -142,7 +142,6 @@ int main(int argc, char **argv){
 	int nzp;
 	double T_mean = 120/(f*dt);
 	int step_mean = (int) T_mean;
-	step_mean = 5;
 	double Residual = 0;
   	double Residual_0 = 0;
 	int steady_state_reached = 0;
@@ -464,12 +463,11 @@ for(i=0; i<n_sphere; i++){
 	sphere[i] = ChoseMaterial(prop_sphere[5*i + 4]);
 }
 for(i=0; i<n_cylinder; i++){
-	cyl[i] = ChoseMaterial(prop_cylinder[6 + 7*i]);
+	cyl[i] = ChoseMaterial(prop_cylinder[5 + 7*i]);
 }
 for(i=0; i<n_cube; i++){
 	cube[i] = ChoseMaterial(prop_cube[6 + 7*i]);
 }
-
 
 /********************************************************************************
 		Declaration of variables. (ELECTRO)
@@ -485,14 +483,14 @@ for(i=0; i<n_cube; i++){
 	vec_e_r.push_back(51.5);		// potato
 	vec_e_r.push_back(4);			// Food from ref
 	vec_e_r.push_back(53.5);		// Water
-	vec_e_r.push_back(53.5);		// Chicken
+	vec_e_r.push_back(49);			// Chicken
 	vec_e_r.push_back(53.5);		// Not physical
 
 	vec_e_r_hot.push_back(1);		// air
 	vec_e_r_hot.push_back(1000);		// potato
 	vec_e_r_hot.push_back(1000);		// Food from ref
 	vec_e_r_hot.push_back(75.8);		// Water
-	vec_e_r_hot.push_back(1000);		// Chicken
+	vec_e_r_hot.push_back(49);		// Chicken
 	vec_e_r_hot.push_back(1000);		// Not physical
 
 	vec_mu_r.push_back(1);			// air
@@ -506,21 +504,21 @@ for(i=0; i<n_cube; i++){
 	vec_e_diel.push_back(16.3);		// potato
 	vec_e_diel.push_back(17.3);		// Food from ref
 	vec_e_diel.push_back(1);		// Water
-	vec_e_diel.push_back(18.3);		// Chicken
+	vec_e_diel.push_back(16.1);		// Chicken
 	vec_e_diel.push_back(18.3);		// Not physical
 
 	vec_e_diel_hot.push_back(0);		// air
 	vec_e_diel_hot.push_back(100);		// potato
 	vec_e_diel_hot.push_back(100);		// Food from ref
-	vec_e_diel_hot.push_back(11);		// Water
-	vec_e_diel_hot.push_back(100);		// Chicken
+	vec_e_diel_hot.push_back(5);		// Water
+	vec_e_diel_hot.push_back(16.1);		// Chicken
 	vec_e_diel_hot.push_back(100);		// Not physical
 
 	Temp_phase_change.push_back(0);		// air
 	Temp_phase_change.push_back(20);	// potato
 	Temp_phase_change.push_back(20);	// Food from ref
 	Temp_phase_change.push_back(0);		// Water
-	Temp_phase_change.push_back(20);	// Chicken
+	Temp_phase_change.push_back(0);		// Chicken
 	Temp_phase_change.push_back(20);	// Not physical
 
 	// Used to check the steady state
@@ -644,7 +642,7 @@ for(i=0; i<n_cube; i++){
 		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init,
 			 dx, prop_temp[4],e_r_totx, e_r_toty, e_r_totz,
 			 e_diel_tot,T_food_init_th, sphere[i]);
-	}
+		 }
 	// Cylinder
 	for(i=0;i<n_cylinder;i++){
 		prop_temp[0] = prop_cylinder[7*i];
@@ -656,8 +654,8 @@ for(i=0; i<n_cube; i++){
 		prop_temp[6] = prop_cylinder[7*i+6];
 		int Config = 1;
 		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init,
-			 dx, prop_temp[5],e_r_totx,e_r_toty,e_r_totz,
-			 e_diel_tot,T_food_init_th, cyl[i]);
+					 dx, prop_temp[5],e_r_totx,e_r_toty,e_r_totz,
+					 e_diel_tot,T_food_init_th, cyl[i]);
 	}
 	// Cube
 	for(i=0;i<n_cube;i++){
@@ -670,14 +668,10 @@ for(i=0; i<n_cube; i++){
 		prop_temp[6] = prop_cube[7*i+6];
 		int Config = 2;
 		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init,
-			 dx, prop_temp[6],e_r_totx,e_r_toty,e_r_totz, e_diel_tot ,T_food_init_th, cube[i]);
+					 dx, prop_temp[6],e_r_totx,e_r_toty,e_r_totz, e_diel_tot ,T_food_init_th, cube[i]);
 	}
  	// Set the geometry on the current proc
-	init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,
-		e_r_totz,mu_r_tot, i_min_proc[myrank],j_min_proc[myrank],
-		k_min_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],
-		point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz,e_diel,
-		e_diel_tot);
+	init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,e_r_totz,mu_r_tot, i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz,e_diel,e_diel_tot);
 
 
 	// Calculation of the position of the antenna.
@@ -1366,24 +1360,26 @@ for(i=0; i<n_cube; i++){
     vec_k_hot.push_back(0.6);
 
     // Chicken
-    vec_k.push_back(0.5);
+    vec_k.push_back(0.7);
     vec_rho.push_back(1080);
     vec_cp.push_back(3132);
-    vec_rho_hot.push_back(100);
-    vec_cp_hot.push_back(100);
-    vec_k_hot.push_back(2);
+    vec_rho_hot.push_back(1080);
+    vec_cp_hot.push_back(3132);
+    vec_k_hot.push_back(0.7);
 
     // Not physical
     vec_k.push_back(1);
     vec_rho.push_back(1);
     vec_cp.push_back(1);
-    vec_rho_hot.push_back(100);
-    vec_cp_hot.push_back(100);
+    vec_rho_hot.push_back(1);
+    vec_cp_hot.push_back(1);
     vec_k_hot.push_back(1);
 
 		Material initialMat = ChoseMaterial(0);
 
-    std::vector<double> constant(n_th);
+
+
+		std::vector<double> constant(n_th);
     #pragma omp parallel for default(shared) private(i)
     for(i=0;i<X_th*Y_th*Z_th;i++){
    	rho[i] = initialMat.rho[0];
@@ -1400,48 +1396,48 @@ for(i=0; i<n_cube; i++){
     #pragma omp parallel for default(shared) private(i)
     for(i=0;i<n_th+X_th*Y_th;i++){
 	k_heat_z[i] = initialMat.k[0];
-    }
+}
 
 
-    	// Placement of the geometry(Thermo)
-	// Sphere
-	for(i=0;i<n_sphere;i++){
-		int j=0;
-		int prop_per_obj = 5;
-		for(j=0;j<prop_per_obj;j++){
-			prop_temp[j] = prop_sphere[prop_per_obj*i+j];
-		}
-		int Config = 0;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],k_heat_x,k_heat_y,
-			k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature, sphere[i]);
-	}
-	//Cylinder
-	for(i=0;i<n_cylinder;i++){
-		int j=0;
-		int prop_per_obj = 7;
-		for(j=0;j<prop_per_obj;j++){
-			prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
-		}
-		int Config = 1;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],
-			k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,
-			Temperature, cyl[i]);
-	}
-	// Cube
-	for(i=0;i<n_cube;i++){
-		int j=0;
-		int prop_per_obj = 7;
-		for(j=0;j<prop_per_obj;j++){
-			prop_temp[j] = prop_cube[prop_per_obj*i+j];
-		}
-		int Config = 2;
-		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],
-			k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature,cube[i]);
-	}
-        #pragma omp parallel for default(shared) private(i)
-  for(i=0;i<X_th*Y_th*Z_th;i++){
-  	constant[i] = (dt_th)/(rho[i]*cp[i]*dx_th*dx_th);
-  }
+// Placement of the geometry(Thermo)
+// Sphere
+for(i=0;i<n_sphere;i++){
+int j=0;
+int prop_per_obj = 5;
+for(j=0;j<prop_per_obj;j++){
+prop_temp[j] = prop_sphere[prop_per_obj*i+j];
+}
+int Config = 0;
+place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],k_heat_x,k_heat_y,
+k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature, sphere[i]);
+}
+//Cylinder
+for(i=0;i<n_cylinder;i++){
+int j=0;
+int prop_per_obj = 7;
+for(j=0;j<prop_per_obj;j++){
+prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
+}
+int Config = 1;
+place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],
+k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,
+Temperature, cyl[i]);
+}
+// Cube
+for(i=0;i<n_cube;i++){
+int j=0;
+int prop_per_obj = 7;
+for(j=0;j<prop_per_obj;j++){
+prop_temp[j] = prop_cube[prop_per_obj*i+j];
+}
+int Config = 2;
+place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],
+k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature,cube[i]);
+}
+	#pragma omp parallel for default(shared) private(i)
+for(i=0;i<X_th*Y_th*Z_th;i++){
+constant[i] = (dt_th)/(rho[i]*cp[i]*dx_th*dx_th);
+}
 
 
 /********************************************************************************
@@ -2030,7 +2026,6 @@ while(step_pos<=step_pos_max){
 			Hy_probe.push_back(Hy_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
 			Hz_probe.push_back(Hz_new[i-i_min_proc[myrank]][j-j_min_proc[myrank]][k-k_min_proc[myrank]]);
 		}
-
      		//Extraction of a cut if needed
 
 	if(step == (int) step_cut[next_cut]){// To extract a cut
@@ -2068,31 +2063,60 @@ while(step_pos<=step_pos_max){
 		ny = point_per_proc_y[myrank];
 		nz = point_per_proc_z[myrank];
 
+		int iii = 0;		// Variables used to handle the boudaries
+		int jjj = 0;
+		int kkk = 0;
+
 		#pragma omp parallel for default(shared) private(i,j,k)
 		for(i=1;i<(nx-lastx);i++){
 			for(j=1;j<(ny-lasty);j++){
 				for(k=1;k<(nz-lastz);k++) {
+					iii = 0;
+					jjj = 0;
+					kkk = 0;
+					if(firstx!=1 && lastx!=1 && i == nx-1){
+						iii = 1;
+					}
+					if(firsty!=1 && lasty!=1 && j == ny-1){
+						jjj = 1;
+					}
+					if(firstz!=1 && lastz!=1 && k == nz-1){
+						kkk = 1;
+					}
            				//x
-           				Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+           				Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1-jjj][k-firstz]*Ex_new[i][j-firsty+1-jjj][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz-kkk]*Ex_new[i][j-firsty][k+1-firstz-kkk])+(Ex_new[i][j+1-firsty-jjj][k+1-firstz-kkk]*Ex_new[i][j+1-firsty-jjj][k+1-firstz-kkk]))/12;
 					//y
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx]+  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-firstx-iii][j][k-firstz]*Ey_new[i+1-firstx-iii][j][k-firstz])+(Ey_new[i-firstx][j][k+1-firstz-kkk]*Ey_new[i-firstx][j][k+1-firstz-kkk])+(Ey_new[i+1-firstx-iii][j][k+1-firstz-kkk]*Ey_new[i+1-firstx-iii][j][k+1-firstz-kkk]))/12;
 					//z
-					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
+					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(Ez_new[i+1-firstx-iii][j-firsty][k]*Ez_new[i+1-firstx-iii][j-firsty][k])+(Ez_new[i-firstx][j+1-firsty-jjj][k]*Ez_new[i-firstx][j+1-firsty-jjj][k])+(Ez_new[i+1-firstx-iii][j+1-firsty-jjj][k]*Ez_new[i+1-firstx-iii][j+1-firsty-jjj][k]))/12;
+
       				}
 			}
 		}
 
-  		 if(firstx!=1){
+  		if(firstx!=1){
 			#pragma omp parallel for default(shared) private(i,j,k)
 		        for(i=0;i<=0;i++){
 				  for(j=1;j<(ny-lasty);j++){
-					for(k=1;k<(nz-lastz);k++) {
-			   			//x
-			   			Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+					for(k=1;k<(nz-lastz);k++){
+						iii = 0;
+						jjj = 0;
+						kkk = 0;
+						if(firstx!=1 && lastx!=1 && i == nx-1){
+							iii = 1;
+						}
+						if(firsty!=1 && lasty!=1 && j == ny-1){
+							jjj = 1;
+						}
+						if(firstz!=1 && lastz!=1 && k  == nz-1){
+							kkk = 1;
+						}
+						//x
+			   			Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_new[i][j-firsty][k-firstz]*Ex_new[i][j-firsty][k-firstz])+(Ex_new[i][j-firsty+1-jjj][k-firstz]*Ex_new[i][j-firsty+1-jjj][k-firstz])+(Ex_new[i][j-firsty][k+1-firstz-kkk]*Ex_new[i][j-firsty][k+1-firstz-kkk])+(Ex_new[i][j+1-firsty-jjj][k+1-firstz-kkk]*Ex_new[i][j+1-firsty-jjj][k+1-firstz-kkk]))/12;
 						//y
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-iii-firstx][j][k-firstz]*Ey_new[i+1-iii-firstx][j][k-firstz])+(Ey_back[j][k+1-kkk-firstz]*Ey_back[j][k+1-kkk-firstz])+(Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]*Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]))/12;
 						//z
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-iii-firstx][j-firsty][k]*Ez_new[i+1-iii-firstx][j-firsty][k])+(Ez_back[j+1-jjj-firsty][k]*Ez_back[j+1-jjj-firsty][k])+(Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]*Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]))/12;
 					}
 				}
 			}
@@ -2102,12 +2126,24 @@ while(step_pos<=step_pos_max){
    			for(i=1;i<(nx-lastx);i++){
 				for(j=0;j<=0;j++){
 					for(k=1;k<(nz-lastz);k++) {
+						iii = 0;
+						jjj = 0;
+						kkk = 0;
+						if(firstx!=1 && lastx!=1 && i == nx-1){
+							iii = 1;
+						}
+						if(firsty!=1 && lasty!=1 && j == ny-1){
+							jjj = 1;
+						}
+						if(firstz!=1 && lastz!=1 && k == nz-1){
+							kkk = 1;
+						}
            					//x
-           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1-jjj][k-firstz]*Ex_new[i][j-firsty+1-jjj][k-firstz])+(Ex_left[i][k+1-kkk-firstz]*Ex_left[i][k+1-kkk-firstz])+(Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]*Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]))/12;
 						//y
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_new[i-firstx][j][k-firstz]*Ey_new[i-firstx][j][k-firstz])+(Ey_new[i+1-iii-firstx][j][k-firstz]*Ey_new[i+1-iii-firstx][j][k-firstz])+(Ey_new[i-firstx][j][k+1-kkk-firstz]*Ey_new[i-firstx][j][k+1-kkk-firstz])+(Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]*Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]))/12;
 						//z
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-iii-firstx][k]*Ez_left[i+1-iii-firstx][k])+(Ez_new[i-firstx][j+1-jjj-firsty][k]*Ez_new[i-firstx][j+1-jjj-firsty][k])+(Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]*Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]))/12;
         				}
 				}
 			}
@@ -2117,12 +2153,24 @@ while(step_pos<=step_pos_max){
    			for(i=1;i<(nx-lastx);i++){
 				for(j=1;j<(ny-lasty);j++){
 					for(k=0;k<=0;k++) {
+						iii = 0;
+						jjj = 0;
+						kkk = 0;
+						if(firstx!=1 && lastx!=1 && i == nx-1){
+							iii = 1;
+						}
+						if(firsty!=1 && lasty!=1 && j == ny-1){
+							jjj = 1;
+						}
+						if(firstz!=1 && lastz!=1 && k == nz-1){
+							kkk = 1;
+						}
            					//x
-           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/12;
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1-jjj]*Ex_bottom[i][j-firsty+1-jjj])+(Ex_new[i][j-firsty][k+1-kkk-firstz]*Ex_new[i][j-firsty][k+1-kkk-firstz])+(Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]*Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]))/12;
 						//y
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/12;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-iii-firstx][j]*Ey_bottom[i+1-iii-firstx][j])+(Ey_new[i-firstx][j][k+1-kkk-firstz]*Ey_new[i-firstx][j][k+1-kkk-firstz])+(Ey_new[i+1-iii-firstx][j][k+lasty-firstz]*Ey_new[i+1-iii-firstx][j][k+lasty-firstz]))/12;
 						//z
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/12;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_new[i-firstx][j-firsty][k]*Ez_new[i-firstx][j-firsty][k])+(Ez_new[i+1-iii-firstx][j-firsty][k]*Ez_new[i+1-iii-firstx][j-firsty][k])+(Ez_new[i-firstx][j+1-jjj-firsty][k]*Ez_new[i-firstx][j+1-jjj-firsty][k])+(Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]*Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]))/12;
         				}
 				}
 			}
@@ -2133,12 +2181,24 @@ while(step_pos<=step_pos_max){
      			for(i=0;i<=0;i++){
 		  		for(j=0;j<=0;j++){
 					for(k=1;k<(nz-lastz);k++) {
+						iii = 0;
+						jjj = 0;
+						kkk = 0;
+						if(firstx!=1 && lastx!=1 && i == nx-1){
+							iii = 1;
+						}
+						if(firsty!=1 && lasty!=1 && j == ny-1){
+							jjj = 1;
+						}
+						if(firstz!=1 && lastz!=1 && k == nz-1){
+							kkk = 1;
+						}
            					//x
-          					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1][k-firstz]*Ex_new[i][j-firsty+1][k-firstz])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+          					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_left[i][k-firstz]*Ex_left[i][k-firstz])+(Ex_new[i][j-firsty+1-jjj][k-firstz]*Ex_new[i][j-firsty+1-jjj][k-firstz])+(Ex_left[i][k+1-kkk-firstz]*Ex_left[i][k+1-kkk-firstz])+(Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]*Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]))/11;
           					//y
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-firstx][j][k-firstz]*Ey_new[i+1-firstx][j][k-firstz])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_back[j][k-firstz]*Ey_back[j][k-firstz])+(Ey_new[i+1-iii-firstx][j][k-firstz]*Ey_new[i+1-iii-firstx][j][k-firstz])+(Ey_back[j][k+1-kkk-firstz]*Ey_back[j][k+1-kkk-firstz])+(Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]*Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]))/11;
         					//z
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-iii-firstx][k]*Ez_left[i+1-iii-firstx][k])+(Ez_back[j+1-jjj-firsty][k]*Ez_back[j+1-jjj-firsty][k])+(Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]*Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]))/11;
         				}
 				}
 			}
@@ -2149,12 +2209,24 @@ while(step_pos<=step_pos_max){
      			for(i=0;i<=0;i++){
 		  		for(j=1;j<(ny-lasty);j++){
 					for(k=0;k<=0;k++) {
+						iii = 0;
+						jjj = 0;
+						kkk = 0;
+						if(firstx!=1 && lastx!=1 && i == nx-1){
+							iii = 1;
+						}
+						if(firsty!=1 && lasty!=1 && j == ny-1){
+							jjj = 1;
+						}
+						if(firstz!=1 && lastz!=1 && k == nz-1){
+							kkk = 1;
+						}
            					//x
-           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_new[i][j-firsty][k+1-firstz]*Ex_new[i][j-firsty][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty]*Ex_bottom[i][j-firsty])+(Ex_bottom[i][j-firsty+1-jjj]*Ex_bottom[i][j-firsty+1-jjj])+(Ex_new[i][j-firsty][k+1-kkk-firstz]*Ex_new[i][j-firsty][k+1-kkk-firstz])+(Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]*Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]))/11;
 						//y
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-iii-firstx][j]*Ey_bottom[i+1-iii-firstx][j])+(Ey_back[j][k+1-kkk-firstz]*Ey_back[j][k+1-kkk-firstz])+(Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]*Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]))/11;
 						//z
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-firstx][j-firsty][k]*Ez_new[i+1-firstx][j-firsty][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_back[j-firsty][k]*Ez_back[j-firsty][k])+(Ez_new[i+1-iii-firstx][j-firsty][k]*Ez_new[i+1-iii-firstx][j-firsty][k])+(Ez_back[j+1-jjj-firsty][k]*Ez_back[j+1-jjj-firsty][k])+(Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]*Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]))/11;
         				}
 				}
 			}
@@ -2165,32 +2237,55 @@ while(step_pos<=step_pos_max){
      			for(i=1;i<(nx-lastx);i++){
 				for(j=0;j<=0;j++){
 					for(k=0;k<=0;k++) {
+						iii = 0;
+						jjj = 0;
+						kkk = 0;
+						if(firstx!=1 && lastx!=1 && i == nx-1){
+							iii = 1;
+						}
+						if(firsty!=1 && lasty!=1 && j == ny-1){
+							jjj = 1;
+						}
+						if(firstz!=1 && lastz!=1 && k == nz-1){
+							kkk = 1;
+						}
            					//x
-           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/11;
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1-jjj]*Ex_bottom[i][j-firsty+1-jjj])+(Ex_left[i][k+1-kkk-firstz]*Ex_left[i][k+1-kkk-firstz])+(Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]*Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]))/11;
 						//y
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_new[i-firstx][j][k+1-firstz]*Ey_new[i-firstx][j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/11;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i-firstx][j]*Ey_bottom[i-firstx][j])+(Ey_bottom[i+1-iii-firstx][j]*Ey_bottom[i+1-iii-firstx][j])+(Ey_new[i-firstx][j][k+1-kkk-firstz]*Ey_new[i-firstx][j][k+1-kkk-firstz])+(Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]*Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]))/11;
 						//z
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_new[i-firstx][j+1-firsty][k]*Ez_new[i-firstx][j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/11;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i-firstx][k]*Ez_left[i-firstx][k])+(Ez_left[i+1-iii-firstx][k]*Ez_left[i+1-iii-firstx][k])+(Ez_new[i-firstx][j+1-jjj-firsty][k]*Ez_new[i-firstx][j+1-jjj-firsty][k])+(Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]*Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]))/11;
         				}
 				}
 			}
    		}
    		if(firstx!=1 && firsty!=1 && firstz!=1){
 			#pragma omp parallel for default(shared) private(i,j,k)
-     			for(i=1;i<(nx-lastx);i++){
+     			for(i=0;i<=0;i++){
 				for(j=0;j<=0;j++){
 					for(k=0;k<=0;k++) {
+						iii = 0;
+						jjj = 0;
+						kkk = 0;
+						if(firstx!=1 && lastx!=1 && i == nx-1){
+							iii = 1;
+						}
+						if(firsty!=1 && lasty!=1 && j == ny-1){
+							jjj = 1;
+						}
+						if(firstz!=1 && lastz!=1 && k == nz-1){
+							kkk = 1;
+						}
            					//x
-           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1]*Ex_bottom[i][j-firsty+1])+(Ex_left[i][k+1-firstz]*Ex_left[i][k+1-firstz])+(Ex_new[i][j+1-firsty][k+1-firstz]*Ex_new[i][j+1-firsty][k+1-firstz]))/9;
+           					Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] + e_0*((Ex_bottom[i][j-firsty+1-jjj]*Ex_bottom[i][j-firsty+1-jjj])+(Ex_left[i][k+1-kkk-firstz]*Ex_left[i][k+1-kkk-firstz])+(Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]*Ex_new[i][j+1-jjj-firsty][k+1-kkk-firstz]))/9;
 						//y
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-firstx][j]*Ey_bottom[i+1-firstx][j])+(Ey_back[j][k+1-firstz]*Ey_back[j][k+1-firstz])+(Ey_new[i+1-firstx][j][k+1-firstz]*Ey_new[i+1-firstx][j][k+1-firstz]))/9;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ey_bottom[i+1-iii-firstx][j]*Ey_bottom[i+1-iii-firstx][j])+(Ey_back[j][k+1-kkk-firstz]*Ey_back[j][k+1-kkk-firstz])+(Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]*Ey_new[i+1-iii-firstx][j][k+1-kkk-firstz]))/9;
 						//z
-						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-firstx][k]*Ez_left[i+1-firstx][k])+(Ez_back[j+1-firsty][k]*Ez_back[j+1-firsty][k])+(Ez_new[i+1-firstx][j+1-firsty][k]*Ez_new[i+1-firstx][j+1-firsty][k]))/9;
+						Power_new[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx] +  e_0*((Ez_left[i+1-iii-firstx][k]*Ez_left[i+1-iii-firstx][k])+(Ez_back[j+1-jjj-firsty][k]*Ez_back[j+1-jjj-firsty][k])+(Ez_new[i+1-iii-firstx][j+1-jjj-firsty][k]*Ez_new[i+1-iii-firstx][j+1-firsty][k]))/9;
         				}
 				}
 			}
    		}
-
 		if(step%step_mean==0){
 			/**************************************
 				Steady state verification
@@ -2229,7 +2324,7 @@ while(step_pos<=step_pos_max){
         			Residual_0 = Residual;
       			}
 
-      			if((Residual<0.05*Residual_0 && (step/step_mean)>2)||Residual==0){
+      			if((Residual<0.1*Residual_0 && (step/step_mean)>2)||Residual==0){
 				steady_state_reached = 1;
 			}
 			else{
@@ -2258,7 +2353,7 @@ while(step_pos<=step_pos_max){
 
 			/****************************************************************************************************/
 
-			//if(step>1800000)
+			if(step>1800000)
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){
@@ -2300,20 +2395,20 @@ while(step_pos<=step_pos_max){
 	     		MPI_Send(&Power_new[0],point_per_proc_x[myrank]*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]),MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
 	   	}
 		//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
-		//export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
+		export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Ez", step+step_prec, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hx", step+step_prec, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hy", step+step_prec, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
 		//export_spoints_XML("Hz", step+step_prec, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
-		//export_spoints_XML("Power", step+step_prec, grid_Power, mygrid_Power, ZIPPED, Nx, Ny, Nz, 0);
+		export_spoints_XML("Power", step+step_prec, grid_Power, mygrid_Power, ZIPPED, Nx, Ny, Nz, 0);
 		if (myrank == 0){	// save main pvti file by rank0
 			//export_spoints_XMLP("Ex", step+step_prec, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-	      		//export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+	      		export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
 			//export_spoints_XMLP("Ez", step+step_prec, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
 			//export_spoints_XMLP("Hx", step+step_prec, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
 			//export_spoints_XMLP("Hy", step+step_prec, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
 			//export_spoints_XMLP("Hz", step+step_prec, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
-			//export_spoints_XMLP("Power", step+step_prec, grid_Power, mygrid_Power, sgrids_Power, ZIPPED);
+			export_spoints_XMLP("Power", step+step_prec, grid_Power, mygrid_Power, sgrids_Power, ZIPPED);
 		}
 
 		// Temporal probe
@@ -2364,7 +2459,7 @@ while(step_pos<=step_pos_max){
 			}
 			int Config = 0;
 			place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],
-				k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature,sphere[i]);
+							k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature,sphere[i]);
 		}
 		//Cylinder
 		for(i=0;i<n_cylinder;i++){
@@ -2398,13 +2493,16 @@ while(step_pos<=step_pos_max){
 *******************************************************************************/
 
       	theta += delta_theta;
-      	rotate_geometry(geometry_init,e_r_totx,e_r_toty,e_r_totz, Nx, Ny, Nz, Lx, Ly, Lz,
-					dx,n_sphere, prop_sphere, n_cylinder,prop_cylinder, n_cube,prop_cube, theta, e_diel_tot,
-					 Temperature, dx_th,x_min_th,y_min_th,z_min_th,
-					 X_th,Y_th,Z_th, cube, cyl, sphere);
-	init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,e_r_totz,mu_r_tot,
-		i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],point_per_proc_x[myrank],
-		point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz,e_diel,e_diel_tot);
+	if(delta_theta!=0){
+		rotate_geometry(geometry_init,e_r_totx,e_r_toty,e_r_totz, Nx, Ny, Nz, Lx, Ly, Lz,
+							dx,n_sphere, prop_sphere, n_cylinder,prop_cylinder, n_cube,prop_cube, theta, e_diel_tot,
+							 Temperature, dx_th,x_min_th,y_min_th,z_min_th,
+							 X_th,Y_th,Z_th, cube, cyl, sphere);
+			init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,e_r_totz,mu_r_tot,
+				i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],point_per_proc_x[myrank],
+				point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz,e_diel,e_diel_tot);
+
+			}
 step_pos++;
 }
 
@@ -2582,7 +2680,6 @@ step_pos++;
 	free(point_per_proc_x);
 	free(point_per_proc_y);
 	free(point_per_proc_z);
-
   	// finalise MUMPS/MPI
   	end_MUMPS(id);
 	MPI_Finalize();
