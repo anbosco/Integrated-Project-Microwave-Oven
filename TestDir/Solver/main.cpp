@@ -2286,7 +2286,7 @@ while(step_pos<=step_pos_max){
 				}
 			}
    		}
-		if(step%step_mean==0){
+		if(step%step_mean==0||(solve_thermo==0 && step == step_max)){
 			/**************************************
 				Steady state verification
 			**************************************/
@@ -2353,7 +2353,7 @@ while(step_pos<=step_pos_max){
 
 			/****************************************************************************************************/
 
-			if(step>1800000)
+			if(step>1800000||(solve_thermo==0 && step == step_max))
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){

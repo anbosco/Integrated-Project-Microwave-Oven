@@ -77,7 +77,7 @@ switch(Val){
 
   case 3:
   {
-   // Some food from a reference.
+   // Not Phy α=1
   Material Alpha;
   Alpha.name = "Alpha";
   Alpha.rho = {1, 1};
@@ -88,6 +88,94 @@ switch(Val){
   Alpha.er = {1, 1};
   Alpha.ur = {1, 1};
   Alpha.eDiel = {1, 1};
+  ReturnMaterial = Alpha;
+}
+  break;
+
+  case 4:
+  {
+   // Not Phy
+  Material Alpha;
+  Alpha.name = "Alpha";
+  Alpha.rho = {1, 1};
+  Alpha.id = 3;
+  Alpha.k = {1, 1};
+  Alpha.cp = {1, 1};
+  Alpha.TempPhaseChange = {0};
+  Alpha.er = {1, 1};
+  Alpha.ur = {1, 1};
+  Alpha.eDiel = {1, 1};
+  ReturnMaterial = Alpha;
+}
+  break;
+
+  case 5:
+  {
+   // SNOt phy.
+  Material Alpha;
+  Alpha.name = "Alpha";
+  Alpha.rho = {1, 1};
+  Alpha.id = 3;
+  Alpha.k = {1, 1};
+  Alpha.cp = {1, 1};
+  Alpha.TempPhaseChange = {0};
+  Alpha.er = {1, 1};
+  Alpha.ur = {1, 1};
+  Alpha.eDiel = {1, 1};
+  ReturnMaterial = Alpha;
+}
+  break;
+
+
+
+  case 6:
+  {
+   // BONES.
+  Material bone;
+  bone.name = "Chicken Bone";
+  bone.rho = {1750, 1750};
+  bone.id = 3;
+  bone.k = {0.58, 0.58};
+  bone.cp = {440, 440};
+  bone.TempPhaseChange = {0};
+  bone.er = {11.345, 11.345};
+  bone.ur = {1, 1};
+  bone.eDiel = {2.904, 2.904};
+  ReturnMaterial = bone;
+}
+  break;
+
+  case 7:
+  {
+   // Chicken Fat.
+  Material fat;
+  fat.name = "Chicken fat";
+  fat.rho = {909.4, 909.4};
+  fat.id = 3;
+  fat.k = {0.201, 0.201};
+  fat.cp = {2348, 2348};
+  fat.TempPhaseChange = {0};
+  fat.er = {5.56, 5.56};
+  fat.ur = {1, 1};
+  fat.eDiel = {54.28, 54.28};
+  ReturnMaterial = fat;
+}
+  break;
+
+
+  case 8:
+  {
+   // Chicken Muscle .
+  Material mus;
+  mus.name = "Chicken muscle";
+  mus.rho = {1059.9, 1059.9};
+  mus.id = 3;
+  mus.k = {0.478, 0.478};
+  mus.cp = {3421, 3421};
+  mus.TempPhaseChange = {0};
+  mus.er = {59, 59};
+  mus.ur = {1, 1};
+  mus.eDiel = {54.28, 54.28};
   ReturnMaterial = Alpha;
 }
   break;

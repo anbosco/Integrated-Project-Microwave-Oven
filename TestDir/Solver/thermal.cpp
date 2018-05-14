@@ -533,13 +533,13 @@ void Compute_a_T0_steady(std::vector<int> &irn , std::vector<int> &jcn, int X, i
 	    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
 	    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
 
-		      				irn.push_back(i_vec+1);
-	    					jcn.push_back(i_vec+1-1);
-	    					/*a.push_back(-h);
-	    					b.push_back(-h);*/
+                irn.push_back(i_vec+1);
+                jcn.push_back(i_vec+1-1);
 
-						a.push_back(-1);		// Test for Neuman non homogene on only 1 face(Face 1)
-	    					b.push_back(-1);
+                a.push_back(-h);		// Same NEUMAN on all faces
+	    					b.push_back(-h);
+                /*a.push_back(-1);
+                b.push_back(-1);*/
 
 
 	    					irn.push_back(i_vec+1);
@@ -837,8 +837,8 @@ void insert_Source_th(std::vector<double> &Source,int nb_source, std::vector<dou
 			for(k=b_inf_z;k<=b_sup_z;k++){
 				for(i=b_inf_x;i<=b_sup_x;i++){
 					eta = j*dx-(b_inf_y*dx);
-					Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6]*sin(eta*(3.141592/((b_sup_y-b_inf_y)*dx)));		// sinusoidal source
-					//Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6];		//constant source
+					//Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6]*sin(eta*(3.141592/((b_sup_y-b_inf_y)*dx)));
+					Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6];		//constant source
 				}
 			}
 		}
