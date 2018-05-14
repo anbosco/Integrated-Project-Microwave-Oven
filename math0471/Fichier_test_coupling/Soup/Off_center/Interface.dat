@@ -17,5 +17,5 @@
 1			! Nb_cylinder
 0			! Nb_cube		
 2280			! Input electric field amplitude
-0.628318		! Delta theta
+0.628319			! Delta theta
 1			! Solve electro? 

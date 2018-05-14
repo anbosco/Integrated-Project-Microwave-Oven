@@ -3,7 +3,7 @@
 0.2		! Lz
 0.005		! dx
 0.1		! dt
-5		! Final Time
+2		! Final Time
 0		! Nb source
 9		! Nb obj
 0		! BC Y0 (1 if Dirichlet)
