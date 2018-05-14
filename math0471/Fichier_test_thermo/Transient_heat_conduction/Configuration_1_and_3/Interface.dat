@@ -17,5 +17,5 @@
 0			! Nb_cylinder
 1			! Nb_cube		
 100			! Input electric field amplitude
-0		! Delta theta
+0		        ! Delta theta
 0			! Solve electro?

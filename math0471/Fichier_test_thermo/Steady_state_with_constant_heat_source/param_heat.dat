@@ -37,4 +37,4 @@
 0.3		! Ly Electro
 0.3		! Lz Electro
 1		! Solve thermo?
-1		! Transient?(1 if transient; 0 if steady state)
+0		! Transient?(1 if transient; 0 if steady state)

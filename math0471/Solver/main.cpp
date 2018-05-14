@@ -486,6 +486,10 @@ fclose(FileR);
 	vec_e_r.push_back(53.5);		// Water
 	vec_e_r.push_back(49);			// Chicken
 	vec_e_r.push_back(53.5);		// Not physical	
+	vec_e_r.push_back(11.345);		// Chicken Bone
+	vec_e_r.push_back(5.56);		// Chicken Fat	
+	vec_e_r.push_back(59);			// Chicken Muscle
+   
 
 	vec_e_r_hot.push_back(1);		// air
 	vec_e_r_hot.push_back(1000);		// potato
@@ -493,6 +497,9 @@ fclose(FileR);
 	vec_e_r_hot.push_back(75.8);		// Water
 	vec_e_r_hot.push_back(49);		// Chicken
 	vec_e_r_hot.push_back(1000);		// Not physical
+	vec_e_r_hot.push_back(11.345));		// Chicken Bone
+	vec_e_r_hot.push_back(5.56);		// Chicken Fat
+	vec_e_r_hot.push_back(59);		// Chicken Muscle
 
 	vec_mu_r.push_back(1);			// air
 	vec_mu_r.push_back(1);			// potato
@@ -500,6 +507,9 @@ fclose(FileR);
 	vec_mu_r.push_back(1);			// Water
 	vec_mu_r.push_back(1);			// Chicken
 	vec_mu_r.push_back(1);			// Not physical
+	vec_mu_r.push_back(1);			// Chicken Bone
+	vec_mu_r.push_back(1);			// Chicken Fat
+	vec_mu_r.push_back(1);			// Chicken Muscle
 
 	vec_e_diel.push_back(0);		// air
 	vec_e_diel.push_back(16.3);		// potato
@@ -507,6 +517,9 @@ fclose(FileR);
 	vec_e_diel.push_back(1);		// Water
 	vec_e_diel.push_back(16.1);		// Chicken
 	vec_e_diel.push_back(18.3);		// Not physical
+	vec_e_diel.push_back(2.904);		// Chicken Bone
+	vec_e_diel.push_back(2.29);		// Chicken Fat
+	vec_e_diel.push_back(54.28);		// Chicken Muscle
 
 	vec_e_diel_hot.push_back(0);		// air
 	vec_e_diel_hot.push_back(100);		// potato
@@ -514,6 +527,9 @@ fclose(FileR);
 	vec_e_diel_hot.push_back(5);		// Water
 	vec_e_diel_hot.push_back(16.1);		// Chicken
 	vec_e_diel_hot.push_back(100);		// Not physical
+	vec_e_diel_hot.push_back(2.904);	// Chicken Bone
+	vec_e_diel_hot.push_back(2.29);		// Chicken Fat
+	vec_e_diel_hot.push_back(54.28);	// Chicken Musclel
 
 	Temp_phase_change.push_back(0);		// air
 	Temp_phase_change.push_back(20);	// potato
@@ -521,6 +537,9 @@ fclose(FileR);
 	Temp_phase_change.push_back(0);		// Water
 	Temp_phase_change.push_back(0);		// Chicken
 	Temp_phase_change.push_back(20);	// Not physical
+	Temp_phase_change.push_back(0);		// Chicken Bone
+	Temp_phase_change.push_back(0);		// Chicken Fat
+	Temp_phase_change.push_back(0);		// Chicken Musclel
 
 	// Used to check the steady state
 	double E_max_new = 0;
@@ -1370,6 +1389,31 @@ fclose(FileR);
     vec_rho_hot.push_back(1);
     vec_cp_hot.push_back(1);
     vec_k_hot.push_back(1);
+
+    // Chicken bones
+    vec_k.push_back(0.58);
+    vec_rho.push_back(1750);
+    vec_cp.push_back(440);
+    vec_rho_hot.push_back(1750);
+    vec_cp_hot.push_back(440);
+    vec_k_hot.push_back(0.58);
+
+    // Chicken fat
+    vec_k.push_back(0.201);
+    vec_rho.push_back(909.4);
+    vec_cp.push_back(2348);
+    vec_rho_hot.push_back(909.4);
+    vec_cp_hot.push_back(2348);
+    vec_k_hot.push_back(0.201);
+
+    // Chicken muscle
+    vec_k.push_back(0.478);
+    vec_rho.push_back(1059.9);
+    vec_cp.push_back(3421);
+    vec_rho_hot.push_back(1059.9);
+    vec_cp_hot.push_back(3421);
+    vec_k_hot.push_back(0.478);
+
 
     std::vector<double> constant(n_th);
     #pragma omp parallel for default(shared) private(i)
@@ -2286,7 +2330,7 @@ while(step_pos<=step_pos_max){
 				}
 			}
    		}
-		if(step%step_mean==0){
+		if(step%step_mean==0||(solve_thermo==0 && step == step_max)){
 			/**************************************
 				Steady state verification
 			**************************************/
@@ -2353,7 +2397,7 @@ while(step_pos<=step_pos_max){
 
 			/****************************************************************************************************/
 
-			if(step>1800000)
+			if(step>1800000||(solve_thermo==0 && step == step_max))
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
 
 			if(steady_state_reached==1){

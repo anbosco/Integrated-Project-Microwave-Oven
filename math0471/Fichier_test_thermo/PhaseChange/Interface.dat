@@ -4,7 +4,7 @@
 2400000000		! Frequency
 0.005			! dx
 0.000000000005		! dt
-300			! Final time
+300			! Final time 
 1			! P (1:guide d'onde; 2: only Ey variable; 3: only Ey constant)
 0.1			! Sampling Rate
 0.005			! L_a_x
@@ -17,5 +17,5 @@
 0			! Nb_cylinder
 1			! Nb_cube
 0			! Input electric field amplitude
-0		! Delta theta
+0			! Delta theta
 1			! Solve electro?
