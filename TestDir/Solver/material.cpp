@@ -98,7 +98,7 @@ switch(Val){
   Material Alpha;
   Alpha.name = "Alpha";
   Alpha.rho = {1, 1};
-  Alpha.id = 3;
+  Alpha.id = 4;
   Alpha.k = {1, 1};
   Alpha.cp = {1, 1};
   Alpha.TempPhaseChange = {0};
@@ -115,7 +115,7 @@ switch(Val){
   Material Alpha;
   Alpha.name = "Alpha";
   Alpha.rho = {1, 1};
-  Alpha.id = 3;
+  Alpha.id = 5;
   Alpha.k = {1, 1};
   Alpha.cp = {1, 1};
   Alpha.TempPhaseChange = {0};
@@ -134,7 +134,7 @@ switch(Val){
   Material bone;
   bone.name = "Chicken Bone";
   bone.rho = {1750, 1750};
-  bone.id = 3;
+  bone.id = 6;
   bone.k = {0.58, 0.58};
   bone.cp = {440, 440};
   bone.TempPhaseChange = {0};
@@ -151,7 +151,7 @@ switch(Val){
   Material fat;
   fat.name = "Chicken fat";
   fat.rho = {909.4, 909.4};
-  fat.id = 3;
+  fat.id = 7;
   fat.k = {0.201, 0.201};
   fat.cp = {2348, 2348};
   fat.TempPhaseChange = {0};
@@ -169,7 +169,7 @@ switch(Val){
   Material mus;
   mus.name = "Chicken muscle";
   mus.rho = {1059.9, 1059.9};
-  mus.id = 3;
+  mus.id = 8;
   mus.k = {0.478, 0.478};
   mus.cp = {3421, 3421};
   mus.TempPhaseChange = {0};
