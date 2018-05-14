@@ -497,7 +497,7 @@ fclose(FileR);
 	vec_e_r_hot.push_back(75.8);		// Water
 	vec_e_r_hot.push_back(49);		// Chicken
 	vec_e_r_hot.push_back(1000);		// Not physical
-	vec_e_r_hot.push_back(11.345));		// Chicken Bone
+	vec_e_r_hot.push_back(11.345);		// Chicken Bone
 	vec_e_r_hot.push_back(5.56);		// Chicken Fat
 	vec_e_r_hot.push_back(59);		// Chicken Muscle
 
