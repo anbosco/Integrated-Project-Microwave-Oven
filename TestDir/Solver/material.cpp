@@ -180,6 +180,22 @@ switch(Val){
 }
   break;
 
+  case 99:
+  {
+   // SNOt phy.
+  Material Alpha;
+  Alpha.name = "Alpha";
+  Alpha.rho = {1, 1};
+  Alpha.id = 99;
+  Alpha.k = {1, 1};
+  Alpha.cp = {1, 1};
+  Alpha.TempPhaseChange = {0};
+  Alpha.er = {9, 9};
+  Alpha.ur = {1, 1};
+  Alpha.eDiel = {1, 1};
+  ReturnMaterial = Alpha;
+}
+  break;
 
   default: std::cerr << "Material is not valid. Please refer to the documentation." << std::endl;
                 exit (EXIT_FAILURE);
