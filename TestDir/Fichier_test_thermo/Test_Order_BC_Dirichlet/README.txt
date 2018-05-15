@@ -1,0 +1,1 @@
+In order to run this test, it is required to modify the highlighted lines in the function "insert_Source_th" of the files "thermal.cpp"

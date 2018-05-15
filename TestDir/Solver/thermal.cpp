@@ -432,7 +432,7 @@ void Compute_RHS(std::vector<double> &pre_mat, std::vector<int> &irn , std::vect
           Temp2[i] = -h*T_inf;	// Associated to the convection condition on the surface of the food (activated only when it is specified that the heat equation has to be solved only inside the food).
         }
         else if((geometry[i]!=0&&((geometry[i+Y*Z]!=0||BC[5]==0)&&(geometry[i-Y*Z]!=0||BC[4]==0)&&(geometry[i+1]!=0||BC[1]==0)&&(geometry[i-1]!=0||BC[0]==0)&&(geometry[i+Y]!=0||BC[3]==0)&&(geometry[i-Y]!=0||BC[2]==0))) || thermo_domain==0){
-    		  Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);
+    		  Temp2[i]+=(dt*Source[i])/(rho[i]*cp[i]);    // Normal source
 		  //Temp2[i]+=theta*((dt*Source[i]*sin(omega*(step)*dt))/(rho[i]*cp[i]))+(1-theta)*((dt*Source[i]*sin(omega*(step-1)*dt))/(rho[i]*cp[i]));		// Test for source varying in time
         }
       }
@@ -840,7 +840,7 @@ void insert_Source_th(std::vector<double> &Source,int nb_source, std::vector<dou
 			for(k=b_inf_z;k<=b_sup_z;k++){
 				for(i=b_inf_x;i<=b_sup_x;i++){
 					eta = j*dx-(b_inf_y*dx);
-					//Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6]*sin(eta*(3.141592/((b_sup_y-b_inf_y)*dx)));
+					//Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6]*sin(eta*(3.141592/((b_sup_y-b_inf_y)*dx))); // Spatially sinusoidal source
 					Source[i*Y*Z+j+k*Y]= prop_source[prop_per_source*l+6];		//constant source
 				}
 			}

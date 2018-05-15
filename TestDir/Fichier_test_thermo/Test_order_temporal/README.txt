@@ -1,0 +1,1 @@
+In order to run this test, it is required to modify the highlighted line in the function "Compute_RHS" of the file "thermal.cpp" 
