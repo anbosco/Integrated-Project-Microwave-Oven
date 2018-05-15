@@ -1,1 +1,0 @@
-In order to run this text, it is required to modify the highlighted lines in the functions "Compute_a_T0_steady" and "Compute_RHS_steady" of the file "thermal.cpp"
