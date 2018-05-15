@@ -2,7 +2,7 @@
 0.3		! Ly
 0.3		! Lz
 0.01		! dx
-0.1		! dt
+0.025		! dt
 100		! Final Time
 1		! Nb source
 0		! Nb obj
