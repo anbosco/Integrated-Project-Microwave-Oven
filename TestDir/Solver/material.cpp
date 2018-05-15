@@ -176,7 +176,7 @@ switch(Val){
   mus.er = {59, 59};
   mus.ur = {1, 1};
   mus.eDiel = {54.28, 54.28};
-  ReturnMaterial = Alpha;
+  ReturnMaterial = mus;
 }
   break;
 
