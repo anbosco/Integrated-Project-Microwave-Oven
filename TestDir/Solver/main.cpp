@@ -68,6 +68,7 @@ int main(int argc, char **argv){
 	std::string TemporalProbeTemp = TestDir + std::string("Temporal_probe.dat");		// Properties of temporal probe for thermal simulation
 	std::string TemporalProbeElm =  TestDir + std::string("temp_probe_electro.dat");	// Properties of temporal probe for electro simulation
 	std::string HeatSource = TestDir + std::string("prop_source_heat.dat");			// Properties of heat sources placed manually
+	std::string Save_Data = TestDir + std::string("Save_Data.dat");
 
 	// Variables used to open files and to write in files.
   	int next_cut = 0;
@@ -279,6 +280,22 @@ int main(int argc, char **argv){
 	std::vector<double> Hx_probe;
 	std::vector<double> Hy_probe;
 	std::vector<double> Hz_probe;
+
+	std::vector<double> Save_field;
+	FileR = fopen(Save_Data.c_str(),"r");
+	if(FileR == NULL){
+		std::cerr << "Impossible to open the Save Data file." << std::endl;
+		return 1;
+	}
+	for(i=0;i<6;i++){
+			if (fgets(chain, 150, FileR) == NULL){
+		printf("Impossible to read the Save Data file. \n");
+		return 1;
+		}
+	else{
+		Save_field.push_back(atof(chain));
+		}
+		}
 
 
 /********************************************************************************
@@ -2009,22 +2026,34 @@ while(step_pos<=step_pos_max){
 		/*************************** Storage of the Results ************** *****************/
 
 		if(step%SR==0){//save results of the mpi process to disk
-			//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
-		  	//export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny+lasty, Nz, 0);
-			//export_spoints_XML("Ez", step, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
-			//export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
-			//export_spoints_XML("Hy", step, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
-			//export_spoints_XML("Hz", step, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[0]==1)
+						export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[1]==1)
+					  	export_spoints_XML("Ey", step, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny+lasty, Nz, 0);
+					if(Save_field[2]==1)
+						export_spoints_XML("Ez", step, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[3]==1)
+						export_spoints_XML("Hx", step, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[4]==1)
+						export_spoints_XML("Hy", step, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[5]==1)
+						export_spoints_XML("Hz", step, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
 
-            		if (myrank == 0){	// save main pvti file by rank0
-				//export_spoints_XMLP("Ex", step, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-                		//export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
-				//export_spoints_XMLP("Ez", step, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
-				//export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
-				//export_spoints_XMLP("Hy", step, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
-				//export_spoints_XMLP("Hz", step, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
-            		}
-        	}
+		            		if (myrank == 0){	// save main pvti file by rank0
+						if(Save_field[0]==1)
+							export_spoints_XMLP("Ex", step, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
+						if(Save_field[1]==1)
+				        		export_spoints_XMLP("Ey", step, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+						if(Save_field[2]==1)
+							export_spoints_XMLP("Ez", step, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
+						if(Save_field[3]==1)
+							export_spoints_XMLP("Hx", step, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
+						if(Save_field[4]==1)
+							export_spoints_XMLP("Hy", step, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
+						if(Save_field[5]==1)
+							export_spoints_XMLP("Hz", step, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
+		            		}
+		        	}
 		// Storage of the value of the fields at the probes
 		if((probe_electro==1)&&(Pos_probe_electro[0]<i_max_proc[myrank])&&(Pos_probe_electro[0]>i_min_proc[myrank])&&(Pos_probe_electro[1]<j_max_proc[myrank])&&(Pos_probe_electro[1]>j_min_proc[myrank])&&(Pos_probe_electro[2]<k_max_proc[myrank])&&(Pos_probe_electro[2]>k_min_proc[myrank])){
 			i = Pos_probe_electro[0];
@@ -2405,22 +2434,34 @@ while(step_pos<=step_pos_max){
 	   	else{
 	     		MPI_Send(&Power_new[0],point_per_proc_x[myrank]*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]),MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
 	   	}
-		//export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
-		export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
-		//export_spoints_XML("Ez", step+step_prec, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
-		//export_spoints_XML("Hx", step+step_prec, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
-		//export_spoints_XML("Hy", step+step_prec, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
-		//export_spoints_XML("Hz", step+step_prec, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
-		export_spoints_XML("Power", step+step_prec, grid_Power, mygrid_Power, ZIPPED, Nx, Ny, Nz, 0);
-		if (myrank == 0){	// save main pvti file by rank0
-			//export_spoints_XMLP("Ex", step+step_prec, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
-	      		export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
-			//export_spoints_XMLP("Ez", step+step_prec, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
-			//export_spoints_XMLP("Hx", step+step_prec, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
-			//export_spoints_XMLP("Hy", step+step_prec, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
-			//export_spoints_XMLP("Hz", step+step_prec, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
-			export_spoints_XMLP("Power", step+step_prec, grid_Power, mygrid_Power, sgrids_Power, ZIPPED);
-		}
+			if(Save_field[0]==1)
+						export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[1]==1)
+						export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[2]==1)
+						export_spoints_XML("Ez", step+step_prec, grid_Ez, mygrid_Ez, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[3]==1)
+						export_spoints_XML("Hx", step+step_prec, grid_Hx, mygrid_Hx, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[4]==1)
+						export_spoints_XML("Hy", step+step_prec, grid_Hy, mygrid_Hy, ZIPPED, Nx, Ny, Nz, 0);
+					if(Save_field[5]==1)
+						export_spoints_XML("Hz", step+step_prec, grid_Hz, mygrid_Hz, ZIPPED, Nx, Ny, Nz, 0);
+					export_spoints_XML("Power", step+step_prec, grid_Power, mygrid_Power, ZIPPED, Nx, Ny, Nz, 0);
+					if (myrank == 0){	// save main pvti file by rank0
+						if(Save_field[0]==1)
+							export_spoints_XMLP("Ex", step+step_prec, grid_Ex, mygrid_Ex, sgrids_Ex, ZIPPED);
+						if(Save_field[1]==1)
+					      		export_spoints_XMLP("Ey", step+step_prec, grid_Ey, mygrid_Ey, sgrids_Ey, ZIPPED);
+						if(Save_field[2]==1)
+							export_spoints_XMLP("Ez", step+step_prec, grid_Ez, mygrid_Ez, sgrids_Ez, ZIPPED);
+						if(Save_field[3]==1)
+							export_spoints_XMLP("Hx", step+step_prec, grid_Hx, mygrid_Hx, sgrids_Hx, ZIPPED);
+						if(Save_field[4]==1)
+							export_spoints_XMLP("Hy", step+step_prec, grid_Hy, mygrid_Hy, sgrids_Hy, ZIPPED);
+						if(Save_field[5]==1)
+							export_spoints_XMLP("Hz", step+step_prec, grid_Hz, mygrid_Hz, sgrids_Hz, ZIPPED);
+						export_spoints_XMLP("Power", step+step_prec, grid_Power, mygrid_Power, sgrids_Power, ZIPPED);
+					}
 
 		// Temporal probe
 		if((probe_electro==1)&&(Pos_probe_electro[0]<i_max_proc[myrank])&&(Pos_probe_electro[0]>i_min_proc[myrank])&&(Pos_probe_electro[1]<j_max_proc[myrank])&&(Pos_probe_electro[1]>j_min_proc[myrank])&&(Pos_probe_electro[2]<k_max_proc[myrank])&&(Pos_probe_electro[2]>k_min_proc[myrank])){
