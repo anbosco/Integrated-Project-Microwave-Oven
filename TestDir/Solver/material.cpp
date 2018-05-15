@@ -99,7 +99,7 @@ switch(Val){
   Alpha.name = "Alpha";
   Alpha.rho = {1, 1};
   Alpha.id = 4;
-  Alpha.k = {1, 1};
+  Alpha.k = {2, 2};
   Alpha.cp = {1, 1};
   Alpha.TempPhaseChange = {0};
   Alpha.er = {1, 1};
