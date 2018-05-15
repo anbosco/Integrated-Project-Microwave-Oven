@@ -1693,7 +1693,7 @@ while(step_pos<=step_pos_max){
 					for(j=b_inf_y;j<=b_sup_y;j++){
 						for(k=b_inf_z;k<=b_sup_z+lastz;k++){
 							double yrel = (j+j_min_proc[myrank]-j_min_a)*dx;
-							Ey_new[i][j][k]= E_amp*sin((3.141692*yrel)/l_ay)*sin(omega*step*dt);
+							Ez_new[i][j][k]= E_amp*sin((3.141692*yrel)/l_ay)*sin(omega*step*dt);
           				  	}
 					}
 				}
@@ -1715,6 +1715,17 @@ while(step_pos<=step_pos_max){
 						for(k=b_inf_z;k<=b_sup_z;k++){
 							Ey_new[i][j][k]= E_amp;
            					}
+					}
+				}
+			}
+      if(P==4){
+				#pragma omp parallel for default(shared) private(i,j,k)
+				for(i=b_inf_x;i<=b_sup_x;i++){
+					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
+						for(k=b_inf_z;k<=b_sup_z;k++){
+							double zrel = (k+k_min_proc[myrank]-k_min_a)*dx;
+							Ey_new[i][j][k]= E_amp*sin((3.141692*zrel)/l_az)*sin(omega*step*dt);
+          				  	}
 					}
 				}
 			}
