@@ -26,7 +26,7 @@
 0.5		! Theta (Determine if the scheme is explicit of implicit)
 0		! Nb sphere
 0		! Nb cylinder
-0		! Nb cube
+1		! Nb cube
 0		! Food initial temperature
 0		! h_air
 0		! x_min
