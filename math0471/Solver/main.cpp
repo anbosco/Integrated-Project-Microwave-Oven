@@ -2107,7 +2107,7 @@ while(step_pos<=step_pos_max){
 		int jjj = 0;
 		int kkk = 0;
 
-		#pragma omp parallel for default(shared) private(i,j,k)
+		#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
 		for(i=1;i<(nx-lastx);i++){
 			for(j=1;j<(ny-lasty);j++){
 				for(k=1;k<(nz-lastz);k++) {
@@ -2135,7 +2135,7 @@ while(step_pos<=step_pos_max){
 		}
 
   		if(firstx!=1){
-			#pragma omp parallel for default(shared) private(i,j,k)
+			#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
 		        for(i=0;i<=0;i++){
 				  for(j=1;j<(ny-lasty);j++){
 					for(k=1;k<(nz-lastz);k++){
@@ -2162,7 +2162,7 @@ while(step_pos<=step_pos_max){
 			}
  	 	}
    		if(firsty!=1){
-			#pragma omp parallel for default(shared) private(i,j,k)
+			#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
    			for(i=1;i<(nx-lastx);i++){
 				for(j=0;j<=0;j++){
 					for(k=1;k<(nz-lastz);k++) {
@@ -2189,7 +2189,7 @@ while(step_pos<=step_pos_max){
 			}
    		}
   		 if(firstz!=1){
-			#pragma omp parallel for default(shared) private(i,j,k)
+			#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
    			for(i=1;i<(nx-lastx);i++){
 				for(j=1;j<(ny-lasty);j++){
 					for(k=0;k<=0;k++) {
@@ -2217,7 +2217,7 @@ while(step_pos<=step_pos_max){
   		}
 
    		if(firstx!=1 && firsty!=1){
-			#pragma omp parallel for default(shared) private(i,j,k)
+			#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
      			for(i=0;i<=0;i++){
 		  		for(j=0;j<=0;j++){
 					for(k=1;k<(nz-lastz);k++) {
@@ -2245,7 +2245,7 @@ while(step_pos<=step_pos_max){
    		}
 
    		if(firstx!=1 && firstz!=1){
-			#pragma omp parallel for default(shared) private(i,j,k)
+			#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
      			for(i=0;i<=0;i++){
 		  		for(j=1;j<(ny-lasty);j++){
 					for(k=0;k<=0;k++) {
@@ -2273,7 +2273,7 @@ while(step_pos<=step_pos_max){
    		}
 
    		if(firsty!=1 && firstz!=1){
-			#pragma omp parallel for default(shared) private(i,j,k)
+			#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
      			for(i=1;i<(nx-lastx);i++){
 				for(j=0;j<=0;j++){
 					for(k=0;k<=0;k++) {
@@ -2300,7 +2300,7 @@ while(step_pos<=step_pos_max){
 			}
    		}
    		if(firstx!=1 && firsty!=1 && firstz!=1){
-			#pragma omp parallel for default(shared) private(i,j,k)
+			#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
      			for(i=0;i<=0;i++){
 				for(j=0;j<=0;j++){
 					for(k=0;k<=0;k++) {
@@ -2412,7 +2412,7 @@ while(step_pos<=step_pos_max){
 		if(myrank==0){
 	     		for(i=i_min_proc[myrank];i<=i_max_proc[myrank];i++){
 	       			for(j=j_min_proc[myrank];j<=j_max_proc[myrank];j++){
-		 			for(k=k_min_proc[myrank];k<=k_max_proc[myrank];k++){
+		 			      for(k=k_min_proc[myrank];k<=k_max_proc[myrank];k++){
 		   				Power_tot[i*Ny*Nz+k*Ny+j] = Power_new[i+j*point_per_proc_x[myrank]+k*point_per_proc_x[myrank]*point_per_proc_y[myrank]];
 						total_power_diss = total_power_diss + Power_new[i+j*point_per_proc_x[myrank]+k*point_per_proc_x[myrank]*point_per_proc_y[myrank]]*dx*dx*dx;
 		 			}
@@ -2422,10 +2422,10 @@ while(step_pos<=step_pos_max){
 	      			Power_send.resize(point_per_proc_x[l]*(point_per_proc_y[l])*(point_per_proc_z[l]));
 	       			MPI_Recv(&Power_send[0],point_per_proc_x[l]*(point_per_proc_y[l])*(point_per_proc_z[l]),MPI_DOUBLE,l,l,MPI_COMM_WORLD, &mystatus);
 	       			for(i=0;i<point_per_proc_x[l];i++){
-		 			for(j=0;j<point_per_proc_y[l];j++){
-		   				for(k=0;k<point_per_proc_z[l];k++){
+		 			      for(j=0;j<point_per_proc_y[l];j++){
+		   				    for(k=0;k<point_per_proc_z[l];k++){
 		       					Power_tot[(i+i_min_proc[l])*Ny*Nz+(k+k_min_proc[l])*Ny+j+j_min_proc[l]] =  Power_send[i+j*point_per_proc_x[l]+k*point_per_proc_x[l]*point_per_proc_y[l]];
-							total_power_diss = total_power_diss + Power_send[i+j*point_per_proc_x[l]+k*point_per_proc_x[l]*point_per_proc_y[l]]*dx*dx*dx;
+							      total_power_diss = total_power_diss + Power_send[i+j*point_per_proc_x[l]+k*point_per_proc_x[l]*point_per_proc_y[l]]*dx*dx*dx;
 		   				}
 		 			}
 	       			}
