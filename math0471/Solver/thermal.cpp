@@ -1439,15 +1439,15 @@ void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double 
                 										}
                 									}
                 									else if (PropertyLoop == Temp_phase_change.size() - 1){
-                										if(test_temp > Temp_phase_change[PropertyLoop]){
+                										if(test_temp >= Temp_phase_change[PropertyLoop]){
                 											Ind = PropertyLoop+1;
                 										}
-                									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
                 										Ind = PropertyLoop ;
                 									}
                 								}
                 								else {
-                									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
                 										Ind = PropertyLoop;
                 									}
                 								}
@@ -1511,15 +1511,15 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
                   										}
                   									}
                   									else if (PropertyLoop == Temp_phase_change.size() - 1){
-                  										if(test_temp > Temp_phase_change[PropertyLoop]){
+                  										if(test_temp >= Temp_phase_change[PropertyLoop]){
                   											Ind = PropertyLoop+1;
                   										}
-                  									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
                   										Ind = PropertyLoop ;
                   									}
                   								}
                   								else {
-                  									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
                   										Ind = PropertyLoop;
                   									}
                   								}
@@ -1556,15 +1556,15 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
                   										}
                   									}
                   									else if (PropertyLoop == Temp_phase_change.size() - 1){
-                  										if(test_temp > Temp_phase_change[PropertyLoop]){
+                  										if(test_temp >= Temp_phase_change[PropertyLoop]){
                   											Ind = PropertyLoop+1;
                   										}
-                  									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
                   										Ind = PropertyLoop ;
                   									}
                   								}
                   								else {
-                  									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
                   										Ind = PropertyLoop;
                   									}
                   								}
@@ -1603,15 +1603,15 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
             										}
             									}
             									else if (PropertyLoop == Temp_phase_change.size() - 1){
-            										if(test_temp > Temp_phase_change[PropertyLoop]){
+            										if(test_temp >= Temp_phase_change[PropertyLoop]){
             											Ind = PropertyLoop+1;
             										}
-            									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+            									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
             										Ind = PropertyLoop ;
             									}
             								}
             								else {
-            									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+            									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
             										Ind = PropertyLoop;
             									}
             								}
@@ -1665,15 +1665,15 @@ void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, doubl
                 										}
                 									}
                 									else if (PropertyLoop == Temp_phase_change.size() - 1){
-                										if(test_temp > Temp_phase_change[PropertyLoop]){
+                										if(test_temp >= Temp_phase_change[PropertyLoop]){
                 											Ind = PropertyLoop+1;
                 										}
-                									else if(test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
                 										Ind = PropertyLoop ;
                 									}
                 								}
                 								else {
-                									if (test_temp > Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
                 										Ind = PropertyLoop;
                 									}
                 								}

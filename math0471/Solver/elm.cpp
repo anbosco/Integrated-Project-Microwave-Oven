@@ -772,15 +772,15 @@ void place_cube(int X,int Y, int Z, std::vector<double> &properties,
 										}
 									}
 									else if (PropertyLoop == Temp_phase_change.size() - 1){
-										if(T_food_init_th > Temp_phase_change[PropertyLoop]){
+										if(T_food_init_th >= Temp_phase_change[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									else if(T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									if (T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
@@ -848,15 +848,15 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,
 										}
 									}
 									else if (PropertyLoop == Temp_phase_change.size() - 1){
-										if(T_food_init_th > Temp_phase_change[PropertyLoop]){
+										if(T_food_init_th >= Temp_phase_change[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									else if(T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									if (T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
@@ -885,15 +885,15 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,
 										}
 									}
 									else if (PropertyLoop == Temp_phase_change.size() - 1){
-										if(T_food_init_th > Temp_phase_change[PropertyLoop]){
+										if(T_food_init_th >= Temp_phase_change[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									else if(T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									if (T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
@@ -922,15 +922,15 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,
 										}
 									}
 									else if (PropertyLoop == Temp_phase_change.size() - 1){
-										if(T_food_init_th > Temp_phase_change[PropertyLoop]){
+										if(T_food_init_th >= Temp_phase_change[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									else if(T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									if (T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
@@ -993,15 +993,15 @@ void place_sphere(int X,int Y, int Z, std::vector<double> &properties,
 										}
 									}
 									else if (PropertyLoop == Temp_phase_change.size() - 1){
-										if(T_food_init_th > Temp_phase_change[PropertyLoop]){
+										if(T_food_init_th >= Temp_phase_change[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									else if(T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (T_food_init_th > Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
+									if (T_food_init_th >= Temp_phase_change[PropertyLoop-1] && T_food_init_th < Temp_phase_change[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
@@ -1157,15 +1157,15 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 										}
 									}
 									else if (PropertyLoop == cube[object].TempPhaseChange.size() - 1){
-										if(Temp > cube[object].TempPhaseChange[PropertyLoop]){
+										if(Temp >= cube[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(Temp > cube[object].TempPhaseChange[PropertyLoop-1] && Temp < cube[object].TempPhaseChange[PropertyLoop]){
+									else if(Temp >= cube[object].TempPhaseChange[PropertyLoop-1] && Temp < cube[object].TempPhaseChange[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (Temp > cube[object].TempPhaseChange[PropertyLoop-1] && Temp < cube[object].TempPhaseChange[PropertyLoop]){
+									if (Temp >= cube[object].TempPhaseChange[PropertyLoop-1] && Temp < cube[object].TempPhaseChange[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
@@ -1200,6 +1200,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 
 
 
+
               	/*					if(Temp<cyl[object].TempPhaseChange){
 														if(component == 3){
 																e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDiel;
@@ -1226,15 +1227,15 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 											}
 										}
 										else if (PropertyLoop == cyl[object].TempPhaseChange.size() - 1){
-											if(Temp > cyl[object].TempPhaseChange[PropertyLoop]){
+											if(Temp >= cyl[object].TempPhaseChange[PropertyLoop]){
 												Ind = PropertyLoop+1;
 											}
-										else if(Temp > cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
+										else if(Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop ;
 										}
 									}
 									else {
-										if (Temp > cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
+										if (Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop;
 										}
 									}
@@ -1257,6 +1258,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 						if(((x_before-xc)*(x_before-xc)+(z_after-zc)*(z_after-zc)<=r*r) && y_before<=yc+l/2 && y_before>= yc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 							Temp = Temp/4;
+
 
 
 
@@ -1289,15 +1291,15 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 										}
 									}
 									else if (PropertyLoop == cyl[object].TempPhaseChange.size() - 1){
-										if(Temp > cyl[object].TempPhaseChange[PropertyLoop]){
+										if(Temp >= cyl[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(Temp > cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
+									else if(Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (Temp > cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
+									if (Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
@@ -1319,6 +1321,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 						if(((x_before-xc)*(x_before-xc)+(y_before-yc)*(y_before-yc)<=r*r) && z_after<=zc+l/2 && z_after>= zc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 							Temp = Temp/4;
+
 
 
 
@@ -1350,15 +1353,15 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 										}
 									}
 									else if (PropertyLoop == cyl[object].TempPhaseChange.size() - 1){
-										if(Temp > cyl[object].TempPhaseChange[PropertyLoop]){
+										if(Temp >= cyl[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(Temp > cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
+									else if(Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (Temp > cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
+									if (Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
@@ -1381,6 +1384,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 					if(((info_sphere[5*object+0]-x_before)*(info_sphere[5*object+0]-x_before)+(info_sphere[5*object+1]-y_before)*(info_sphere[5*object+1]-y_before)+(info_sphere[5*object+2]-z_after)*(info_sphere[5*object+2]-z_after))<=info_sphere[5*object+3]*info_sphere[5*object+3]){
 						Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 						Temp = Temp/4;
+					
 
 
 
@@ -1412,15 +1416,15 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 										}
 									}
 									else if (PropertyLoop == sphere[object].TempPhaseChange.size() - 1){
-										if(Temp > sphere[object].TempPhaseChange[PropertyLoop]){
+										if(Temp >= sphere[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(Temp > sphere[object].TempPhaseChange[PropertyLoop-1] && Temp < sphere[object].TempPhaseChange[PropertyLoop]){
+									else if(Temp >= sphere[object].TempPhaseChange[PropertyLoop-1] && Temp < sphere[object].TempPhaseChange[PropertyLoop]){
 										Ind = PropertyLoop ;
 									}
 								}
 								else {
-									if (Temp > sphere[object].TempPhaseChange[PropertyLoop-1] && Temp < sphere[object].TempPhaseChange[PropertyLoop]){
+									if (Temp >= sphere[object].TempPhaseChange[PropertyLoop-1] && Temp < sphere[object].TempPhaseChange[PropertyLoop]){
 										Ind = PropertyLoop;
 									}
 								}
