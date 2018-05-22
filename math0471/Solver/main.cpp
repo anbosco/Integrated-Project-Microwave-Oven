@@ -2395,7 +2395,7 @@ while(step_pos<=step_pos_max){
 
 			if(step>1800000||(solve_thermo==0 && step == step_max))
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
-				steady_state_reached = 1;
+				
 			if(steady_state_reached==1){
 				break;
  			}
