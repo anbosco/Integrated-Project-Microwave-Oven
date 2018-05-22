@@ -2395,7 +2395,7 @@ while(step_pos<=step_pos_max){
 
 			if(step>1800000||(solve_thermo==0 && step == step_max))
    			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
-
+				steady_state_reached = 1;
 			if(steady_state_reached==1){
 				break;
  			}
@@ -2404,7 +2404,6 @@ while(step_pos<=step_pos_max){
 				Residual_0 = Residual;
 			}
 		}
-
  	step++;
 	}
 	if(solve_electro==1){	// We save the last step of the electro calculation if there was any
@@ -2487,6 +2486,7 @@ while(step_pos<=step_pos_max){
 			printf("\n SOLVING OF THE HEAT EQUATION...\n");
 		}
 		rotate_Power_grid(Power_tot,Power_tot_rotated_back,Nx,Ny,Nz,Lx,Ly,Lz,dx,theta);
+
 		main_th(Power_tot_rotated_back, Temperature,BC, T_Dir,  T_0,dx_th,h_air,Lx_th,Ly_th,Lz_th,dt_th,step_max_th,
 			nb_source_th,SR_th,theta_th,n_sphere,n_cylinder,n_cube,prop_sphere,prop_cylinder,prop_cube,T_food_init_th,x_min_th,
 			y_min_th,z_min_th,dx,Lx,Ly_electro,Lz_electro,prop_per_source_th, prop_source_th, Cut_th,Pos_cut_th,N_cut_th,

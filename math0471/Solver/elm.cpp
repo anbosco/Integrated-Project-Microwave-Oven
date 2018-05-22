@@ -567,18 +567,23 @@ void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r
 
 
 
+
  rotate_rel_perm(e_r_totx,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
 	 ncube,info_cube,theta,0, Temperature, dx_th,
 	 x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th, cube, cyl, sphere);
+
  rotate_rel_perm(e_r_toty,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
 	 ncube,info_cube,theta,1, Temperature, dx_th,
 	 x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th, cube, cyl, sphere);
+
  rotate_rel_perm(e_r_totz,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
 	 ncube,info_cube,theta,2, Temperature, dx_th,
 	 x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th, cube, cyl, sphere);
+
  rotate_rel_perm(e_diel_tot,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
 	 ncube,info_cube,theta,3, Temperature, dx_th,
 	 x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th, cube, cyl, sphere);
+
 }
 
 void place_geometry(int X,int Y, int Z, std::vector<double> &properties,
@@ -1060,6 +1065,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 	double x_min_th, double y_min_th, double z_min_th,double X_th,double Y_th, double Z_th,
   std::vector<Material> &cube, std::vector<Material> &cyl, std::vector<Material> &sphere){
 
+
 	double xx = 0;
 	double yy = 0;
 	double zz = 0;
@@ -1124,8 +1130,6 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 				xi =-1+2*((x_before-x_min_th)-x1)/dx_th;
 				eta =-1+2*((y_before-y_min_th)-y1)/dx_th;
 				double Temp;
-
-
 				for(object=0; object<ncube; object++){//	Cube
 					if(((x_before)<=info_cube[7*object+3]+info_cube[7*object+0]/2)&&((x_before)>=info_cube[7*object+3]-info_cube[7*object+0]/2)&&((y_before)<=info_cube[7*object+4]+info_cube[7*object+1]/2)&&((y_before)>=info_cube[7*object+4]-info_cube[7*object+1]/2)&&((z_after)<=info_cube[7*object+5]+info_cube[7*object+2]/2)&&((z_after)>=info_cube[7*object+5]-info_cube[7*object+2]/2)){
 						Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
@@ -1191,7 +1195,6 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 					zc = info_cylinder[7*object+3];
 					r = info_cylinder[7*object+4];
 					l = info_cylinder[7*object+6];
-
 					if(info_cylinder[7*object]==0){
 						if(((y_before-yc)*(y_before-yc)+(z_after-zc)*(z_after-zc)<=r*r) && x_before<=xc+l/2 && x_before>= xc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
@@ -1285,6 +1288,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 						Ind = 0;
 
 						for(PropertyLoop=0; PropertyLoop < cyl[object].TempPhaseChange.size() ; PropertyLoop++){
+
 								if(PropertyLoop==0){
 										if(Temp< cyl[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop;
@@ -1347,6 +1351,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 						Ind = 0;
 
 						for(PropertyLoop=0; PropertyLoop < cyl[object].TempPhaseChange.size() ; PropertyLoop++){
+
 								if(PropertyLoop==0){
 										if(Temp< cyl[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop;
@@ -1374,19 +1379,14 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].er[Ind];
 							}
 
-
-
-
 					}
 				}
+			}
 
 				for(object=0;object<nsphere;object++){//	Sphere
 					if(((info_sphere[5*object+0]-x_before)*(info_sphere[5*object+0]-x_before)+(info_sphere[5*object+1]-y_before)*(info_sphere[5*object+1]-y_before)+(info_sphere[5*object+2]-z_after)*(info_sphere[5*object+2]-z_after))<=info_sphere[5*object+3]*info_sphere[5*object+3]){
 						Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 						Temp = Temp/4;
-					
-
-
 
 
 
@@ -1410,6 +1410,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 						Ind = 0;
 
 						for(PropertyLoop=0; PropertyLoop < sphere[object].TempPhaseChange.size() ; PropertyLoop++){
+
 								if(PropertyLoop==0){
 										if(Temp< sphere[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop;
@@ -1447,7 +1448,6 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 			}
 		}
 	}
-}
 }
 
 // This function initialise the value of a std vector
