@@ -1,12 +1,12 @@
-0.6			! Lx
+0.54			! Lx
 0.15			! Ly
 0.15			! Lz
 2400000000		! Frequency
 0.005			! dx 
 0.000000000005		! dt
-0.000000042000		! Final time
+0.000000080050		! Final time
 4			! P (1:guide d'onde; 2: only Ey variable; 3: only Ey constant)
-0.0000025			! Sampling Rate
+0.0000000000001			! Sampling Rate
 0.005			! L_a_x
 0.15			! L_a_y
 0.15			! L_a_z
@@ -16,6 +16,6 @@
 0			! Nb_sphere 
 0			! Nb_cylinder
 0 			! Nb_cube		
-100			! Input electric field amplitude
-0.628319		! Delta theta
+1			! Input electric field amplitude
+0		! Delta theta
 1			! Solve electro?

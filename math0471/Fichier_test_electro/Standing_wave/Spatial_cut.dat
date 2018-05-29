@@ -7,12 +7,9 @@
 0		! CutZ ?
 0.14		! CutZ Posx
 0.14		! CutZ Posy
-6		! Nb Cuts
-0.000000000250	! Time for cut 1
-0.000000000500	! Time for cut 2
-0.000000000750	! Time for cut 2
-0.000000001000	! Time for cut 3
-0.000000001500	! Time for cut 4
-0.000000040000	! Time for cut 4
-0.000000040000	! Time for cut 5
-
+5		! Nb Cuts
+0.000000079500	! Time for cut 1
+0.000000079505	! Time for cut 2
+0.000000079510	! Time for cut 3
+0.000000079515	! Time for cut 4
+0.000000079520	! Time for cut 5

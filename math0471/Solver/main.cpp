@@ -22,7 +22,6 @@
 #include<math.h>
 
 using namespace vtl;
-// from c_example.c ------
 #include "mpi.h"
 #include "dmumps_c.h"
 #define ICNTL(I) icntl[(I)-1]
@@ -203,73 +202,73 @@ int main(int argc, char **argv){
 	}
 	fclose(FileR);
 
-    // Property of spatial cuts
-    std::vector<double> Cut(3);
-    std::vector<double> Pos_cut(6);
-    int N_cut;
-    std::vector<double> step_cut;
-    double data_cut[10];
-    FileR = fopen(SpatialCutElm.c_str(),"r");
-    if(FileR == NULL){
-    	std::cerr << "Impossible to open the Cuts file." << std::endl;
-    	return 1;
-    }
-    for (i=0 ; i<10; i++){
- 	   if (fgets(chain, 150, FileR) == NULL){
-		std::cerr << "Impossible to read the Cuts file." << std::endl;
-		return 1;
-  	  }
-   	 else{
-		data_cut[i] = atof(chain);
-   	 }
-    }
-    Cut[0] = data_cut[0];		// Cut along x
-    Pos_cut[0] = data_cut[1];
-    Pos_cut[1] = data_cut[2];
-    Cut[1] = data_cut[3];		// Cut along y
-    Pos_cut[2] = data_cut[4];
-    Pos_cut[3] = data_cut[5];
-    Cut[2] = data_cut[6];		// Cut along z
-    Pos_cut[4] = data_cut[7];
-    Pos_cut[5] = data_cut[8];
-    N_cut = (int) data_cut[9];		// Number of cuts
-    if(N_cut !=0){
-    	for(i=0;i<N_cut;i++){
- 		if (fgets(chain, 150, FileR) == NULL){
+    	// Property of spatial cuts
+    	std::vector<double> Cut(3);
+    	std::vector<double> Pos_cut(6);
+    	int N_cut;
+    	std::vector<double> step_cut;
+    	double data_cut[10];
+    	FileR = fopen(SpatialCutElm.c_str(),"r");
+    	if(FileR == NULL){
+    		std::cerr << "Impossible to open the Cuts file." << std::endl;
+    		return 1;
+    	}
+    	for (i=0 ; i<10; i++){
+ 	   	if (fgets(chain, 150, FileR) == NULL){
 			std::cerr << "Impossible to read the Cuts file." << std::endl;
 			return 1;
   	  	}
-		step_cut.push_back(atof(chain)/dt);
+   	 	else{
+			data_cut[i] = atof(chain);
+   	 	}
     	}
-    }
-    fclose(FileR);
+    	Cut[0] = data_cut[0];		// Cut along x
+    	Pos_cut[0] = data_cut[1];
+    	Pos_cut[1] = data_cut[2];
+    	Cut[1] = data_cut[3];		// Cut along y
+    	Pos_cut[2] = data_cut[4];
+    	Pos_cut[3] = data_cut[5];
+    	Cut[2] = data_cut[6];		// Cut along z
+    	Pos_cut[4] = data_cut[7];
+    	Pos_cut[5] = data_cut[8];
+    	N_cut = (int) data_cut[9];		// Number of cuts
+    	if(N_cut !=0){
+    		for(i=0;i<N_cut;i++){
+ 			if (fgets(chain, 150, FileR) == NULL){
+				std::cerr << "Impossible to read the Cuts file." << std::endl;
+				return 1;
+  	  		}
+			step_cut.push_back(atof(chain)/dt);
+    		}
+    	}
+    	fclose(FileR);
 
-    // Property of temporal probes
-    double probe_electro;
-    std::vector<double> Pos_probe_electro;
-    FileR = fopen(TemporalProbeElm.c_str(),"r");
-    if(FileR == NULL){
-    	std::cerr << "Impossible to open the Electro Probe file." << std::endl;
-    	return 1;
-    }
-    if (fgets(chain, 150, FileR) == NULL){
-	std::cerr << "Impossible to read the Electro Probe file." << std::endl;
-	return 1;
-   }
-   else{
-	probe_electro = atof(chain);
-   }
-   if(probe_electro!=0){
-   	for(i=0;i<3;i++){
-    		if (fgets(chain, 150, FileR) == NULL){
-			printf("Impossible to read the Electro Probe file. \n");
-			return 1;
-  		}
- 		else{
-			Pos_probe_electro.push_back(atof(chain));
-  		}
+    	// Property of temporal probes
+    	double probe_electro;
+    	std::vector<double> Pos_probe_electro;
+    	FileR = fopen(TemporalProbeElm.c_str(),"r");
+    	if(FileR == NULL){
+    		std::cerr << "Impossible to open the Electro Probe file." << std::endl;
+    		return 1;
     	}
-   }
+    	if (fgets(chain, 150, FileR) == NULL){
+		std::cerr << "Impossible to read the Electro Probe file." << std::endl;
+		return 1;
+   	}
+   	else{
+		probe_electro = atof(chain);
+   	}
+   	if(probe_electro!=0){
+   		for(i=0;i<3;i++){
+    			if (fgets(chain, 150, FileR) == NULL){
+				printf("Impossible to read the Electro Probe file. \n");
+				return 1;
+  			}
+ 			else{
+				Pos_probe_electro.push_back(atof(chain));
+  			}
+    		}
+   	}
 	Pos_probe_electro[0] = (Pos_probe_electro[0])/dx;
 	Pos_probe_electro[1] = (Pos_probe_electro[1])/dx;
 	Pos_probe_electro[2] = (Pos_probe_electro[2])/dx;
@@ -325,7 +324,7 @@ int main(int argc, char **argv){
    	 }
     }
     fclose(FileR);
-    double Lx_th = data_th[0];    // Length of the domain
+    double Lx_th = data_th[0];    // Dimension of the domain
     double Ly_th = data_th[1];
     double Lz_th = data_th[2];
     double dx_th = data_th[3];    // Grid spacing
@@ -467,9 +466,9 @@ int main(int argc, char **argv){
 fclose(FileR);
 
 
-/****************************
+/*******************************************************************************
 			Test Materials
-*****************************/
+*******************************************************************************/
 std::vector<Material> sphere(n_sphere);
 std::vector<Material> cyl(n_cylinder);
 std::vector<Material> cube(n_cube);
@@ -573,7 +572,7 @@ for(i=0; i<n_cube; i++){
 	int lastx = 0;
 	int lasty = 0;
 	int lastz = 0;
-  int firstx = 0;
+  	int firstx = 0;
 	int firsty = 0;
 	int firstz = 0;
 	if(divx == 1){
@@ -687,7 +686,7 @@ for(i=0; i<n_cube; i++){
 		place_geometry(Nx,Ny, Nz, prop_temp, Config, geometry_init,
 					 dx, prop_temp[6],e_r_totx,e_r_toty,e_r_totz, e_diel_tot ,T_food_init_th, cube[i]);
 	}
- 	// Set the geometry on the current proc
+ 	// Set the geometry on the current process
 	init_geom_one_proc(e_rx,mu_r,e_ry,e_rz,e_r_totx,e_r_toty,e_r_totz,mu_r_tot, i_min_proc[myrank],j_min_proc[myrank],k_min_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz,e_diel,e_diel_tot);
 
 
@@ -1392,15 +1391,15 @@ for(i=0; i<n_cube; i++){
     vec_cp_hot.push_back(1);
     vec_k_hot.push_back(1);
 
-		Material initialMat = ChoseMaterial(0);
+    Material initialMat = ChoseMaterial(0);
 
 
 
-		std::vector<double> constant(n_th);
+    std::vector<double> constant(n_th);
     #pragma omp parallel for default(shared) private(i)
     for(i=0;i<X_th*Y_th*Z_th;i++){
    	rho[i] = initialMat.rho[0];
-	cp[i] = initialMat.cp[0];                            /*************** UTILISER SET VEC PLUTOT ***********************/
+	cp[i] = initialMat.cp[0];                          
     }
     #pragma omp parallel for default(shared) private(i)
     for(i=0;i<n_th+Y_th*Z_th;i++){
@@ -1416,45 +1415,45 @@ for(i=0; i<n_cube; i++){
 }
 
 
-// Placement of the geometry(Thermo)
-// Sphere
-for(i=0;i<n_sphere;i++){
-int j=0;
-int prop_per_obj = 5;
-for(j=0;j<prop_per_obj;j++){
-prop_temp[j] = prop_sphere[prop_per_obj*i+j];
-}
-int Config = 0;
-place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],k_heat_x,k_heat_y,
-k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature, sphere[i]);
-}
-//Cylinder
-for(i=0;i<n_cylinder;i++){
-int j=0;
-int prop_per_obj = 7;
-for(j=0;j<prop_per_obj;j++){
-prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
-}
-int Config = 1;
-place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],
-k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,
-Temperature, cyl[i]);
-}
-// Cube
-for(i=0;i<n_cube;i++){
-int j=0;
-int prop_per_obj = 7;
-for(j=0;j<prop_per_obj;j++){
-prop_temp[j] = prop_cube[prop_per_obj*i+j];
-}
-int Config = 2;
-place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],
-k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature,cube[i]);
-}
+	// Placement of the geometry(Thermo)
+	// Sphere
+	for(i=0;i<n_sphere;i++){
+		int j=0;
+		int prop_per_obj = 5;
+		for(j=0;j<prop_per_obj;j++){
+			prop_temp[j] = prop_sphere[prop_per_obj*i+j];
+		}
+		int Config = 0;
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[4],k_heat_x,k_heat_y,
+		k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature, sphere[i]);
+	}
+	//Cylinder
+	for(i=0;i<n_cylinder;i++){
+		int j=0;
+		int prop_per_obj = 7;
+		for(j=0;j<prop_per_obj;j++){
+			prop_temp[j] = prop_cylinder[prop_per_obj*i+j];
+		}
+		int Config = 1;
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[5],
+		k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,
+		Temperature, cyl[i]);
+	}
+	// Cube
+	for(i=0;i<n_cube;i++){
+		int j=0;
+		int prop_per_obj = 7;
+		for(j=0;j<prop_per_obj;j++){
+			prop_temp[j] = prop_cube[prop_per_obj*i+j];
+		}
+		int Config = 2;
+		place_geometry_th(X_th,Y_th, Z_th, prop_temp, Config, geometry_th , dx_th, prop_temp[6],
+		k_heat_x,k_heat_y,k_heat_z,rho,cp,x_min_th,y_min_th,z_min_th,Temperature,cube[i]);
+	}
 	#pragma omp parallel for default(shared) private(i)
-for(i=0;i<X_th*Y_th*Z_th;i++){
-constant[i] = (dt_th)/(rho[i]*cp[i]*dx_th*dx_th);
-}
+	for(i=0;i<X_th*Y_th*Z_th;i++){
+		constant[i] = (dt_th)/(rho[i]*cp[i]*dx_th*dx_th);
+	}
 
 
 /********************************************************************************
@@ -1468,7 +1467,8 @@ if(solve_electro==0){	// Desactivation of the electro magnetic solver
 
 while(step_pos<=step_pos_max){
 
-	// Reinitialisation of the calculation of the fields and of the power grid
+	// Reinitialisation of the calculation of the fields and of the power grid (Beginning of
+	// the algorithm and after the rotation).
 	Hom_BC(0, 0, 0, point_per_proc_x[myrank]+lastx-1, point_per_proc_y[myrank]-1, point_per_proc_z[myrank]-1,Ex_new);
 	Hom_BC(0, 0, 0, point_per_proc_x[myrank]-1, point_per_proc_y[myrank]+lasty-1, point_per_proc_z[myrank]-1,Ey_new);
  	Hom_BC(0, 0, 0, point_per_proc_x[myrank]-1, point_per_proc_y[myrank]-1, point_per_proc_z[myrank]+lastz-1,Ez_new);
@@ -1695,7 +1695,7 @@ while(step_pos<=step_pos_max){
 			if(point_per_proc_z[myrank]-1+lastz<b_sup_z){
 				b_sup_z = point_per_proc_z[myrank]-1+lastz;
 			}
-			if(P==1){
+			if(P==1){// Wave guide (2 components of E imposed)
 				#pragma omp parallel for default(shared) private(i,j,k)
 				for(i=b_inf_x;i<=b_sup_x;i++){
 					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
@@ -1715,7 +1715,7 @@ while(step_pos<=step_pos_max){
 					}
 				}
 			}
-			if(P==2){
+			if(P==2){// Ey varying sinusoidally
 				#pragma omp parallel for default(shared) private(i,j,k)
 				for(i=b_inf_x;i<=b_sup_x;i++){
 					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
@@ -1725,7 +1725,7 @@ while(step_pos<=step_pos_max){
 					}
 				}
 			}
-			if(P==3){
+			if(P==3){// Ey constant 
 				#pragma omp parallel for default(shared) private(i,j,k)
 				for(i=b_inf_x;i<=b_sup_x;i++){
 					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
@@ -1735,7 +1735,7 @@ while(step_pos<=step_pos_max){
 					}
 				}
 			}
-      if(P==4){
+      			if(P==4){// Wave guide (1 component of E imposed).
 				#pragma omp parallel for default(shared) private(i,j,k)
 				for(i=b_inf_x;i<=b_sup_x;i++){
 					for(j=b_inf_y;j<=b_sup_y+lasty;j++){
@@ -1747,26 +1747,6 @@ while(step_pos<=step_pos_max){
 				}
 			}
 		}
-		/*nx = point_per_proc_x[myrank];
-		ny = point_per_proc_y[myrank];
-		nz = point_per_proc_z[myrank];
-		i = nx/2;
-		j = ny/2;
-		k = nz/2;
-		if(E_max_new<sqrt((Ex_new[i][j][k]*Ex_new[i][j][k])+(Ey_new[i][j][k]*Ey_new[i][j][k])+(Ez_new[i][j][k]*Ez_new[i][j][k]))){
-			E_max_new=sqrt((Ex_new[i][j][k]*Ex_new[i][j][k])+(Ey_new[i][j][k]*Ey_new[i][j][k])+(Ez_new[i][j][k]*Ez_new[i][j][k]));
-		}
-		// Check for steady state
-		if(step%step_mean==0){
-			Residual = sqrt((E_max_new-E_max_old)*(E_max_new-E_max_old));
-			//printf("Step:  %d Rank : %lf Residual : %lf\n",step, E_max_new, E_max_old);
-			Residual = Residual/E_max_old;
-			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual);
-			E_max_old = E_max_new;
-			E_max_new = 0;
-		}*/
-
-
 		//Storage of the new value of the electric field in E_prev.
 
 		New_in_old(point_per_proc_x[myrank]+lastx,point_per_proc_y[myrank],point_per_proc_z[myrank],Ex_new,Ex_prev);
@@ -1865,7 +1845,7 @@ while(step_pos<=step_pos_max){
 			}
 		}
 
-		//Update of the magnetic field
+		// Update of the magnetic field
 		//	X Component
 		Update_H_boundary(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,0,lasty,Hx_new,Hx_prev,Ey_prev,Ez_prev,Ey_bottom,dt,dx,mu_0,mu_r,myrank,5);
 		Update_H_inside(point_per_proc_x[myrank],point_per_proc_y[myrank]+lasty,point_per_proc_z[myrank]+lastz, lastz, lasty,Hx_new,Hx_prev,Ey_prev,Ez_prev,dt,dx,mu_0,mu_r,1);
@@ -2023,7 +2003,7 @@ while(step_pos<=step_pos_max){
         	}
 		/***********************************************************************************/
 
-		/*************************** Storage of the Results ************** *****************/
+		/*************************** Storage of the Results *******************************/
 
 		if(step%SR==0){//save results of the mpi process to disk
 					if(Save_field[0]==1)
@@ -2068,37 +2048,37 @@ while(step_pos<=step_pos_max){
 		}
      		//Extraction of a cut if needed
 
-	if(step == (int) step_cut[next_cut]){// To extract a cut
-		next_cut++;
-		if(Cut[0]==1){// Cut along x
-			export_coupe(1, 1, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Ex_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(1, 2, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Ey_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(1, 3, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Ez_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(1, 4, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Hx_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(1, 5, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Hy_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(1, 6, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+		if(step == (int) step_cut[next_cut]){// To extract a cut
+			next_cut++;
+			if(Cut[0]==1){// Cut along x
+				export_coupe(1, 1, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Ex_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(1, 2, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Ey_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(1, 3, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Ez_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(1, 4, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Hx_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(1, 5, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Hy_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(1, 6, Pos_cut[0], Pos_cut[1], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+			}
+			if(Cut[1]==1){// Cut along y
+				export_coupe(2, 1, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Ex_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(2, 2, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Ey_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(2, 3, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Ez_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(2, 4, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Hx_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(2, 5, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Hy_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(2, 6, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+			}
+			if(Cut[2]==1){// Cut along z
+				export_coupe(3, 1, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Ex_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(3, 2, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Ey_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(3, 3, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Ez_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(3, 4, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hx_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(3, 5, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hy_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+      				export_coupe(3, 6, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
+			}
 		}
-		if(Cut[1]==1){// Cut along y
-			export_coupe(2, 1, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Ex_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(2, 2, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Ey_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(2, 3, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Ez_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(2, 4, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Hx_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(2, 5, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Hy_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(2, 6, Pos_cut[2], Pos_cut[3], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-		}
-		if(Cut[2]==1){// Cut along z
-			export_coupe(3, 1, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Ex_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(3, 2, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Ey_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(3, 3, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Ez_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(3, 4, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hx_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(3, 5, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hy_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-      export_coupe(3, 6, Pos_cut[4], Pos_cut[5], Nx, Ny, Nz, Hz_new, dx, step, myrank,i_min_proc[myrank],i_max_proc[myrank],j_min_proc[myrank],j_max_proc[myrank],k_min_proc[myrank],k_max_proc[myrank],point_per_proc_x[myrank],point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz);
-		}
-	}
 /*****************************************************************************************/
 
 
-	// Computation of the power grid (TO BE PARAMETRIZED)
+	// Computation of the power grid 
 		nx = point_per_proc_x[myrank];
 		ny = point_per_proc_y[myrank];
 		nz = point_per_proc_z[myrank];
@@ -2107,6 +2087,7 @@ while(step_pos<=step_pos_max){
 		int jjj = 0;
 		int kkk = 0;
 
+		// Bulk of the domain
 		#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
 		for(i=1;i<(nx-lastx);i++){
 			for(j=1;j<(ny-lasty);j++){
@@ -2134,6 +2115,7 @@ while(step_pos<=step_pos_max){
 			}
 		}
 
+		// Boundaries
   		if(firstx!=1){
 			#pragma omp parallel for default(shared) private(i,j,k,iii,jjj,kkk)
 		        for(i=0;i<=0;i++){
@@ -2332,6 +2314,8 @@ while(step_pos<=step_pos_max){
 			**************************************/
 
 			/****************** Check if steady state is reached on the current process **********************/
+
+			// Finalisation of the computation of the power grid and computation of the residual.
 			Residual = 0;
 			Residual_0 = 0;
 			for(i=0;i<nx;i++){
@@ -2341,21 +2325,10 @@ while(step_pos<=step_pos_max){
 						Power_new[i+j*nx+k*(ny)*nx] = e_diel[j+k*ny+i*(ny)*nz]*Power_new[i+j*nx+k*(ny)*nx];
 						Residual = Residual + (Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]);
 						Residual_0 = Residual_0 + (Power_old[i+j*nx+k*(ny)*nx])*(Power_old[i+j*nx+k*(ny)*nx]);
-						/*if(i==nx/2&&j==ny/2&&k==nz/2){
-							Residual = ((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
-							Residual = sqrt((Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx])*(Power_new[i+j*nx+k*(ny)*nx]-Power_old[i+j*nx+k*(ny)*nx]));
-							Residual = Residual/Power_old[i+j*nx+k*(ny)*nx];
-						}*/
 						Power_old[i+j*nx+k*(ny)*nx] = Power_new[i+j*nx+k*(ny)*nx];
 					}
 				}
 			}
-			/*if(Residual<0.0025){
-				steady_state_reached = 1;
-			}
-			else{
-				steady_state_reached = 0;
-			}*/
      			 if((step/step_mean)==1){
 				if(Residual==0){
 					Residual = 1;
@@ -2389,12 +2362,11 @@ while(step_pos<=step_pos_max){
 				MPI_Recv(&steady_state_reached,1,MPI_INT,0,0, MPI_COMM_WORLD, &mystatus );
 			}
        			printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual/Residual_0);
-			//printf("Step:  %d Rank : %d Residual : %lf\n",step, myrank, Residual);
 
 			/****************************************************************************************************/
 
-			if(step>1800000||(solve_thermo==0 && step == step_max))
-   			steady_state_reached=1;		/************** To be suppressed if we want to reach the steady state *********************/
+			if(step>1800000||(solve_thermo==0 && step == step_max)) // Avoid infinite test
+   			steady_state_reached=1;		
 				
 			if(steady_state_reached==1){
 				break;
@@ -2406,7 +2378,7 @@ while(step_pos<=step_pos_max){
 		}
  	step++;
 	}
-	if(solve_electro==1){	// We save the last step of the electro calculation if there was any
+	if(solve_electro==1){	
 		total_power_diss = 0;
 		if(myrank==0){
 	     		for(i=i_min_proc[myrank];i<=i_max_proc[myrank];i++){
@@ -2433,7 +2405,8 @@ while(step_pos<=step_pos_max){
 	   	else{
 	     		MPI_Send(&Power_new[0],point_per_proc_x[myrank]*(point_per_proc_y[myrank])*(point_per_proc_z[myrank]),MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
 	   	}
-			if(Save_field[0]==1)
+					// We save the last step of the electro calculation if there was any
+					if(Save_field[0]==1)
 						export_spoints_XML("Ex", step, grid_Ex, mygrid_Ex, ZIPPED, Nx, Ny, Nz, 0);
 					if(Save_field[1]==1)
 						export_spoints_XML("Ey", step+step_prec, grid_Ey, mygrid_Ey, ZIPPED, Nx, Ny, Nz, 0);
@@ -2555,7 +2528,7 @@ while(step_pos<=step_pos_max){
 				point_per_proc_y[myrank],point_per_proc_z[myrank],lastx,lasty,lastz, Nx, Ny, Nz,e_diel,e_diel_tot);
 
 			}
-step_pos++;
+	step_pos++;
 }
 
 

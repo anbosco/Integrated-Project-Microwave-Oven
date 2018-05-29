@@ -195,10 +195,6 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
     std::vector<int> lasty_h(n);
     std::vector<int> lastz_h(n);
 
-    // Variable use for probing the temperature
-    //if(nb_probe!=0){
-    	//std::vector<double> probe(nb_probe*step_max);
- //  }
     std::vector<double> probe(nb_probe*step_max);
 	#pragma omp parallel for default(shared) private(i_vec)
 	for(i_vec=0;i_vec<X*Y*Z;i_vec++){
@@ -335,7 +331,6 @@ void host_work(DMUMPS_STRUC_C &id,double Lx,double Ly,double Lz,double delta_x,d
       	if(step%SR==0){
       		export_spoints_XML("Temperature_field", step+step_pos*step_max, grid, grid, Zip::ZIPPED, X, Y,  Z, 1);
 		export_spoints_XML("Heat conductivity field", step+step_pos*step_max, gridk, gridk, Zip::ZIPPED, X+1, Y,  Z, 1);     // To check the phase transition in conductivity
-		//export_spoints_XML("Test_power", step+step_pos*step_max, grid2, grid2, Zip::ZIPPED, X_elec, Y_elec,  Z_elec, 1);  // To check if the source is correctly transferred.
 
   		/************* To be suppress when coupling is done ****************/
 
@@ -536,13 +531,13 @@ void Compute_a_T0_steady(std::vector<int> &irn , std::vector<int> &jcn, int X, i
 	    					a.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
 	    					b.push_back(-k_heat_y[i*(Y+1)*Z+k*(Y+1)+j-1]/(2*dx));
 
-                irn.push_back(i_vec+1);
-                jcn.push_back(i_vec+1-1);
+                				irn.push_back(i_vec+1);
+                				jcn.push_back(i_vec+1-1);
 
-                a.push_back(-h);		// Same NEUMAN on all faces
+                				a.push_back(-h);		// Same NEUMAN on all faces
 	    					b.push_back(-h);
-                /*a.push_back(-1);
-                b.push_back(-1);*/
+               					/*a.push_back(-1);		
+                				b.push_back(-1);*/
 
 
 	    					irn.push_back(i_vec+1);
@@ -643,44 +638,38 @@ void Compute_a_T0_steady(std::vector<int> &irn , std::vector<int> &jcn, int X, i
 			}
 				/**********************************************************/
 
-				/***** Imposition of the dirichlet boundary condition **********/
+				/***** Imposition of the Dirichlet boundary condition **********/
 				else if(geometry[i_vec-Y*Z]==0&&geometry[i_vec+Y*Z]!=0&&BC[4]==1){ // face 4
-            				// Dirichlet
   					irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
   					a.push_back(1);
   					b.push_back(1);
 				}
 				else if((geometry[i_vec+Y*Z]==0&&geometry[i_vec-Y*Z]!=0&&BC[5]==1)){ // face 5
-		 			 // Dirichlet
 		  			 irn.push_back(i_vec+1);
 	  				 jcn.push_back(i_vec+1);
 					 a.push_back(1);
 	  				 b.push_back(1);
 				}
 				else if(geometry[i_vec-1]==0&&geometry[i_vec+1]!=0&&BC[0]==1){ // face 0
-		      			// Dirichlet
             				irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
   					a.push_back(1);
   					b.push_back(1);
         			}
 				else if((geometry[i_vec+1]==0 && geometry[i_vec-1]!=0&&BC[1]==1)){ // face 1
-         				// Dirichlet
            				irn.push_back(i_vec+1);
 	  				jcn.push_back(i_vec+1);
 	  				a.push_back(1);
 	  				b.push_back(1);
 				}
 				else if(geometry[i_vec-Y]==0&&geometry[i_vec+Y]!=0&&BC[2]==1){ // face2
-            				// Dirichlet
             				irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
   					a.push_back(1);
   					b.push_back(1);
 				}
 				else if((geometry[i_vec+Y]==0&&geometry[i_vec-Y]!=0&&BC[3]==1)){  // face 3
-         				// Dirichlet
             				irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
   					a.push_back(1);
@@ -1064,7 +1053,6 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
 
 				/***** Imposition of the dirichlet boundary condition **********/
 				else if(geometry[i_vec-Y*Z]==0&&geometry[i_vec+Y*Z]!=0&&BC[4]==1){ // face 4
-            				// Dirichlet
             				Temp[i_vec] = T_Dir[4];
   					irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
@@ -1072,7 +1060,6 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
   					b.push_back(1);
 				}
 				else if((geometry[i_vec+Y*Z]==0&&geometry[i_vec-Y*Z]!=0&&BC[5]==1)){ // face 5
-         				// Dirichlet
            				Temp[i_vec] = T_Dir[5];
            				irn.push_back(i_vec+1);
   				 	jcn.push_back(i_vec+1);
@@ -1080,7 +1067,6 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
   				 	b.push_back(1);
 				}
 				else if(geometry[i_vec-1]==0&&geometry[i_vec+1]!=0&&BC[0]==1){ // face 0
-		      			// Dirichlet
             				Temp[i_vec] = T_Dir[0];
             				irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
@@ -1088,7 +1074,6 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
   					b.push_back(1);
         			}
 				else if((geometry[i_vec+1]==0 && geometry[i_vec-1]!=0&&BC[1]==1)){ // face 1
-         				// Dirichlet
            				Temp[i_vec] = T_Dir[1];
            				irn.push_back(i_vec+1);
   				 	jcn.push_back(i_vec+1);
@@ -1096,7 +1081,6 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
   				 	b.push_back(1);
 				}
 				else if(geometry[i_vec-Y]==0&&geometry[i_vec+Y]!=0&&BC[2]==1){ // face2
-            				// Dirichlet
             				Temp[i_vec] = T_Dir[2];
             				irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
@@ -1104,7 +1088,6 @@ void Compute_a_T0_2(std::vector<int> &irn , std::vector<int> &jcn, int X, int Y,
   					b.push_back(1);
 				}
 				else if((geometry[i_vec+Y]==0&&geometry[i_vec-Y]!=0&&BC[3]==1)){  // face 3
-         				// Dirichlet
              				Temp[i_vec] = T_Dir[3];
             				irn.push_back(i_vec+1);
   					jcn.push_back(i_vec+1);
@@ -1419,45 +1402,29 @@ void place_cube_th(int X, int Y, int Z, double xx, double yy, double zz, double 
 			for(i=0;i<X+xx;i++){
 				if(((x_min_th+(i*dx)-0.5*dx*xx)<=properties[3]+properties[0]/2)&&((x_min_th+i*dx-0.5*dx*xx)>=properties[3]-properties[0]/2)&&((y_min_th+j*dx-0.5*dx*yy)<=properties[4]+properties[1]/2)&&((y_min_th+j*dx-0.5*dx*yy)>=properties[4]-properties[1]/2)&&((z_min_th+k*dx-0.5*dx*zz)<=properties[5]+properties[2]/2)&&((z_min_th+k*dx-0.5*dx*zz)>=properties[5]-properties[2]/2)){
 					test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+					Ind = 0;
 
-
-          /*      if(test_temp<Temp_phase_change)	{
-    							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-    						}
-    						else{
-    							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-    						} */
-
-
-
-                						Ind = 0;
-
-                						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
-                								if(PropertyLoop==0){
-                										if(test_temp< Temp_phase_change[PropertyLoop]){
-                											Ind = PropertyLoop;
-                										}
-                									}
-                									else if (PropertyLoop == Temp_phase_change.size() - 1){
-                										if(test_temp >= Temp_phase_change[PropertyLoop]){
-                											Ind = PropertyLoop+1;
-                										}
-                									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-                										Ind = PropertyLoop ;
-                									}
-                								}
-                								else {
-                									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-                										Ind = PropertyLoop;
-                									}
-                								}
-                							}
-
-
-                M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
-
-
-
+                			for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+                				if(PropertyLoop==0){
+                					if(test_temp< Temp_phase_change[PropertyLoop]){
+                						Ind = PropertyLoop;
+                					}
+                				}
+                				else if (PropertyLoop == Temp_phase_change.size() - 1){
+                					if(test_temp >= Temp_phase_change[PropertyLoop]){
+                						Ind = PropertyLoop+1;
+                					}
+                					else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                						Ind = PropertyLoop ;
+                					}
+                				}
+                				else {
+                					if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                						Ind = PropertyLoop;
+                					}
+                				}
+                			}
+                			M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
 				}
 			}
 		}
@@ -1489,138 +1456,85 @@ void place_cylinder_th(int X,int Y,int Z, double xx, double yy, double zz, doubl
 				if(properties[0]==0){
 					if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
 						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+                  				Ind = 0;
 
-
-
-
-            /*      if(test_temp<Temp_phase_change)	{
-      							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-      						}
-      						else{
-      							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-      						} */
-
-
-
-                  						Ind = 0;
-
-                  						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
-                  								if(PropertyLoop==0){
-                  										if(test_temp< Temp_phase_change[PropertyLoop]){
-                  											Ind = PropertyLoop;
-                  										}
-                  									}
-                  									else if (PropertyLoop == Temp_phase_change.size() - 1){
-                  										if(test_temp >= Temp_phase_change[PropertyLoop]){
-                  											Ind = PropertyLoop+1;
-                  										}
-                  									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-                  										Ind = PropertyLoop ;
-                  									}
-                  								}
-                  								else {
-                  									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-                  										Ind = PropertyLoop;
-                  									}
-                  								}
-                  							}
-
-
-                  M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
-
-
+                  				for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+                  					if(PropertyLoop==0){
+                  						if(test_temp< Temp_phase_change[PropertyLoop]){
+                  							Ind = PropertyLoop;
+                  						}
+                  					}
+                  					else if (PropertyLoop == Temp_phase_change.size() - 1){
+                  						if(test_temp >= Temp_phase_change[PropertyLoop]){
+                  							Ind = PropertyLoop+1;
+                  						}
+                  						else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  							Ind = PropertyLoop ;
+                  						}
+                  					}
+                  					else {
+                  						if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  							Ind = PropertyLoop;
+                  						}
+                  					}
+                  				}
+                  				M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
 					}
 				}
 				else if(properties[0]==1){
 					if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
 						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+                  				Ind = 0;
 
-
-
-
-            /*      if(test_temp<Temp_phase_change)	{
-      							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-      						}
-      						else{
-      							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-      						} */
-
-
-
-                  						Ind = 0;
-
-                  						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
-                  								if(PropertyLoop==0){
-                  										if(test_temp< Temp_phase_change[PropertyLoop]){
-                  											Ind = PropertyLoop;
-                  										}
-                  									}
-                  									else if (PropertyLoop == Temp_phase_change.size() - 1){
-                  										if(test_temp >= Temp_phase_change[PropertyLoop]){
-                  											Ind = PropertyLoop+1;
-                  										}
-                  									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-                  										Ind = PropertyLoop ;
-                  									}
-                  								}
-                  								else {
-                  									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-                  										Ind = PropertyLoop;
-                  									}
-                  								}
-                  							}
-
-
-                  M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
-
-
-
-
+                  				for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+                  					if(PropertyLoop==0){
+                  						if(test_temp< Temp_phase_change[PropertyLoop]){
+                  							Ind = PropertyLoop;
+                  						}
+                  					}
+                  					else if (PropertyLoop == Temp_phase_change.size() - 1){
+                  						if(test_temp >= Temp_phase_change[PropertyLoop]){
+                  							Ind = PropertyLoop+1;
+                  						}
+                  						else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  							Ind = PropertyLoop ;
+                  						}
+                  					}
+                  					else {
+                  						if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                  							Ind = PropertyLoop;
+                  						}
+                  					}
+                  				}
+                 				M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
 					}
 				}
 				else if(properties[0]==2){
 					if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
 						test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+            					Ind = 0;
 
-
-
-
-      /*      if(test_temp<Temp_phase_change)	{
-							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-						}
-						else{
-							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-						} */
-
-
-
-            						Ind = 0;
-
-            						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
-            								if(PropertyLoop==0){
-            										if(test_temp< Temp_phase_change[PropertyLoop]){
-            											Ind = PropertyLoop;
-            										}
-            									}
-            									else if (PropertyLoop == Temp_phase_change.size() - 1){
-            										if(test_temp >= Temp_phase_change[PropertyLoop]){
-            											Ind = PropertyLoop+1;
-            										}
-            									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-            										Ind = PropertyLoop ;
-            									}
-            								}
-            								else {
-            									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-            										Ind = PropertyLoop;
-            									}
-            								}
+            					for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+            						if(PropertyLoop==0){
+            							if(test_temp< Temp_phase_change[PropertyLoop]){
+            								Ind = PropertyLoop;
             							}
-
-
-            M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
-
-
+            						}
+            						else if (PropertyLoop == Temp_phase_change.size() - 1){
+            							if(test_temp >= Temp_phase_change[PropertyLoop]){
+            								Ind = PropertyLoop+1;
+            							}
+            							else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+            								Ind = PropertyLoop ;
+            							}
+            						}
+            						else {
+            							if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+            								Ind = PropertyLoop;
+            							}
+            						}
+            					}
+           					M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
 					}
 				}
 			}
@@ -1644,46 +1558,29 @@ void place_sphere_th(int X, int Y, int Z, double xx, double yy, double zz, doubl
 			for(i=0;i<X+xx;i++){
 				if(((properties[0]-(x_min_th+i*dx-xx*0.5*dx))*(properties[0]-(x_min_th+i*dx-xx*0.5*dx))+(properties[1]-(y_min_th+j*dx-yy*0.5*dx))*(properties[1]-(y_min_th+j*dx-yy*0.5*dx))+(properties[2]-(z_min_th+k*dx-zz*0.5*dx))*(properties[2]-(z_min_th+k*dx-zz*0.5*dx)))<=properties[3]*properties[3]){
 					test_temp = (Temperature[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]+Temperature[(i-xx)*(Y+yy)*(Z+zz)+(k-zz)*(Y+yy)+(j-yy)])/2;
+                			Ind = 0;
 
-
-
-          /*      if(test_temp<Temp_phase_change)	{
-    							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val;
-    						}
-    						else{
-    							M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_hot;
-    						} */
-
-
-
-                						Ind = 0;
-
-                						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
-                								if(PropertyLoop==0){
-                										if(test_temp< Temp_phase_change[PropertyLoop]){
-                											Ind = PropertyLoop;
-                										}
-                									}
-                									else if (PropertyLoop == Temp_phase_change.size() - 1){
-                										if(test_temp >= Temp_phase_change[PropertyLoop]){
-                											Ind = PropertyLoop+1;
-                										}
-                									else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-                										Ind = PropertyLoop ;
-                									}
-                								}
-                								else {
-                									if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
-                										Ind = PropertyLoop;
-                									}
-                								}
-                							}
-
-
-                M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
-
-
-
+                			for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
+                				if(PropertyLoop==0){
+                					if(test_temp< Temp_phase_change[PropertyLoop]){
+                						Ind = PropertyLoop;
+                					}
+                				}
+                				else if (PropertyLoop == Temp_phase_change.size() - 1){
+                					if(test_temp >= Temp_phase_change[PropertyLoop]){
+                						Ind = PropertyLoop+1;
+                					}
+                					else if(test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                						Ind = PropertyLoop ;
+                					}
+                				}
+                				else {
+                					if (test_temp >= Temp_phase_change[PropertyLoop-1] && test_temp < Temp_phase_change[PropertyLoop]){
+                						Ind = PropertyLoop;
+                					}
+                				}
+                			}
+                			M[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j]= vec_val[Ind];
 				}
 			}
 		}

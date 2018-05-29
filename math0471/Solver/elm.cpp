@@ -25,8 +25,6 @@ using namespace vtl;
 #include "dmumps_c.h"
 #define ICNTL(I) icntl[(I)-1]
 
-// Tous les includes sont pas nécessaires, i'll edit later i guess
-
 /*****************************************************************************************
 			ELECTRO-MAGNETIC FUNCTIONS
 *****************************************************************************************/
@@ -568,19 +566,19 @@ void rotate_geometry(std::vector<double> &geometry_init,std::vector<double> &e_r
 
 
 
- rotate_rel_perm(e_r_totx,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
+ 	rotate_rel_perm(e_r_totx,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
 	 ncube,info_cube,theta,0, Temperature, dx_th,
 	 x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th, cube, cyl, sphere);
 
- rotate_rel_perm(e_r_toty,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
+ 	rotate_rel_perm(e_r_toty,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
 	 ncube,info_cube,theta,1, Temperature, dx_th,
 	 x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th, cube, cyl, sphere);
 
- rotate_rel_perm(e_r_totz,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
+ 	rotate_rel_perm(e_r_totz,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
 	 ncube,info_cube,theta,2, Temperature, dx_th,
 	 x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th, cube, cyl, sphere);
 
- rotate_rel_perm(e_diel_tot,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
+ 	rotate_rel_perm(e_diel_tot,Nx, Ny,Nz,Lx,Ly,Lz,dx,nsphere,info_sphere,ncylinder,info_cylinder,
 	 ncube,info_cube,theta,3, Temperature, dx_th,
 	 x_min_th,y_min_th,z_min_th,X_th,Y_th, Z_th, cube, cyl, sphere);
 
@@ -761,15 +759,6 @@ void place_cube(int X,int Y, int Z, std::vector<double> &properties,
 			for(k=0;k<Z+zz;k++){
 				for(i=0;i<X+xx;i++){
 					if(((i*dx-0.5*xx*dx)<=properties[3]+properties[0]/2)&&((i*dx-0.5*xx*dx)>=properties[3]-properties[0]/2)&&((j*dx-0.5*yy*dx)<=properties[4]+properties[1]/2)&&((j*dx-0.5*yy*dx)>=properties[4]-properties[1]/2)&&((k*dx-0.5*zz*dx)<=properties[5]+properties[2]/2)&&((k*dx-0.5*zz*dx)>=properties[5]-properties[2]/2)){
-
-
-			/*			if(T_food_init_th<Temp_phase_change){
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = er;
-						}
-						else{
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = erHot;
-						} */
-
 						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
 								if(PropertyLoop==0){
 										if(T_food_init_th<Temp_phase_change[PropertyLoop]){
@@ -838,14 +827,6 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,
 				zp = k*dx-0.5*zz*dx;
 				if(properties[0]==0){
 					if(((yp-yc)*(yp-yc)+(zp-zc)*(zp-zc)<=r*r) && xp<=xc+l/2 && xp>= xc-l/2){
-
-
-				/*		if(T_food_init_th<Temp_phase_change){
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = er;
-						}
-						else{
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = erHot;
-						} */
 						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
 								if(PropertyLoop==0){
 										if(T_food_init_th<Temp_phase_change[PropertyLoop]){
@@ -875,14 +856,6 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,
 				}
 				else if(properties[0]==1){
 					if(((xp-xc)*(xp-xc)+(zp-zc)*(zp-zc)<=r*r) && yp<=yc+l/2 && yp>= yc-l/2){
-
-
-			/*			if(T_food_init_th<Temp_phase_change){
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = er;
-						}
-						else{
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = erHot;
-						} */
 						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
 								if(PropertyLoop==0){
 										if(T_food_init_th<Temp_phase_change[PropertyLoop]){
@@ -911,15 +884,6 @@ void place_cylinder(int X,int Y, int Z, std::vector<double> &properties,
 				}
 				else if(properties[0]==2){
 					if(((xp-xc)*(xp-xc)+(yp-yc)*(yp-yc)<=r*r) && zp<=zc+l/2 && zp>= zc-l/2){
-
-
-		/*				if(T_food_init_th<Temp_phase_change){
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = er;
-						}
-						else{
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = erHot;
-						}  */
-
 						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
 								if(PropertyLoop==0){
 										if(T_food_init_th<Temp_phase_change[PropertyLoop]){
@@ -982,15 +946,6 @@ void place_sphere(int X,int Y, int Z, std::vector<double> &properties,
          				double yp = (j*dx)-0.5*yy*dx;
           				double zp = (k*dx)-0.5*zz*dx;
 					if(((properties[0]-(xp))*(properties[0]-(xp))+(properties[1]-(yp))*(properties[1]-(yp))+(properties[2]-(zp))*(properties[2]-(zp)))<=properties[3]*properties[3]){
-
-
-			/*			if(T_food_init_th<Temp_phase_change){
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = er;
-						}
-						else{
-							e_r_tot[i*(Y+yy)*(Z+zz)+k*(Y+yy)+j] = erHot;
-						} */
-
 						for(PropertyLoop=0; PropertyLoop < Temp_phase_change.size() ; PropertyLoop++){
 								if(PropertyLoop==0){
 										if(T_food_init_th<Temp_phase_change[PropertyLoop]){
@@ -1134,26 +1089,6 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 					if(((x_before)<=info_cube[7*object+3]+info_cube[7*object+0]/2)&&((x_before)>=info_cube[7*object+3]-info_cube[7*object+0]/2)&&((y_before)<=info_cube[7*object+4]+info_cube[7*object+1]/2)&&((y_before)>=info_cube[7*object+4]-info_cube[7*object+1]/2)&&((z_after)<=info_cube[7*object+5]+info_cube[7*object+2]/2)&&((z_after)>=info_cube[7*object+5]-info_cube[7*object+2]/2)){
 						Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 						Temp = Temp/4;
-
-
-
-				/*		if(Temp<cube[object].TempPhaseChange){
-							if(component == 3){
-									e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cube[object].eDiel;
-							}
-							else{
-								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cube[object].er;
-							}
-						}
-						else{
-							if(component == 3){
-									e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cube[object].eDielHot;
-							}
-							else{
-								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cube[object].erHot;
-							}
-						}  */
-
 						for(PropertyLoop=0; PropertyLoop < cube[object].TempPhaseChange.size() ; PropertyLoop++){
 								if(PropertyLoop==0){
 										if(Temp<cube[object].TempPhaseChange[PropertyLoop]){
@@ -1199,30 +1134,7 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 						if(((y_before-yc)*(y_before-yc)+(z_after-zc)*(z_after-zc)<=r*r) && x_before<=xc+l/2 && x_before>= xc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 							Temp = Temp/4;
-
-
-
-
-
-              	/*					if(Temp<cyl[object].TempPhaseChange){
-														if(component == 3){
-																e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDiel;
-														}
-														else{
-															e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].er;
-														}
-													}
-													else{
-														if(component == 3){
-																e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDielHot;
-														}
-														else{
-															e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].erHot;
-														}
-							}  */
-
 							Ind = 0;
-
 							for(PropertyLoop=0; PropertyLoop < cyl[object].TempPhaseChange.size() ; PropertyLoop++){
 									if(PropertyLoop==0){
 											if(Temp< cyl[object].TempPhaseChange[PropertyLoop]){
@@ -1261,33 +1173,9 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 						if(((x_before-xc)*(x_before-xc)+(z_after-zc)*(z_after-zc)<=r*r) && y_before<=yc+l/2 && y_before>= yc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 							Temp = Temp/4;
+							Ind = 0;
 
-
-
-
-
-
-					/*		if(Temp<cyl[object].TempPhaseChange){
-								if(component == 3){
-										e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDiel;
-								}
-								else{
-									e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].er;
-								}
-							}
-							else{
-								if(component == 3){
-										e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDielHot;
-								}
-								else{
-									e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].erHot;
-								}
-						}  */
-
-
-						Ind = 0;
-
-						for(PropertyLoop=0; PropertyLoop < cyl[object].TempPhaseChange.size() ; PropertyLoop++){
+							for(PropertyLoop=0; PropertyLoop < cyl[object].TempPhaseChange.size() ; PropertyLoop++){
 
 								if(PropertyLoop==0){
 										if(Temp< cyl[object].TempPhaseChange[PropertyLoop]){
@@ -1298,56 +1186,29 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 										if(Temp >= cyl[object].TempPhaseChange[PropertyLoop]){
 											Ind = PropertyLoop+1;
 										}
-									else if(Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
-										Ind = PropertyLoop ;
+										else if(Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
+											Ind = PropertyLoop ;
+										}
 									}
-								}
-								else {
-									if (Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
-										Ind = PropertyLoop;
+									else {
+										if (Temp >= cyl[object].TempPhaseChange[PropertyLoop-1] && Temp < cyl[object].TempPhaseChange[PropertyLoop]){
+											Ind = PropertyLoop;
+										}
 									}
-								}
 							}
 
 							if(component == 3){
-									e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDiel[Ind];
+								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDiel[Ind];
 							}
 							else{
 								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].er[Ind];
 							}
-
-
-
-
 					}
 				}
 					else if(info_cylinder[7*object]==2){
 						if(((x_before-xc)*(x_before-xc)+(y_before-yc)*(y_before-yc)<=r*r) && z_after<=zc+l/2 && z_after>= zc-l/2){
 							Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 							Temp = Temp/4;
-
-
-
-
-
-		/*					if(Temp<cyl[object].TempPhaseChange){
-								if(component == 3){
-										e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDiel;
-								}
-								else{
-									e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].er;
-								}
-							}
-							else{
-								if(component == 3){
-										e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].eDielHot;
-								}
-								else{
-									e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = cyl[object].erHot;
-								}
-						}   */
-
-
 						Ind = 0;
 
 						for(PropertyLoop=0; PropertyLoop < cyl[object].TempPhaseChange.size() ; PropertyLoop++){
@@ -1387,26 +1248,6 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 					if(((info_sphere[5*object+0]-x_before)*(info_sphere[5*object+0]-x_before)+(info_sphere[5*object+1]-y_before)*(info_sphere[5*object+1]-y_before)+(info_sphere[5*object+2]-z_after)*(info_sphere[5*object+2]-z_after))<=info_sphere[5*object+3]*info_sphere[5*object+3]){
 						Temp = (1-xi)*(1-eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1-eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1)] + (1+xi)*(1+eta)*Temperature[(i1+1)*Y_th*Z_th+(k)*Y_th+(j1+1)]+(1-xi)*(1+eta)*Temperature[(i1)*Y_th*Z_th+(k)*Y_th+(j1+1)];
 						Temp = Temp/4;
-
-
-
-    /*       					if(Temp<sphere[object].TempPhaseChange){
-											if(component == 3){
-													e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = sphere[object].eDiel;
-											}
-											else{
-												e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = sphere[object].er;
-											}
-						}
-						else{
-							if(component == 3){
-									e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = sphere[object].eDielHot;
-							}
-							else{
-								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = sphere[object].erHot;
-							}
-						}   */
-
 						Ind = 0;
 
 						for(PropertyLoop=0; PropertyLoop < sphere[object].TempPhaseChange.size() ; PropertyLoop++){
@@ -1437,12 +1278,6 @@ void rotate_rel_perm(std::vector<double> &e_r_tot,
 							else{
 								e_r_tot[i*(Ny+yy)*(Nz+zz)+k*(Ny+yy)+j] = sphere[object].er[Ind];
 							}
-
-
-
-
-
-
 					}
 				}
 			}
