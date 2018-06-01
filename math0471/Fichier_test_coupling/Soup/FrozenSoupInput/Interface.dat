@@ -1,0 +1,21 @@
+0.3			! Lx
+0.3			! Ly
+0.3			! Lz
+2400000000		! Frequency
+0.005			! dx
+0.000000000005		! dt
+600			! Final time
+1			! P (1:guide d'onde; 2: only Ey variable; 3: only Ey constant)
+0.000025		! Sampling Rate
+0.005			! L_a_x
+0.065			! L_a_y
+0.065			! L_a_z
+0			! Pos_a_x
+0.15			! Pos_a_y
+0.15			! Pos_a_z
+0			! Nb_sphere
+1 			! Nb_cylinder
+0			! Nb_cube		
+1500			! Input electric field amplitude
+0.628318		! Delta theta
+1			! Solve electro?  

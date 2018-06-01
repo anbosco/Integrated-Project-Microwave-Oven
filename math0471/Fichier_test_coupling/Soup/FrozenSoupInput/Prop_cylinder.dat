@@ -1,0 +1,7 @@
+2		! Axis of cylinder(0->x;1->y;2->z) (PATTE AVANT)
+0.15		! Centre x
+0.15		! Centre y
+0.06		! Centre z
+0.06		! Rayon
+1		! Valeur
+0.08		! Length
