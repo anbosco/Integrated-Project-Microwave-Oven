@@ -77,7 +77,7 @@ switch(Val){
 
   case 3:
   {
-   // Not Phy α=1
+   // Not Phy alpha=1
   Material Alpha;
   Alpha.name = "Alpha";
   Alpha.rho = {1, 1};
@@ -179,6 +179,22 @@ switch(Val){
   ReturnMaterial = mus;
 }
   break;
+
+  case 9:
+  {
+   // Not Phy alpha = 0.0002
+  Material Alpha;
+  Alpha.name = "Alpha";
+  Alpha.rho = {10000, 10000};
+  Alpha.id = 9;
+  Alpha.k = {2, 2};
+  Alpha.cp = {1, 1};
+  Alpha.TempPhaseChange = {0};
+  Alpha.er = {1, 1};
+  Alpha.ur = {1, 1};
+  Alpha.eDiel = {1, 1};
+  ReturnMaterial = Alpha;
+}
 
   case 99:
   {
