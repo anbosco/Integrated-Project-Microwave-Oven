@@ -196,7 +196,7 @@ switch(Val){
   ReturnMaterial = Alpha;
 }
 
-  case 99:
+  case 10:
   {
    // SNOt phy.
   Material Alpha;
