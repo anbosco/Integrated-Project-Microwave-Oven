@@ -27,7 +27,7 @@
 0		! Nb sphere
 1		! Nb cylinder
 0		! Nb cube
-10		! Food initial temperature
+-5		! Food initial temperature
 10		! h_air
 0.05		! x_min
 0.05		! y_min
